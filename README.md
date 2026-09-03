@@ -19,6 +19,46 @@ holds the commands I ran, the captured output, and notes on what I actually obse
 | Dockerfiles and images | [Multi-stage build on port 8080](multi-stage-build/README.md) | [verification.txt](multi-stage-build/verification.txt) + screenshot |
 | Docker networking and volumes | [Networks, host mode, bind mount, overlay](docker-networking/README.md) | four transcripts + screenshots |
 
+## Screenshots
+
+Every page below was captured from a real browser against the running container.
+
+### Docker fundamentals — six Hello World applications
+
+| Node.js — `:8201` | Python — `:8202` | Java — `:8203` |
+| --- | --- | --- |
+| ![Node.js app](docker-apps/screenshots/01-nodejs-app.png) | ![Python app](docker-apps/screenshots/02-python-app.png) | ![Java app](docker-apps/screenshots/03-java-app.png) |
+
+| Apache — `:8204` | React — `:8205` | Nginx — `:8206` |
+| --- | --- | --- |
+| ![Apache app](docker-apps/screenshots/04-Apache-app.png) | ![React app](docker-apps/screenshots/05-React-app.png) | ![Nginx app](docker-apps/screenshots/06-nginx-app.png) |
+
+### Multi-stage build — port 8080
+
+![Hello World from Docker multi-stage build, on port 8080](multi-stage-build/screenshots/01-app-on-8080.png)
+
+### Docker networking and volumes
+
+**Task 1** — the frontend container published on port 8081, with the backend on two networks
+behind it:
+
+![Frontend served on port 8081](docker-networking/screenshots/01-frontend-8081.png)
+
+**Task 3** — the bind mount, before and after editing `index.html` on the host. The container was
+never restarted between the two:
+
+| Before the edit | After the edit |
+| --- | --- |
+| ![Hello students](docker-networking/screenshots/02-bind-mount-before.png) | ![Edited page](docker-networking/screenshots/03-bind-mount-after.png) |
+
+**Task 2** (host network) has no browser screenshot, because `--network host` is not reachable
+from macOS — Docker Desktop runs containers inside a Linux VM. It is verified from inside that
+namespace instead, and the reason is written up in
+[docker-networking/host-network/README.md](docker-networking/host-network/README.md).
+
+**Task 4** (overlay) is a Swarm networking exercise with no web page; its evidence is the command
+output in [overlay-demo-output.txt](docker-networking/overlay-demo-output.txt).
+
 ## How this is put together
 
 Every task has a **runnable script** and a **captured transcript**, so each claim in a README can be
