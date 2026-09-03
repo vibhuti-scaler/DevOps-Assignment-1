@@ -1,0 +1,223 @@
+Linux fundamentals Task 3 - journalctl
+Name: Vibhuti Bhatnagar | Roll no: 24BCS10288 | Batch: B
+Captured: 2026-09-03 18:55:34 IST
+
+journalctl needs systemd as PID 1. A normal container runs the application
+as PID 1, so there is no journal at all. I built a small Ubuntu image that
+boots systemd and has nginx installed, then ran the lab inside it:
+
+  FROM ubuntu:24.04
+  RUN apt-get install -y systemd systemd-sysv nginx dbus && systemctl enable nginx
+  CMD ["/sbin/init"]
+
+$ docker run -d --name systemd-lab --privileged --cgroupns=host \
+      -v /sys/fs/cgroup:/sys/fs/cgroup:rw vibhuti-systemd
+$ docker exec systemd-lab bash /journalctl-lab.sh
+
+==============================================================
+0. This really is systemd
+==============================================================
+
+$ ps -p 1 -o pid,comm
+    PID COMMAND
+      1 systemd
+
+$ systemctl is-system-running
+running
+
+$ systemd-analyze
+Startup finished in 106ms (userspace) 
+graphical.target reached after 103ms in userspace.
+
+==============================================================
+1. What journalctl is
+==============================================================
+systemd-journald collects log records from the kernel, from early boot,
+from every unit's stdout/stderr, and from anything using syslog. It stores
+them as indexed binary records, and journalctl is how you read them back.
+The win over tailing files in /var/log is that every record carries
+structured metadata - unit, PID, UID, priority, boot ID, timestamp - so
+you can filter instead of grepping.
+
+$ journalctl --no-pager | wc -l   # total records available
+3498
+
+==============================================================
+2. System logs
+==============================================================
+$ journalctl -n 10 --no-pager     # the 10 most recent entries
+Sep 03 13:25:19 00218f5a0cde systemd[1]: e2scrub_reap.service: Deactivated successfully.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Finished e2scrub_reap.service - Remove Stale Online ext4 Metadata Check Snapshots.
+Sep 03 13:25:19 00218f5a0cde systemd-logind[69]: New seat seat0.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Started systemd-logind.service - User Login Management.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Reached target multi-user.target - Multi-User System.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Reached target graphical.target - Graphical Interface.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Starting systemd-update-utmp-runlevel.service - Record Runlevel Change in UTMP...
+Sep 03 13:25:19 00218f5a0cde systemd[1]: systemd-update-utmp-runlevel.service: Deactivated successfully.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Finished systemd-update-utmp-runlevel.service - Record Runlevel Change in UTMP.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Startup finished in 106ms.
+
+$ journalctl -b --no-pager | head -12   # this boot, from the beginning
+Sep 03 13:24:07 00218f5a0cde kernel: Booting Linux on physical CPU 0x0000000000 [0x610f0000]
+Sep 03 13:24:07 00218f5a0cde kernel: Linux version 6.12.76-linuxkit (root@buildkitsandbox) (gcc (Alpine 15.2.0) 15.2.0, GNU ld (GNU Binutils) 2.45.1) #1 SMP Thu Apr 30 15:11:03 UTC 2026
+Sep 03 13:24:07 00218f5a0cde kernel: OF: reserved mem: Reserved memory: No reserved-memory node in the DT
+Sep 03 13:24:07 00218f5a0cde kernel: Zone ranges:
+Sep 03 13:24:07 00218f5a0cde kernel:   DMA      [mem 0x0000000070000000-0x00000000ffffffff]
+Sep 03 13:24:07 00218f5a0cde kernel:   DMA32    empty
+Sep 03 13:24:07 00218f5a0cde kernel:   Normal   [mem 0x0000000100000000-0x000000026fffffff]
+Sep 03 13:24:07 00218f5a0cde kernel: Movable zone start for each node
+Sep 03 13:24:07 00218f5a0cde kernel: Early memory node ranges
+Sep 03 13:24:07 00218f5a0cde kernel:   node   0: [mem 0x0000000070000000-0x000000026fffffff]
+Sep 03 13:24:07 00218f5a0cde kernel: Initmem setup node 0 [mem 0x0000000070000000-0x000000026fffffff]
+Sep 03 13:24:07 00218f5a0cde kernel: psci: probing for conduit method from DT.
+
+==============================================================
+3. Logs for one specific service
+==============================================================
+
+$ systemctl status nginx --no-pager
+● nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 13:25:19 UTC; 14s ago
+       Docs: man:nginx(8)
+    Process: 68 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+    Process: 71 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+   Main PID: 75 (nginx)
+      Tasks: 16 (limit: 9520)
+     Memory: 9.1M (peak: 10.3M)
+        CPU: 12ms
+     CGroup: /docker/00218f5a0cde3866beb7447717a449b8762ea173152eab2fb72b6096b6d881a3/system.slice/nginx.service
+             ├─75 "nginx: master process /usr/sbin/nginx -g daemon on; master_process on;"
+             ├─76 "nginx: worker process"
+             ├─77 "nginx: worker process"
+             ├─79 "nginx: worker process"
+             ├─80 "nginx: worker process"
+             ├─82 "nginx: worker process"
+             ├─83 "nginx: worker process"
+             ├─84 "nginx: worker process"
+             ├─85 "nginx: worker process"
+             ├─86 "nginx: worker process"
+             ├─88 "nginx: worker process"
+             ├─89 "nginx: worker process"
+             ├─90 "nginx: worker process"
+             ├─92 "nginx: worker process"
+             ├─94 "nginx: worker process"
+             └─95 "nginx: worker process"
+
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Starting nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Started nginx.service - A high performance web server and a reverse proxy server.
+
+$ journalctl -u nginx --no-pager
+Sep 03 13:24:07 00218f5a0cde systemd[1]: Starting nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:24:07 00218f5a0cde systemd[1]: Started nginx.service - A high performance web server and a reverse proxy server.
+Sep 03 13:24:56 00218f5a0cde systemd[1]: Stopping nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:24:56 00218f5a0cde systemd[1]: nginx.service: Deactivated successfully.
+Sep 03 13:24:56 00218f5a0cde systemd[1]: Stopped nginx.service - A high performance web server and a reverse proxy server.
+Sep 03 13:24:56 00218f5a0cde systemd[1]: Starting nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:24:56 00218f5a0cde systemd[1]: Started nginx.service - A high performance web server and a reverse proxy server.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Stopping nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:25:19 00218f5a0cde systemd[1]: nginx.service: Deactivated successfully.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Stopped nginx.service - A high performance web server and a reverse proxy server.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Starting nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Started nginx.service - A high performance web server and a reverse proxy server.
+
+--- Restart it and watch new records appear ---
+
+$ systemctl restart nginx
+$ journalctl -u nginx --no-pager --since '1 minute ago'
+Sep 03 13:24:56 00218f5a0cde systemd[1]: Stopping nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:24:56 00218f5a0cde systemd[1]: nginx.service: Deactivated successfully.
+Sep 03 13:24:56 00218f5a0cde systemd[1]: Stopped nginx.service - A high performance web server and a reverse proxy server.
+Sep 03 13:24:56 00218f5a0cde systemd[1]: Starting nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:24:56 00218f5a0cde systemd[1]: Started nginx.service - A high performance web server and a reverse proxy server.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Stopping nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:25:19 00218f5a0cde systemd[1]: nginx.service: Deactivated successfully.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Stopped nginx.service - A high performance web server and a reverse proxy server.
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Starting nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:25:19 00218f5a0cde systemd[1]: Started nginx.service - A high performance web server and a reverse proxy server.
+Sep 03 13:25:34 00218f5a0cde systemd[1]: Stopping nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:25:34 00218f5a0cde systemd[1]: nginx.service: Deactivated successfully.
+Sep 03 13:25:34 00218f5a0cde systemd[1]: Stopped nginx.service - A high performance web server and a reverse proxy server.
+Sep 03 13:25:34 00218f5a0cde systemd[1]: Starting nginx.service - A high performance web server and a reverse proxy server...
+Sep 03 13:25:34 00218f5a0cde systemd[1]: Started nginx.service - A high performance web server and a reverse proxy server.
+
+==============================================================
+4. Filtering
+==============================================================
+$ journalctl -u nginx -o json-pretty --no-pager -n 1
+	"_PID" : "1",
+	"_COMM" : "systemd",
+	"_SYSTEMD_UNIT" : "init.scope",
+	"MESSAGE" : "Started nginx.service - A high performance web server and a reverse proxy server.",
+	"PRIORITY" : "6",
+
+Those fields are what makes -u, -p and the rest possible: each record is
+structured, not a line of text.
+
+--- A service that fails, so there is a real error to find ---
+
+$ systemctl start broken.service
+Job for broken.service failed because the control process exited with error code.
+See "systemctl status broken.service" and "journalctl -xeu broken.service" for details.
+
+$ journalctl -u broken.service --no-pager
+Sep 03 13:24:58 00218f5a0cde systemd[1]: Starting broken.service - A deliberately broken service for the journalctl lab...
+Sep 03 13:24:58 00218f5a0cde sh[187]: about to fail on purpose
+Sep 03 13:24:58 00218f5a0cde systemd[1]: broken.service: Main process exited, code=exited, status=3/NOTIMPLEMENTED
+Sep 03 13:24:58 00218f5a0cde systemd[1]: broken.service: Failed with result 'exit-code'.
+Sep 03 13:24:58 00218f5a0cde systemd[1]: Failed to start broken.service - A deliberately broken service for the journalctl lab.
+Sep 03 13:25:36 00218f5a0cde systemd[1]: Starting broken.service - A deliberately broken service for the journalctl lab...
+Sep 03 13:25:36 00218f5a0cde sh[160]: about to fail on purpose
+Sep 03 13:25:36 00218f5a0cde systemd[1]: broken.service: Main process exited, code=exited, status=3/NOTIMPLEMENTED
+Sep 03 13:25:36 00218f5a0cde systemd[1]: broken.service: Failed with result 'exit-code'.
+Sep 03 13:25:36 00218f5a0cde systemd[1]: Failed to start broken.service - A deliberately broken service for the journalctl lab.
+
+The exit code and the service's own output are both in the journal,
+with no log file to go looking for.
+
+--- Filtering by priority now finds it without knowing the unit name ---
+$ journalctl -p err --no-pager
+Sep 03 13:24:58 00218f5a0cde systemd[1]: Failed to start broken.service - A deliberately broken service for the journalctl lab.
+Sep 03 13:25:36 00218f5a0cde systemd[1]: Failed to start broken.service - A deliberately broken service for the journalctl lab.
+
+-p err shows priority 3 and worse. That is how you find what broke when
+you do not already know which service to look at.
+
+$ systemctl --failed --no-pager
+  UNIT           LOAD   ACTIVE SUB    DESCRIPTION
+● broken.service loaded failed failed A deliberately broken service for the journalctl lab
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+1 loaded units listed.
+
+==============================================================
+5. Housekeeping
+==============================================================
+
+$ journalctl --disk-usage
+Archived and active journals take up 12.3M in the file system.
+
+$ journalctl --list-boots --no-pager
+IDX BOOT ID                          FIRST ENTRY                 LAST ENTRY
+  0 aa769517b3e347f8aeb2a5687632185d Thu 2026-09-03 13:24:07 UTC Thu 2026-09-03 13:25:36 UTC
+
+==============================================================
+6. The commands worth remembering
+==============================================================
+  journalctl                        everything, oldest first
+  journalctl -n 20                  last 20 entries
+  journalctl -f                     follow live, like tail -f
+  journalctl -b                     this boot only
+  journalctl -b -1                  the previous boot
+  journalctl -u nginx               one unit
+  journalctl -u nginx -f            one unit, live
+  journalctl -p err                 priority err and above
+  journalctl --since "1 hour ago"   time window
+  journalctl --since today --until "10:00"
+  journalctl -k                     kernel messages only
+  journalctl -o json-pretty         structured output
+  journalctl --disk-usage           how much space the journal uses
+  journalctl --vacuum-time=7d       delete records older than 7 days

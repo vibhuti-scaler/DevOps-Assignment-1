@@ -1,0 +1,131 @@
+Docker fundamentals - build and run verification
+Student: Vibhuti Bhatnagar | Roll no: 24BCS10288 | Batch: B
+Captured: 2026-09-03 18:27:46 IST
+Host: macOS 26.4.1 | Docker 29.4.2
+
+==============================================================
+1. Images built
+==============================================================
+$ docker images --filter reference='vibhuti-*' --format 'table {{.Repository}}	{{.Tag}}	{{.Size}}'
+REPOSITORY       TAG       SIZE
+vibhuti-react    latest    76.1MB
+vibhuti-nginx    latest    75.9MB
+vibhuti-apache   latest    105MB
+vibhuti-java     latest    286MB
+vibhuti-python   latest    87.8MB
+vibhuti-node     latest    228MB
+
+==============================================================
+2. nodejs-app  (Node.js HTTP server -> host port 8201)
+==============================================================
+$ docker run --rm -d --name vibhuti-node -p 8201:3000 vibhuti-node
+0adbc6505edf61779a3efe6a3ec0d4345c34d24d64f5ba5b78fdd87ae0490e43
+
+$ curl -s -o /dev/null -w 'HTTP %{http_code}  %{size_download} bytes
+' http://localhost:8201
+HTTP 200  751 bytes
+
+$ curl -s http://localhost:8201 | grep -E '<h1>|<p>'
+<h1>Hello World</h1>
+<p>Node.js application running in Docker</p>
+<p>Vibhuti Bhatnagar &middot; 24BCS10288 &middot; Batch B</p>
+
+==============================================================
+3. python-app  (Python http.server -> host port 8202)
+==============================================================
+$ docker run --rm -d --name vibhuti-python -p 8202:5000 vibhuti-python
+61e536e24d10f9d0b7c65a0d39a87bb43cd724b8b61206e703097e13ab0f2ffd
+
+$ curl -s -o /dev/null -w 'HTTP %{http_code}  %{size_download} bytes
+' http://localhost:8202
+HTTP 200  749 bytes
+
+$ curl -s http://localhost:8202 | grep -E '<h1>|<p>'
+<h1>Hello World</h1>
+<p>Python application running in Docker</p>
+<p>Vibhuti Bhatnagar &middot; 24BCS10288 &middot; Batch B</p>
+
+==============================================================
+4. java-app    (Java HttpServer -> host port 8203)
+==============================================================
+$ docker run --rm -d --name vibhuti-java -p 8203:8080 vibhuti-java
+5a3a1c39abdb13433195937e6b79c525f59f5c49e585049a1d26121d1972a7c1
+
+$ curl -s -o /dev/null -w 'HTTP %{http_code}  %{size_download} bytes
+' http://localhost:8203
+HTTP 200  745 bytes
+
+$ curl -s http://localhost:8203 | grep -E '<h1>|<p>'
+<h1>Hello World</h1>
+<p>Java application running in Docker</p>
+<p>Vibhuti Bhatnagar &middot; 24BCS10288 &middot; Batch B</p>
+
+==============================================================
+5. Apache-app  (Apache httpd -> host port 8204)
+==============================================================
+$ docker run --rm -d --name vibhuti-apache -p 8204:80 vibhuti-apache
+b1a1625115b75ac6bea38966eaa824445a56e1f1de2aaf4365f89c545cb0326c
+
+$ curl -s -o /dev/null -w 'HTTP %{http_code}  %{size_download} bytes
+' http://localhost:8204
+HTTP 200  760 bytes
+
+$ curl -s http://localhost:8204 | grep -E '<h1>|<p>'
+<h1>Hello World</h1>
+<p>Apache httpd serving a static page from Docker</p>
+<p>Vibhuti Bhatnagar &middot; 24BCS10288 &middot; Batch B</p>
+
+==============================================================
+6. React-app   (React build on Nginx -> host port 8205)
+==============================================================
+$ docker run --rm -d --name vibhuti-react -p 8205:80 vibhuti-react
+55f2692161157bde96360ee0fe0de619816781407a74374823439b2486fca276
+
+$ curl -s -o /dev/null -w 'HTTP %{http_code}  %{size_download} bytes
+' http://localhost:8205
+HTTP 200  402 bytes
+
+$ curl -s http://localhost:8205 | grep -E '<h1>|<p>'
+
+==============================================================
+7. nginx-app   (Nginx static page -> host port 8206)
+==============================================================
+$ docker run --rm -d --name vibhuti-nginx -p 8206:80 vibhuti-nginx
+19329ebfeb278e40c91fc74f477319672385d43070247db8279cd2bb943141eb
+
+$ curl -s -o /dev/null -w 'HTTP %{http_code}  %{size_download} bytes
+' http://localhost:8206
+HTTP 200  752 bytes
+
+$ curl -s http://localhost:8206 | grep -E '<h1>|<p>'
+<h1>Hello World</h1>
+<p>Nginx serving a static page from Docker</p>
+<p>Vibhuti Bhatnagar &middot; 24BCS10288 &middot; Batch B</p>
+
+==============================================================
+8. All six containers running at the same time
+==============================================================
+$ docker ps --filter name=vibhuti- --format 'table {{.Names}}	{{.Image}}	{{.Status}}	{{.Ports}}'
+NAMES            IMAGE            STATUS          PORTS
+vibhuti-nginx    vibhuti-nginx    Up 3 seconds    0.0.0.0:8206->80/tcp, [::]:8206->80/tcp
+vibhuti-react    vibhuti-react    Up 6 seconds    0.0.0.0:8205->80/tcp, [::]:8205->80/tcp
+vibhuti-apache   vibhuti-apache   Up 9 seconds    0.0.0.0:8204->80/tcp, [::]:8204->80/tcp
+vibhuti-java     vibhuti-java     Up 12 seconds   0.0.0.0:8203->8080/tcp, [::]:8203->8080/tcp
+vibhuti-python   vibhuti-python   Up 15 seconds   0.0.0.0:8202->5000/tcp, [::]:8202->5000/tcp
+vibhuti-node     vibhuti-node     Up 18 seconds   0.0.0.0:8201->3000/tcp, [::]:8201->3000/tcp
+
+Note on the React app: the raw HTML response is the Vite shell (<div id="root">),
+because React renders the page in the browser. The grep above therefore matches nothing.
+The served bundle and the rendered result are confirmed below.
+
+$ curl -s http://localhost:8205 | tr '>' '>
+' | grep -E 'root|script'
+<script type="module" crossorigin src="/assets/index-DYlfVdZk.js"></script>
+<div id="root"></div>
+
+$ curl -s -o /dev/null -w 'assets/index HTTP %{http_code}
+' http://localhost:8205$(curl -s http://localhost:8205 | sed -n 's/.*src="\([^"]*\.js\)".*/\1/p')
+assets/index HTTP 200
+
+A browser screenshot of the rendered React page is in screenshots/05-React-app.png
+

@@ -1,0 +1,88 @@
+Shell scripting - system-info.sh sample run
+Name: Vibhuti Bhatnagar | Roll no: 24BCS10288 | Batch: B
+Captured: 2026-09-03 18:45:23 IST
+
+Run inside a disposable Ubuntu container, so the process list and hostname
+belong to the lab rather than to my laptop. The four read -p prompts were
+answered from a here-document so the run is reproducible.
+
+$ docker run --rm -i -v "$PWD":/lab -w /lab ubuntu:24.04 bash system-info.sh
+
+==================================================
+            SYSTEM INFORMATION REPORT
+==================================================
+
+Name        : Vibhuti Bhatnagar
+Roll number : 24BCS10288
+Batch       : B
+Comment     : DevOps homework - shell scripting task
+
+--------------------------------------------------
+Date        : Thursday, 03 September 2026, 13:15:23 UTC
+Hostname    : b7347455c771
+Username    : root
+--------------------------------------------------
+
+Disk usage:
+Filesystem            Size  Used Avail Use% Mounted on
+overlay               911G  167G  699G  20% /
+tmpfs                  64M     0   64M   0% /dev
+shm                    64M     0   64M   0% /dev/shm
+/run/host_mark/Users  927G  409G  518G  45% /lab
+/dev/vda1             911G  167G  699G  20% /etc/hosts
+tmpfs                 3.9G     0  3.9G   0% /proc/scsi
+tmpfs                 3.9G     0  3.9G   0% /sys/firmware
+
+Running processes: 3
+Full list written to system-report/processes.txt using > redirection.
+
+Top 10 processes by memory:
+  PID USER     %MEM COMMAND
+   17 root      0.0 ps
+    7 root      0.0 bash
+    1 root      0.0 bash
+   16 root      0.0 bash
+
+First 10 lines of system-report/processes.txt:
+  PID  PPID USER     %CPU %MEM COMMAND
+    1     0 root      0.0  0.0 bash
+    7     1 root      0.0  0.0 bash
+   13     7 root      0.0  0.0 ps
+
+Files created:
+total 8
+-rw-r--r-- 1 root root  145 Sep  3 13:15 processes.txt
+-rw-r--r-- 1 root root 1152 Sep  3 13:15 summary.txt
+
+==================================================================
+The same script on the macOS host, to show it is portable
+==================================================================
+$ printf 'Vibhuti Bhatnagar
+24BCS10288
+B
+portability check
+' | ./system-info.sh
+
+==================================================
+            SYSTEM INFORMATION REPORT
+==================================================
+
+Name        : Vibhuti Bhatnagar
+Roll number : 24BCS10288
+Batch       : B
+Comment     : portability check
+
+--------------------------------------------------
+Date        : Thursday, 03 September 2026, 18:45:24 IST
+Hostname    : Vibhutis-MacBook-Pro.local
+Username    : vibhutibhatnagar
+--------------------------------------------------
+
+Disk usage:
+[... local disk layout trimmed: it lists my personal volumes ...]
+
+Running processes: 652
+Full list written to system-report/processes.txt using > redirection.
+
+The script produced the same report on both systems, so the GNU/BSD
+`ps` difference is handled correctly.

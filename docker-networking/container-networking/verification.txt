@@ -1,0 +1,239 @@
+Task 1 - three containers, three networks, backend on two
+Name: Vibhuti Bhatnagar | Roll no: 24BCS10288 | Batch: B
+Captured: 2026-09-03 18:34:42 IST
+Command: ./network-lab.sh
+Note: the MySQL password is shown as $MYSQL_ROOT_PASSWORD rather than its
+literal value, so this transcript is safe to commit. Everything else is
+verbatim output.
+
+==============================================================
+1. Create the three networks
+==============================================================
+
+$ docker network create public_net
+a8edf043dd9e3e45d00333e642e6dd3f8971f94c242bae4ee6e3b4d722c2091b
+
+$ docker network create app_net
+3f61a25efaf64956d99a4b57dd5ae13a32eb4b00ec5866e3516ec521b1919902
+
+$ docker network create data_net
+0ab7af8a4cbf98bd73ded0a2dcfccfd4377d9a3d6dd48f6bed764a233a30a7cd
+
+$ docker network ls --filter name=public_net --filter name=app_net --filter name=data_net --format table {{.Name}}\t{{.Driver}}\t{{.Scope}}
+NAME         DRIVER    SCOPE
+app_net      bridge    local
+data_net     bridge    local
+public_net   bridge    local
+
+==============================================================
+2. Start the three containers
+==============================================================
+
+$ docker run -d --name database --network data_net \
+    -e MYSQL_ROOT_PASSWORD="$MYSQL_ROOT_PASSWORD" -e MYSQL_DATABASE=homework mysql:8.4
+Unable to find image 'mysql:8.4' locally
+8.4: Pulling from library/mysql
+26eb9d6698f0: Pulling fs layer
+1ff71ea7626e: Pulling fs layer
+b12e28485eff: Pulling fs layer
+19c1e4d5e56d: Pulling fs layer
+d3c86b417a74: Pulling fs layer
+3d7f10ed4edf: Pulling fs layer
+ac21e899ba1c: Pulling fs layer
+bec4c5f6b46d: Pulling fs layer
+8a905d3b3fdf: Pulling fs layer
+c1a8d43326b8: Pulling fs layer
+64896815bd4e: Download complete
+8a905d3b3fdf: Download complete
+26eb9d6698f0: Download complete
+b12e28485eff: Download complete
+1ff71ea7626e: Download complete
+d3c86b417a74: Download complete
+541dad502f35: Download complete
+ac21e899ba1c: Download complete
+3d7f10ed4edf: Download complete
+bec4c5f6b46d: Download complete
+c1a8d43326b8: Download complete
+8a905d3b3fdf: Pull complete
+1ff71ea7626e: Pull complete
+d3c86b417a74: Pull complete
+ac21e899ba1c: Pull complete
+3d7f10ed4edf: Pull complete
+c1a8d43326b8: Pull complete
+b12e28485eff: Pull complete
+bec4c5f6b46d: Pull complete
+19c1e4d5e56d: Download complete
+19c1e4d5e56d: Pull complete
+26eb9d6698f0: Pull complete
+Digest: sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb
+Status: Downloaded newer image for mysql:8.4
+ddba49d3ba5ce4191cab855687edbe63d75576b157677fe0df98eb084fce0284
+
+$ docker run -d --name backend --network app_net -v /Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSIGNMENT 1/docker-networking/container-networking/backend/index.html:/usr/share/nginx/html/index.html:ro nginx:1.27-alpine
+Unable to find image 'nginx:1.27-alpine' locally
+1.27-alpine: Pulling from library/nginx
+Digest: sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+Status: Downloaded newer image for nginx:1.27-alpine
+3635cb05086153a35daa653ff28a93cfecfcffcc27d62e00771ca280ee0781ab
+
+$ docker run -d --name frontend --network public_net -p 8081:80 -v /Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSIGNMENT 1/docker-networking/container-networking/frontend/index.html:/usr/share/nginx/html/index.html:ro nginx:1.27-alpine
+aa35ef9f39c739becb6444279ccabe77056581662c493e97c4f18ef2d89716f6
+
+==============================================================
+3. Attach the extra networks
+==============================================================
+The backend joins a second network so it can reach the database.
+
+$ docker network connect data_net backend
+The frontend joins app_net so it can reach the backend.
+
+$ docker network connect app_net frontend
+
+Network membership per container:
+  frontend  -> app_net public_net 
+  backend   -> app_net data_net 
+  database  -> data_net 
+
+Waiting for MySQL to finish initialising...
+MySQL is ready.
+
+==============================================================
+4. Connectivity checks
+==============================================================
+
+4a. frontend -> backend  (shared network: app_net)  EXPECT: success
+
+$ docker exec frontend wget -qO- --timeout=5 http://backend/
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Backend tier</title></head>
+  <body>
+    <h1>Backend container</h1>
+    <p>Networks: app_net, data_net</p>
+    <p>Vibhuti Bhatnagar - 24BCS10288 - Batch B</p>
+  </body>
+</html>
+
+4b. backend -> database  (shared network: data_net)  EXPECT: success
+
+$ docker exec backend getent hosts database
+172.21.0.2        database  database
+
+$ docker exec backend nc -z -w 3 database 3306
+TCP 3306 on 'database' is reachable from the backend.
+
+4c. frontend -> database (no shared network)  EXPECT: failure
+As expected, the frontend cannot resolve 'database': the two containers
+share no network, so Docker's embedded DNS gives the frontend no record.
+
+4d. the published frontend page, from the host
+
+$ curl -s http://localhost:8081/
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Frontend tier</title></head>
+  <body>
+    <h1>Frontend container</h1>
+    <p>Networks: public_net, app_net</p>
+    <p>Vibhuti Bhatnagar - 24BCS10288 - Batch B</p>
+  </body>
+</html>
+
+==============================================================
+5. Which containers each network holds
+==============================================================
+
+$ docker network inspect public_net --format ...
+  public_net  : frontend 
+
+$ docker network inspect app_net --format ...
+  app_net     : backend frontend 
+
+$ docker network inspect data_net --format ...
+  data_net    : backend database 
+
+==============================================================
+6. Clean up
+==============================================================
+docker rm -f frontend backend database
+docker network rm public_net app_net data_net
+
+==============================================================
+7. Compose equivalent (remaining exercises from the session)
+==============================================================
+$ docker compose up -d
+ Network container-networking_data_net Creating 
+ Network container-networking_data_net Created 
+ Network container-networking_public_net Creating 
+ Network container-networking_public_net Created 
+ Network container-networking_app_net Creating 
+ Network container-networking_app_net Created 
+ Volume container-networking_database_data Creating 
+ Volume container-networking_database_data Created 
+ Container compose-database Creating 
+ Container compose-database Created 
+ Container compose-backend Creating 
+ Container compose-backend Created 
+ Container compose-frontend Creating 
+ Container compose-frontend Created 
+ Container compose-database Starting 
+ Container compose-database Started 
+ Container compose-database Waiting 
+ Container compose-database Healthy 
+ Container compose-backend Starting 
+ Container compose-backend Started 
+ Container compose-frontend Starting 
+ Container compose-frontend Started 
+
+$ docker compose ps --format 'table {{.Name}}	{{.Service}}	{{.Status}}	{{.Ports}}'
+NAME               SERVICE    STATUS                    PORTS
+compose-backend    backend    Up 8 seconds              80/tcp
+compose-database   database   Up 13 seconds (healthy)   3306/tcp, 33060/tcp
+compose-frontend   frontend   Up 8 seconds              0.0.0.0:8081->80/tcp, [::]:8081->80/tcp
+
+$ docker network ls --filter name=container-networking --format 'table {{.Name}}	{{.Driver}}'
+NAME                              DRIVER
+container-networking_app_net      bridge
+container-networking_data_net     bridge
+container-networking_public_net   bridge
+
+Network membership under Compose:
+  compose-frontend   -> container-networking_app_net container-networking_public_net 
+  compose-backend    -> container-networking_app_net container-networking_data_net 
+  compose-database   -> container-networking_data_net 
+
+$ docker compose exec -T frontend wget -qO- http://backend/ | grep h1
+<h1>Backend container</h1>
+
+$ docker compose exec -T backend nc -z -w 3 database 3306 && echo reachable
+database:3306 reachable from backend
+
+$ docker compose exec -T frontend getent hosts database   # expected to fail
+  (no result - frontend and database share no network)
+
+$ docker volume ls --filter name=container-networking
+DRIVER    VOLUME NAME
+local     container-networking_database_data
+
+$ docker compose down -v
+ Container compose-frontend Stopping 
+ Container compose-frontend Stopped 
+ Container compose-frontend Removing 
+ Container compose-frontend Removed 
+ Container compose-backend Stopping 
+ Container compose-backend Stopped 
+ Container compose-backend Removing 
+ Container compose-backend Removed 
+ Container compose-database Stopping 
+ Container compose-database Stopped 
+ Container compose-database Removing 
+ Container compose-database Removed 
+ Volume container-networking_database_data Removing 
+ Network container-networking_data_net Removing 
+ Network container-networking_public_net Removing 
+ Network container-networking_app_net Removing 
+ Volume container-networking_database_data Removed 
+ Network container-networking_data_net Removed 
+ Network container-networking_public_net Removed 
+ Network container-networking_app_net Removed 
+Stack removed, including the named volume.

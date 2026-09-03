@@ -1,0 +1,128 @@
+Docker multi-stage build - verification
+Name: Vibhuti Bhatnagar | Roll no: 24BCS10288 | Batch: B
+Captured: 2026-09-03 18:31:03 IST
+Host: macOS 26.4.1 | Docker 29.4.2
+
+==============================================================
+TASK 1 (a) - instructor's multi-stage Dockerfile, cloned and run
+==============================================================
+$ git clone --depth 1 https://github.com/Nency-Ravaliya/devops-heros.git
+Cloned into devops-heros (depth 1).
+
+$ cat session6-7-docker/multi-stage-dockerfile/Dockerfile
+# -------------------------
+# Stage 1: Build
+# -------------------------
+FROM node:24-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+
+# -------------------------
+# Stage 2: Production
+# -------------------------
+FROM node:24-alpine AS production
+WORKDIR /app
+COPY --from=builder /app/package*.json ./
+RUN npm install --omit=dev
+COPY --from=builder /app/server.js ./
+EXPOSE 3000
+CMD ["npm", "start"]
+
+The upstream app listens on 3000, so it is published on host port 8080 as the
+homework requires.
+
+$ docker build -t upstream-multi-stage ./session6-7-docker/multi-stage-dockerfile
+sha256:7718e29113d12d157ecf9b7a8d5b103b273b8837e08143a1eff7b3f6a652f212
+
+$ docker run --rm -d --name upstream-multi-stage -p 8080:3000 upstream-multi-stage
+d84515bab3da6147bf95e0adf0e41f5f1b2b2530223c6326e87855bdd9e8b867
+
+$ curl -s http://localhost:8080
+<h1>Hello World from Docker Multi-Stage Build!</h1>
+
+$ docker ps --filter name=upstream-multi-stage --format 'table {{.Names}}	{{.Status}}	{{.Ports}}'
+NAMES                  STATUS         PORTS
+upstream-multi-stage   Up 4 seconds   0.0.0.0:8080->3000/tcp, [::]:8080->3000/tcp
+
+$ docker stop upstream-multi-stage
+
+==============================================================
+TASK 1 (b) - my own multi-stage Dockerfile in this folder
+==============================================================
+Stage 1 builds a React bundle with Vite. Stage 2 copies only dist/ onto Nginx.
+
+$ docker build -t vibhuti-multi-stage .
+  (built successfully - see the size comparison in section 2)
+
+$ docker run --rm -d --name vibhuti-multi-stage -p 8080:80 vibhuti-multi-stage
+9d98608800e569176be7abce9fbf6c6553e7c4a63ae2d47ed225ba42136d3655
+
+$ curl -s -o /dev/null -w 'HTTP %{http_code}
+' http://localhost:8080
+HTTP 200
+
+The page is rendered by React in the browser, so the phrase lives in the JS bundle
+rather than the HTML shell. Both are confirmed here:
+
+$ curl -s http://localhost:8080 | tr '>' '>
+' | grep -E 'root|script'
+<script type="module" crossorigin src="/assets/index-BMKuRJF2.js"></script>
+<div id="root"></div>
+
+$ curl -s http://localhost:8080/assets/index-BMKuRJF2.js | grep -o 'Hello World from Docker multi-stage build'
+Hello World from Docker multi-stage build
+
+$ docker ps --filter name=vibhuti-multi-stage --format 'table {{.Names}}	{{.Image}}	{{.Status}}	{{.Ports}}'
+NAMES                 IMAGE                 STATUS         PORTS
+vibhuti-multi-stage   vibhuti-multi-stage   Up 3 seconds   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+
+==============================================================
+2. Why multi-stage matters - measured size difference
+==============================================================
+The same application built as a single stage keeps Node, npm, node_modules and the
+source tree in the final image. Built both ways from identical source:
+
+$ docker images --format 'table {{.Repository}}	{{.Size}}' | grep vibhuti
+vibhuti-multi-stage                         76.1MB
+vibhuti-single-stage-compare                449MB
+
+Multi-stage is roughly 6x smaller. The comparison image is not part of this repo;
+it was built only to produce this measurement.
+
+$ docker history vibhuti-multi-stage --format 'table {{.CreatedBy}}	{{.Size}}' | head -6
+CREATED BY                                      SIZE
+CMD ["nginx" "-g" "daemon off;"]                0B
+EXPOSE [80/tcp]                                 0B
+COPY /app/dist /usr/share/nginx/html # build…   176kB
+RUN /bin/sh -c set -x     && apkArch="$(cat …   39.7MB
+ENV NJS_RELEASE=1                               0B
+
+==============================================================
+TASK 3 - deploying three different application types
+==============================================================
+Node.js, Python and Java, built from ../docker-apps and run together.
+
+$ docker run --rm -d --name t3-node   -p 8201:3000 vibhuti-node
+$ docker run --rm -d --name t3-python -p 8202:5000 vibhuti-python
+$ docker run --rm -d --name t3-java   -p 8203:8080 vibhuti-java
+
+$ docker ps --filter name=t3- --format 'table {{.Names}}	{{.Image}}	{{.Status}}	{{.Ports}}'
+NAMES       IMAGE            STATUS         PORTS
+t3-java     vibhuti-java     Up 4 seconds   0.0.0.0:8203->8080/tcp, [::]:8203->8080/tcp
+t3-python   vibhuti-python   Up 4 seconds   0.0.0.0:8202->5000/tcp, [::]:8202->5000/tcp
+t3-node     vibhuti-node     Up 4 seconds   0.0.0.0:8201->3000/tcp, [::]:8201->3000/tcp
+
+$ curl -s http://localhost:8201 | grep "running in Docker"
+<p>Node.js application running in Docker</p>
+
+$ curl -s http://localhost:8202 | grep "running in Docker"
+<p>Python application running in Docker</p>
+
+$ curl -s http://localhost:8203 | grep "running in Docker"
+<p>Java application running in Docker</p>
+
+$ docker stop t3-node t3-python t3-java
+
+All containers were started with --rm, so stopping them removed them.

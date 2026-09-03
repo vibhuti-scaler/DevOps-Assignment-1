@@ -1,0 +1,180 @@
+Linux fundamentals - links and users
+Name: Vibhuti Bhatnagar | Roll no: 24BCS10288 | Batch: B
+Captured: 2026-09-03 18:52:31 IST
+
+Run inside a disposable ubuntu:24.04 container so no user is ever created
+on my laptop, and so adduser/useradd behave the Ubuntu way rather than the
+macOS way (macOS has neither command).
+
+$ docker run --rm -v "$PWD":/lab ubuntu:24.04 bash /lab/linux-lab.sh
+  (file, adduser and perl installed first so every command in the lab exists)
+
+==============================================================
+TASK 1 - soft links and hard links
+==============================================================
+
+$ ln original.txt hard-link.txt
+
+$ ln -s original.txt soft-link.txt
+
+$ ls -li
+total 8
+2768363 -rw-r--r-- 2 root root 21 Sep  3 13:22 hard-link.txt
+2768363 -rw-r--r-- 2 root root 21 Sep  3 13:22 original.txt
+2768365 lrwxrwxrwx 1 root root 12 Sep  3 13:22 soft-link.txt -> original.txt
+
+The first column is the inode number.
+  original.txt and hard-link.txt share ONE inode - they are two names
+  for the same file, and the link count (column 3) is 2.
+  soft-link.txt has its own inode, type 'l', and displays -> original.txt.
+
+$ stat -c '%n  inode=%i  links=%h  size=%s  type=%F' original.txt hard-link.txt soft-link.txt
+original.txt  inode=2768363  links=2  size=21  type=regular file
+hard-link.txt  inode=2768363  links=2  size=21  type=regular file
+soft-link.txt  inode=2768365  links=1  size=12  type=symbolic link
+
+The soft link is only 12 bytes - just the length of the path it stores.
+
+--- Writing through either name changes the same data ---
+
+$ cat original.txt
+the original content
+appended through the hard link
+
+--- Now delete the original ---
+
+$ rm original.txt
+
+$ ls -li
+total 4
+2768363 -rw-r--r-- 1 root root 52 Sep  3 13:22 hard-link.txt
+2768365 lrwxrwxrwx 1 root root 12 Sep  3 13:22 soft-link.txt -> original.txt
+
+$ cat hard-link.txt
+the original content
+appended through the hard link
+  The hard link still works. The data lives with the inode, and the inode
+  is only freed when its link count reaches zero.
+
+$ cat soft-link.txt
+cat: soft-link.txt: No such file or directory
+  The soft link is now dangling - it still stores the path 'original.txt',
+  but nothing is there any more.
+
+$ test -L soft-link.txt && echo 'still a symlink'; test -e soft-link.txt || echo 'but its target does not exist'
+still a symlink
+but its target does not exist
+
+--- What a hard link cannot do ---
+$ ln /etc/hostname /tmp/link-lab/x   # different filesystems
+ln: failed to create hard link '/tmp/link-lab/x' => '/etc/hostname': Invalid cross-device link
+$ ln /tmp /tmp/link-lab/dirlink      # a directory
+ln: /tmp: hard link not allowed for directory
+  A symlink can do both of these without complaint.
+
+$ ln -s /tmp /tmp/link-lab/dirlink
+
+$ ls -ld /tmp/link-lab/dirlink
+lrwxrwxrwx 1 root root 4 Sep  3 13:22 /tmp/link-lab/dirlink -> /tmp
+
+--- Deleting links ---
+
+$ rm soft-link.txt
+
+$ rm hard-link.txt
+  Plain rm removes the name. The data goes only when the last name goes.
+
+
+==============================================================
+TASK 2 - adduser vs useradd
+==============================================================
+
+$ file $(command -v adduser) $(command -v useradd)
+/usr/sbin/adduser: Perl script text executable
+/usr/sbin/useradd: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=483f79642f7a936acdeb2cb2fd1c4e70c2f0ef9d, for GNU/Linux 3.7.0, stripped
+
+useradd is a compiled binary from the shadow package - the low-level tool.
+adduser is a Perl script that wraps it and applies Debian/Ubuntu policy.
+
+--- useradd on its own, with no options ---
+
+$ useradd testuser-plain
+
+$ getent passwd testuser-plain
+testuser-plain:x:1001:1001::/home/testuser-plain:/bin/sh
+
+$ ls -d /home/testuser-plain
+ls: cannot access '/home/testuser-plain': No such file or directory
+  No home directory, and the shell is /bin/sh. useradd does exactly what
+  it is told and nothing more, which is what you want in a script.
+
+--- The same thing done properly with useradd ---
+
+$ useradd -m -s /bin/bash testuser-useradd
+
+$ getent passwd testuser-useradd
+testuser-useradd:x:1002:1002::/home/testuser-useradd:/bin/bash
+
+$ ls -ld /home/testuser-useradd
+drwxr-x--- 2 testuser-useradd testuser-useradd 4096 Sep  3 13:22 /home/testuser-useradd
+
+--- adduser, the recommended command on Ubuntu ---
+$ adduser --gecos '' --disabled-password testuser-adduser
+info: Adding user `testuser-adduser' ...
+info: Selecting UID/GID from range 1000 to 59999 ...
+info: Adding new group `testuser-adduser' (1003) ...
+info: Adding new user `testuser-adduser' (1003) with group `testuser-adduser (1003)' ...
+info: Creating home directory `/home/testuser-adduser' ...
+info: Copying files from `/etc/skel' ...
+info: Adding new user `testuser-adduser' to supplemental / extra groups `users' ...
+info: Adding user `testuser-adduser' to group `users' ...
+
+
+$ getent passwd testuser-adduser
+testuser-adduser:x:1003:1003:,,,:/home/testuser-adduser:/bin/bash
+
+$ ls -ld /home/testuser-adduser
+drwxr-x--- 2 testuser-adduser testuser-adduser 4096 Sep  3 13:22 /home/testuser-adduser
+
+$ id testuser-adduser
+uid=1003(testuser-adduser) gid=1003(testuser-adduser) groups=1003(testuser-adduser),100(users)
+
+$ ls -a /home/testuser-adduser
+.
+..
+.bash_logout
+.bashrc
+.profile
+  adduser created the home directory, copied the skeleton files from
+  /etc/skel, set /bin/bash, and made a matching user group - all by
+  default. Run without --disabled-password it also prompts for one.
+
+--- Removing the test users ---
+
+$ deluser --remove-home testuser-adduser
+info: Looking for files to backup/remove ...
+info: Removing files ...
+warn: `/usr/bin/crontab' not executed. Skipping crontab removal. Package `cron' required.
+info: Removing user `testuser-adduser' ...
+
+$ userdel -r testuser-useradd
+userdel: testuser-useradd mail spool (/var/mail/testuser-useradd) not found
+
+$ userdel testuser-plain
+
+$ getent passwd | grep testuser || echo 'all test users removed'
+all test users removed
+
+
+==============================================================
+TASK 3 - journalctl in this environment
+==============================================================
+$ command -v journalctl || echo 'journalctl is not installed'
+journalctl is not installed
+
+$ ps -p 1 -o pid,comm
+  PID COMMAND
+    1 bash
+
+PID 1 is not systemd, so there is no journal to read here.
+journalctl is demonstrated separately - see systemd-journal-output.txt.

@@ -1,0 +1,52 @@
+# Compose equivalent of network-lab.sh, kept for the "remaining exercises"
+# part of the session. Same three networks, same membership.
+services:
+  frontend:
+    image: nginx:1.27-alpine
+    container_name: compose-frontend
+    ports:
+      - "8081:80"
+    volumes:
+      - ./frontend/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - public_net
+      - app_net
+    depends_on:
+      - backend
+
+  backend:
+    image: nginx:1.27-alpine
+    container_name: compose-backend
+    volumes:
+      - ./backend/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - app_net
+      - data_net
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: mysql:8.4
+    container_name: compose-database
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}"
+      MYSQL_DATABASE: homework
+    volumes:
+      - database_data:/var/lib/mysql
+    networks:
+      - data_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+networks:
+  public_net:
+  app_net:
+  data_net:
+
+volumes:
+  database_data:

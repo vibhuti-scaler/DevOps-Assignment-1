@@ -1,0 +1,139 @@
+Task 4 - overlay network on a single-node Swarm
+Name: Vibhuti Bhatnagar | Roll no: 24BCS10288 | Batch: B
+Captured: 2026-09-03 18:42:12 IST
+Command: ./overlay-demo.sh
+
+==============================================================
+0. Before: overlay networks need Swarm mode
+==============================================================
+
+$ docker info --format Swarm state: {{.Swarm.LocalNodeState}}
+Swarm state: inactive
+
+Creating an overlay network outside Swarm mode is refused:
+
+$ docker network create --driver overlay will_fail
+Error response from daemon: This node is not a swarm manager. Use "docker swarm init" or "docker swarm join" to connect this node to swarm and try again.
+
+==============================================================
+1. Initialise a Swarm
+==============================================================
+
+$ docker swarm init
+Swarm initialized: current node (otch86upm0yjlxchblakilkv5) is now a manager.
+
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-<redacted> 192.168.65.3:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+
+$ docker node ls
+ID                            HOSTNAME         STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+otch86upm0yjlxchblakilkv5 *   docker-desktop   Ready     Active         Leader           29.4.2
+
+Swarm mode creates two networks automatically:
+
+$ docker network ls --filter driver=overlay --format table {{.Name}}\t{{.Driver}}\t{{.Scope}}
+NAME      DRIVER    SCOPE
+ingress   overlay   swarm
+  ingress        - the routing mesh, used for published service ports
+  docker_gwbridge - how overlay containers reach the outside world
+
+==============================================================
+2. Create an overlay network
+==============================================================
+
+$ docker network create --driver overlay --attachable app_overlay
+xst86tdlkqv7ahd4ahuxhz5x8
+
+Compare the scope column with a normal bridge network:
+
+$ docker network ls --format table {{.Name}}\t{{.Driver}}\t{{.Scope}} --filter name=app_overlay --filter name=bridge
+NAME          DRIVER    SCOPE
+app_overlay   overlay   swarm
+bridge        bridge    local
+
+'swarm' scope means the network definition is shared across every node in
+the cluster, not just this one. A bridge network is 'local' to one host.
+
+==============================================================
+3. Run a replicated service on it
+==============================================================
+
+$ docker service create --name web --network app_overlay --replicas 3 --publish published=8090,target=80 nginx:1.27-alpine
+h5d7ueuigybvzzsgln9n72mjm
+[... 34 lines of docker service create progress output trimmed ...]
+verify: Service h5d7ueuigybvzzsgln9n72mjm converged
+
+$ docker service ls --format table {{.Name}}\t{{.Mode}}\t{{.Replicas}}\t{{.Ports}}
+NAME      MODE         REPLICAS   PORTS
+web       replicated   3/3        *:8090->80/tcp
+
+$ docker service ps web --format table {{.Name}}\t{{.Node}}\t{{.CurrentState}}
+NAME      NODE             CURRENT STATE
+web.1     docker-desktop   Running 11 seconds ago
+web.2     docker-desktop   Running 11 seconds ago
+web.3     docker-desktop   Running 11 seconds ago
+
+All three tasks are on this one node. On a real cluster the Node column
+would show different hostnames, and the overlay would carry traffic
+between them.
+
+==============================================================
+4. Service discovery over the overlay
+==============================================================
+
+$ docker run -d --name overlay-client --network app_overlay alpine:3.20 sleep 300
+333af8de17f862fba45982543d64b1f37525c805892bada094f8f951250ce312
+
+The service name resolves to a single virtual IP, not to three addresses:
+
+$ docker exec overlay-client getent hosts web
+10.0.1.2          web  web
+
+Docker load-balances that VIP across the three tasks. The individual task
+addresses are visible under the special tasks.<service> name:
+
+$ docker exec overlay-client getent hosts tasks.web
+10.0.1.4          tasks.web  tasks.web
+
+And the service answers over the overlay:
+
+$ docker exec overlay-client wget -qS -O /dev/null http://web/
+  HTTP/1.1 200 OK
+  Server: nginx/1.27.5
+  Date: Thu, 03 Sep 2026 13:12:40 GMT
+  Content-Type: text/html
+  Content-Length: 615
+  Last-Modified: Wed, 16 Apr 2025 12:55:34 GMT
+  Connection: close
+  ETag: "67ffa8c6-267"
+  Accept-Ranges: bytes
+  
+
+==============================================================
+5. What the overlay looks like from the inside
+==============================================================
+
+$ docker network inspect app_overlay --format Driver: {{.Driver}}  Scope: {{.Scope}}  Attachable: {{.Attachable}}
+Driver: overlay  Scope: swarm  Attachable: true
+
+$ docker network inspect app_overlay --format Subnet: {{range .IPAM.Config}}{{.Subnet}}{{end}}
+Subnet: 10.0.1.0/24
+
+Members:
+  overlay-client  10.0.1.7/24  web.2.p34qbsv7x9u3cjgd7kov626jq  10.0.1.4/24  web.1.pm91pzgfqh9hic8janhur4jb5  10.0.1.3/24  web.3.jcf60xoixd0b8bc2t8bqt8bds  10.0.1.5/24  app_overlay-endpoint  10.0.1.6/24
+
+The routing mesh published port:
+
+$ docker service inspect web --format Published: {{range .Endpoint.Ports}}{{.PublishedPort}} -> {{.TargetPort}} ({{.PublishMode}}){{end}}
+Published: 8090 -> 80 (ingress)
+
+PublishMode 'ingress' means a request to port 8090 on ANY node in the
+cluster is forwarded to a healthy task, even if that task runs elsewhere.
+
+==============================================================
+6. Clean up - leaving the Swarm
+==============================================================
+docker service rm web && docker network rm app_overlay && docker swarm leave --force

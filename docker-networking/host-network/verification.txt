@@ -1,0 +1,122 @@
+Task 2 - Apache2 on the host network
+Name: Vibhuti Bhatnagar | Roll no: 24BCS10288 | Batch: B
+Captured: 2026-09-03 18:38:21 IST
+Host: macOS 26.4.1, Docker Desktop 29.4.2
+Command: ./host-network-lab.sh
+
+==============================================================
+1. Pull the Apache2 image from Docker Hub
+==============================================================
+
+$ docker pull httpd:2.4-alpine
+2.4-alpine: Pulling from library/httpd
+Digest: sha256:1b766f17b84026429b7cb243317b142921b24432336e798bc881c43f45ed9567
+Status: Image is up to date for httpd:2.4-alpine
+docker.io/library/httpd:2.4-alpine
+
+$ docker images httpd --format table {{.Repository}}\t{{.Tag}}\t{{.Size}}
+REPOSITORY   TAG          SIZE
+httpd        2.4-alpine   107MB
+
+==============================================================
+2. Run it on the host network - note there is no -p flag
+==============================================================
+
+$ docker run -d --name apache-host --network host -v /Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSIGNMENT 1/docker-networking/host-network/index.html:/usr/local/apache2/htdocs/index.html:ro httpd:2.4-alpine
+1ced9efb21dcbf2e9c5d9b9c0950e349504e746589e2596f21c7ca692e7a2416
+
+$ docker inspect apache-host --format NetworkMode = {{.HostConfig.NetworkMode}}
+NetworkMode = host
+
+$ docker inspect apache-host --format Networks    = {{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}
+Networks    = host
+
+In host mode Docker allocates no address of its own for the container:
+
+$ docker inspect apache-host --format {{json .NetworkSettings.Networks}}
+{"host":{"IPAMConfig":null,"Links":null,"Aliases":null,"DriverOpts":null,"GwPriority":0,"NetworkID":"143796ee5228cc0a4ea5cff7a5a4a6940bed6c8a3572af77947abb6946b87885","EndpointID":"3f149b1834c4ca1ca2907815447ff680e6d1f43fe725ffb26ee9839661af6de2","Gateway":"","IPAddress":"","MacAddress":"","IPPrefixLen":0,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"DNSNames":null}}
+
+$ docker ps --filter name=apache-host --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+NAMES         STATUS         PORTS
+apache-host   Up 3 seconds   
+The PORTS column is empty. In host mode there is nothing to map, because the
+container is already bound to port 80 on the host.
+
+==============================================================
+3. Access the site on port 80
+==============================================================
+
+3a. From inside the container's (= the host's) namespace:
+
+$ docker exec apache-host wget -qO- http://localhost:80/
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Apache on the host network</title></head>
+  <body>
+    <h1>Apache2 running with --network host</h1>
+    <p>No -p flag was used. The container listens on port 80 in the host's network namespace.</p>
+    <p>Vibhuti Bhatnagar - 24BCS10288 - Batch B</p>
+  </body>
+</html>
+
+3b. From a second, separate container also on the host network.
+    It has no link to apache-host other than the shared namespace,
+    so reaching port 80 proves they share the host's network stack:
+
+$ docker run --rm --name netcheck --network host alpine:3.20 wget -qO- --timeout=5 http://localhost:80/
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Apache on the host network</title></head>
+  <body>
+    <h1>Apache2 running with --network host</h1>
+    <p>No -p flag was used. The container listens on port 80 in the host's network namespace.</p>
+    <p>Vibhuti Bhatnagar - 24BCS10288 - Batch B</p>
+  </body>
+</html>
+
+3c. Compare: the same image WITHOUT host networking gets its own namespace.
+
+$ docker run --rm --name netcheck --network bridge alpine:3.20 sh -c wget -qO- --timeout=3 http://localhost:80/ || echo "nothing on localhost:80 - this container has its own network namespace"
+wget: can't connect to remote host: Connection refused
+nothing on localhost:80 - this container has its own network namespace
+
+==============================================================
+4. Interfaces seen from inside the container
+==============================================================
+In host mode the container sees every interface the host has,
+including docker0 and the user-defined bridges:
+
+$ docker run --rm --network host alpine:3.20 sh -c "ip -o addr show | grep inet"
+lo 127.0.0.1/8
+eth0 192.168.65.3/24
+services1 192.168.65.6/32
+docker0 172.17.0.1/16
+br-4f4ea5480595 172.18.0.1/16
+
+In bridge mode the same command shows only loopback and one veth endpoint:
+
+$ docker run --rm --network bridge alpine:3.20 sh -c "ip -o addr show | grep inet"
+lo 127.0.0.1/8
+eth0 172.17.0.3/16
+
+==============================================================
+5. Reaching it from the machine you are sitting at
+==============================================================
+curl http://localhost:80 from macOS did NOT connect, and that is expected here.
+
+Docker Desktop does not run containers on macOS directly. It runs a small Linux
+VM, and "the host" in --network host means that VM, not the Mac. The container
+really is on port 80 of the host it belongs to, which is why steps 3a and 3b
+succeed, but macOS is outside that namespace.
+
+On a native Linux Docker host there is no VM in between, so http://localhost:80
+in the browser works immediately.
+
+To reach it from macOS as well, enable Docker Desktop's host networking:
+  Settings -> Resources -> Network -> "Enable host networking", then Apply & restart.
+Re-running this script afterwards makes this section print the page instead.
+
+==============================================================
+6. Clean up
+==============================================================
+docker rm -f apache-host

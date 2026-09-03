@@ -1,0 +1,135 @@
+Networking command practice
+Name: Vibhuti Bhatnagar | Roll no: 24BCS10288 | Batch: B
+Captured: 2026-09-03 18:46:21 IST
+
+Run inside a disposable container so the addresses shown belong to the lab
+and not to my home network. The image is nicolaka/netshoot, which ships the
+standard troubleshooting tools (ip, ss, dig, traceroute, nc, curl).
+
+$ docker run --rm -v "$PWD":/lab -w /lab nicolaka/netshoot bash network-checks.sh
+
+Unable to find image 'nicolaka/netshoot:latest' locally
+[... 44 image-pull layer lines trimmed ...]
+Digest: sha256:b09d9b21381f47a79b3cbcb30da25266dc17186ea00ae65e99fdc51396f48e70
+Status: Downloaded newer image for nicolaka/netshoot:latest
+==============================================================
+1. Who am I?
+==============================================================
+
+$ hostname
+09909ca17a42
+
+==============================================================
+2. Interfaces and addresses
+==============================================================
+
+$ ip -brief address
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+tunl0@NONE       DOWN           
+gre0@NONE        DOWN           
+gretap0@NONE     DOWN           
+erspan0@NONE     DOWN           
+ip_vti0@NONE     DOWN           
+ip6_vti0@NONE    DOWN           
+sit0@NONE        DOWN           
+ip6tnl0@NONE     DOWN           
+ip6gre0@NONE     DOWN           
+eth0@if173       UP             172.17.0.3/16 
+
+==============================================================
+3. Routing table - how packets leave this machine
+==============================================================
+
+$ ip route
+default via 172.17.0.1 dev eth0 
+172.17.0.0/16 dev eth0 proto kernel scope link src 172.17.0.3 
+
+==============================================================
+4. DNS - can a name be turned into an address?
+==============================================================
+
+$ nslookup example.com
+Server:		192.168.65.7
+Address:	192.168.65.7#53
+
+Non-authoritative answer:
+Name:	example.com
+Address: 172.66.147.243
+Name:	example.com
+Address: 104.20.23.154
+
+
+
+$ dig +short example.com A
+172.66.147.243
+104.20.23.154
+
+==============================================================
+5. IP connectivity, bypassing DNS entirely
+==============================================================
+
+$ ping -c 3 1.1.1.1
+PING 1.1.1.1 (1.1.1.1) 56(84) bytes of data.
+64 bytes from 1.1.1.1: icmp_seq=1 ttl=63 time=13.6 ms
+64 bytes from 1.1.1.1: icmp_seq=2 ttl=63 time=34.9 ms
+64 bytes from 1.1.1.1: icmp_seq=3 ttl=63 time=12.6 ms
+
+--- 1.1.1.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2011ms
+rtt min/avg/max/mdev = 12.619/20.362/34.911/10.294 ms
+
+==============================================================
+6. Path to a remote host
+==============================================================
+
+$ traceroute -m 8 -w 2 1.1.1.1
+traceroute to 1.1.1.1 (1.1.1.1), 8 hops max, 46 byte packets
+ 1  172.17.0.1 (172.17.0.1)  0.007 ms  0.008 ms  0.005 ms
+ 2  *  *  *
+ 3  *  *  *
+ 4  *  *  *
+ 5  *  *  *
+ 6  *  *  *
+ 7  *  *  *
+ 8  *  *  *
+
+==============================================================
+7. The full application path - DNS, TCP, TLS, HTTP
+==============================================================
+
+$ curl -sS -I https://example.com
+HTTP/2 200 
+date: Thu, 03 Sep 2026 13:17:48 GMT
+content-type: text/html
+server: cloudflare
+last-modified: Wed, 02 Sep 2026 22:14:26 GMT
+allow: GET, HEAD
+accept-ranges: bytes
+age: 3400
+cf-cache-status: HIT
+cf-ray: a3550969fc237e78-MAA
+
+
+Timing breakdown of the same request:
+
+$ curl -sS -o /dev/null -w ... https://example.com
+  dns lookup   : 0.002075s
+  tcp connect  : 0.017150s
+  tls handshake: 0.044658s
+  first byte   : 0.062588s
+  total        : 0.062656s
+  http code    : 200
+
+==============================================================
+8. Listening sockets on this machine
+==============================================================
+
+$ ss -tuln
+Netid State Recv-Q Send-Q Local Address:Port Peer Address:Port
+
+==============================================================
+9. Is a specific remote port open?
+==============================================================
+
+$ nc -z -v -w 3 example.com 443
+Connection to example.com (104.20.23.154) 443 port [tcp/https] succeeded!

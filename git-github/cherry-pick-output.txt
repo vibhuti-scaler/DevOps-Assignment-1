@@ -1,0 +1,256 @@
+Git homework - commit -a and cherry-pick
+Name: Vibhuti Bhatnagar | Roll no: 24BCS10288 | Batch: B
+Captured: 2026-09-03 18:50:36 IST
+git 2.53.0
+Command: ./git-lab.sh
+
+Run in a throwaway repository so the practice history stays out of the
+homework repo.
+
+==============================================================
+TASK 1 - git commit -m  vs  git commit -a -m
+==============================================================
+
+$ git init -b main -q .
+
+$ git add tracked.txt
+
+$ git commit -q -m Add tracked.txt
+
+Now make two changes at once:
+  - modify tracked.txt   (a TRACKED file)
+  - create untracked.txt (an UNTRACKED file)
+
+$ git status --short
+ M tracked.txt
+?? untracked.txt
+  M = modified and tracked, ?? = untracked
+
+-------- git commit -m  (nothing staged) --------
+
+$ git commit -m "try to commit without staging"
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   tracked.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+Refused. Plain -m commits only what is already in the staging area,
+and nothing was added, so there was nothing to commit.
+
+-------- git commit -a -m --------
+
+$ git commit -a -q -m Commit with -a
+
+$ git show --stat --oneline HEAD
+d1354b3 Commit with -a
+ tracked.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+$ git status --short
+?? untracked.txt
+  untracked.txt is STILL untracked.
+
+RESULT:
+  modified tracked file  -> included by git commit -a
+  new untracked file     -> NOT included by git commit -a
+
+-a stages tracked files that were modified or deleted, then commits.
+It never adds a file git has not seen before. Those still need git add.
+
+$ git add untracked.txt
+
+$ git commit -q -m Add untracked.txt explicitly
+
+
+==============================================================
+TASK 2 - cherry-pick
+==============================================================
+
+--- Three commits on main ---
+
+$ git log --oneline
+1e73def Add Docker note
+943a537 Add Linux note
+bc2ecba Add base notes
+
+--- A new branch with three more commits ---
+
+$ git switch -c command-notes
+Switched to a new branch 'command-notes'
+
+$ git log --oneline
+8817e7d Add cherry-pick note
+bf2b248 Add journalctl note
+5b52e29 Add networking note
+1e73def Add Docker note
+943a537 Add Linux note
+bc2ecba Add base notes
+
+--- Both branches ---
+
+$ git log --oneline --all --decorate --graph
+* 8817e7d (HEAD -> command-notes) Add cherry-pick note
+* bf2b248 Add journalctl note
+* 5b52e29 Add networking note
+* 1e73def (main) Add Docker note
+* 943a537 Add Linux note
+* bc2ecba Add base notes
+
+--- Identify the one commit to take ---
+
+$ git log --format="%h %s" | grep "Add networking note"
+5b52e29 Add networking note
+
+Target commit: 5b52e297a9c6a74f46e9583cce104cbf2b1ecd32
+
+--- Back to main, which does NOT have it ---
+
+$ git switch main
+Switched to branch 'main'
+
+main also moves on in the meantime, so the two branches genuinely diverge.
+Without this the cherry-pick would land straight onto the commit's own
+parent and git would rebuild a byte-identical commit - same tree, same
+parent, same timestamp, same SHA - which hides what cherry-pick does.
+main's own commit touches a DIFFERENT file, so the pick applies cleanly.
+A conflicting pick is demonstrated separately at the end.
+
+$ git log --oneline
+6c02a9a Add README on main
+1e73def Add Docker note
+943a537 Add Linux note
+bc2ecba Add base notes
+
+$ cat notes.txt
+base notes
+linux note
+docker note
+
+$ grep -c networking notes.txt   # 0 = not present on main
+0
+
+--- Cherry-pick just that one commit ---
+
+$ git cherry-pick 5b52e297a9c6a74f46e9583cce104cbf2b1ecd32
+[main fc71a37] Add networking note
+ Date: Thu Sep 3 18:50:37 2026 +0530
+ 1 file changed, 1 insertion(+)
+
+--- Verify ---
+
+$ git log --oneline
+fc71a37 Add networking note
+6c02a9a Add README on main
+1e73def Add Docker note
+943a537 Add Linux note
+bc2ecba Add base notes
+
+$ cat notes.txt
+base notes
+linux note
+docker note
+networking note
+
+$ grep networking notes.txt
+networking note
+
+==============================================================
+The new commit is a COPY, not the same commit
+==============================================================
+original commit on command-notes : 5b52e297a9c6a74f46e9583cce104cbf2b1ecd32
+new commit on main               : fc71a37a206a84ae6ce11c619a983b7af23cf6da
+
+Different SHAs. A commit's hash covers its parent and its committer
+timestamp, and here the parent changed, so the copy hashes differently.
+The patch itself is unchanged:
+
+$ diff <(git show --format="" 5b52e29) <(git show --format="" fc71a37) && echo "the two patches are identical"
+the two patches are identical
+
+$ git log --oneline --all --decorate --graph
+* 8817e7d (command-notes) Add cherry-pick note
+* bf2b248 Add journalctl note
+* 5b52e29 Add networking note
+| * fc71a37 (HEAD -> main) Add networking note
+| * 6c02a9a Add README on main
+|/  
+* 1e73def Add Docker note
+* 943a537 Add Linux note
+* bc2ecba Add base notes
+
+Note that 'Add journalctl note' and 'Add cherry-pick note' were left
+behind on the branch. That is the point of cherry-pick: take one commit,
+not everything up to it, which is what a merge or rebase would do.
+
+
+==============================================================
+APPENDIX - what a conflicting cherry-pick looks like
+==============================================================
+First let main append its own line to the same end-of-file region:
+
+$ cat notes.txt
+base notes
+linux note
+docker note
+networking note
+compose note
+
+The branch's next commit expects 'networking note' to be the last line,
+but on main it is now followed by 'compose note'. Picking it must conflict.
+
+$ git cherry-pick bf2b248   # "Add journalctl note"
+Auto-merging notes.txt
+CONFLICT (content): Merge conflict in notes.txt
+error: could not apply bf2b248... Add journalctl note
+hint: After resolving the conflicts, mark them with
+hint: "git add/rm <pathspec>", then run
+hint: "git cherry-pick --continue".
+
+$ git status --short
+UU notes.txt
+  UU = both sides modified the same region
+
+$ cat notes.txt
+base notes
+linux note
+docker note
+networking note
+<<<<<<< HEAD
+compose note
+=======
+journalctl note
+>>>>>>> bf2b248 (Add journalctl note)
+
+Resolve by keeping both sides, then continue:
+
+$ git add notes.txt
+
+$ git cherry-pick --continue --no-edit
+[main 8f6cb6b] Add journalctl note
+ Date: Thu Sep 3 18:50:37 2026 +0530
+ 1 file changed, 1 insertion(+)
+
+$ git log --oneline
+8f6cb6b Add journalctl note
+9c2a377 Add Compose note on main
+fc71a37 Add networking note
+6c02a9a Add README on main
+1e73def Add Docker note
+943a537 Add Linux note
+bc2ecba Add base notes
+
+$ cat notes.txt
+base notes
+linux note
+docker note
+networking note
+compose note
+journalctl note
+
+git cherry-pick --abort would have thrown the whole thing away instead.
+
+Lab directory: /private/tmp/claude-501/-Users-vibhutibhatnagar-Desktop-SST-STUDY-DEVOPS-ASSIGNMENT-1/908def88-2507-4952-b830-05fef6298a6e/scratchpad/git-lab

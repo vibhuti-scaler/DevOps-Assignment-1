@@ -1,0 +1,118 @@
+Task 3 - bind mount a host folder into Nginx
+Name: Vibhuti Bhatnagar | Roll no: 24BCS10288 | Batch: B
+Captured: 2026-09-03 18:41:03 IST
+Command: ./bind-mount-lab.sh
+
+==============================================================
+1. The folder on the local machine
+==============================================================
+
+$ ls -l site/
+total 8
+-rw-r--r--@ 1 vibhutibhatnagar  staff  749 Sep  3 18:41 index.html
+
+$ grep -E '<h1>|<p>' site/index.html
+<h1>Hello students</h1>
+<p>Served by Nginx from a bind-mounted folder</p>
+<p>Vibhuti Bhatnagar &middot; 24BCS10288 &middot; Batch B</p>
+
+==============================================================
+2. Bind mount it into Nginx
+==============================================================
+
+$ docker run -d --name bind-mount-web -p 8082:80 -v /Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSIGNMENT 1/docker-networking/bind-mount/site:/usr/share/nginx/html:ro nginx:1.27-alpine
+7f5344875c2a83ff9267522252efcdd8ed77024d921ec53b870dd462e54c26b8
+
+$ docker inspect bind-mount-web --format '{{range .Mounts}}{{.Type}} {{.Source}} -> {{.Destination}} (rw={{.RW}}){{end}}'
+bind /Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSIGNMENT 1/docker-networking/bind-mount/site -> /usr/share/nginx/html (rw=false)
+
+The mount Type is 'bind', not 'volume'. Docker is not managing any storage
+here; it is mapping a host directory straight into the container.
+
+==============================================================
+3. Access the website
+==============================================================
+
+$ curl -s http://localhost:8082/
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bind mount</title>
+    <style>
+      body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0;
+             display: grid; place-items: center; height: 100vh; margin: 0; }
+      .card { background: #1e293b; padding: 2.5rem 3rem; border-radius: 12px;
+              border: 1px solid #334155; text-align: center; }
+      h1 { margin: 0 0 .5rem; color: #4ade80; }
+      p { margin: .25rem 0; color: #94a3b8; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Hello students</h1>
+      <p>Served by Nginx from a bind-mounted folder</p>
+      <p>Vibhuti Bhatnagar &middot; 24BCS10288 &middot; Batch B</p>
+    </div>
+  </body>
+</html>
+
+==============================================================
+4. Modify index.html on the host - the container is NOT touched
+==============================================================
+$ sed -i '' 's|Hello students|Hello students - edited at 18:41:06 with the container still running|' site/index.html
+
+$ grep '<h1>' site/index.html
+<h1>Hello students - edited at 18:41:06 with the container still running</h1>
+
+==============================================================
+5. Re-request the page - no restart, no rebuild, no docker command
+==============================================================
+
+$ curl -s http://localhost:8082/
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bind mount</title>
+    <style>
+      body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0;
+             display: grid; place-items: center; height: 100vh; margin: 0; }
+      .card { background: #1e293b; padding: 2.5rem 3rem; border-radius: 12px;
+              border: 1px solid #334155; text-align: center; }
+      h1 { margin: 0 0 .5rem; color: #4ade80; }
+      p { margin: .25rem 0; color: #94a3b8; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Hello students - edited at 18:41:06 with the container still running</h1>
+      <p>Served by Nginx from a bind-mounted folder</p>
+      <p>Vibhuti Bhatnagar &middot; 24BCS10288 &middot; Batch B</p>
+    </div>
+  </body>
+</html>
+
+Proof that the container never restarted:
+  StartedAt before edit : 2026-09-03T13:11:03.368632292Z
+  StartedAt after edit  : 2026-09-03T13:11:03.368632292Z
+  Main PID before/after : 99536 / 99536
+  Identical - the same process served both responses.
+
+
+$ docker ps --filter name=bind-mount-web --format table {{.Names}}\t{{.Status}}\t{{.Ports}}
+NAMES            STATUS         PORTS
+bind-mount-web   Up 4 seconds   0.0.0.0:8082->80/tcp, [::]:8082->80/tcp
+
+==============================================================
+6. The mount is read-only from the container's side
+==============================================================
+$ docker exec bind-mount-web sh -c 'echo test > /usr/share/nginx/html/index.html'
+sh: can't create /usr/share/nginx/html/index.html: Read-only file system
+  Refused, because the mount was made with :ro. The host stays the single
+  source of truth for this content.
+
+==============================================================
+7. Clean up
+==============================================================
+docker rm -f bind-mount-web

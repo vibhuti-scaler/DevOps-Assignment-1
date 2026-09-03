@@ -1,0 +1,10 @@
+# Compose equivalent of the host-network run.
+# network_mode: host and a ports: block are mutually exclusive - in host mode
+# there is nothing to publish, because the container is already on the host.
+services:
+  apache:
+    image: httpd:2.4-alpine
+    container_name: apache-host
+    network_mode: host
+    volumes:
+      - ./index.html:/usr/local/apache2/htdocs/index.html:ro
