@@ -18,7 +18,7 @@ echo "=============================================================="
 
 step git init -b main -q .
 git config user.name  "Vibhuti Bhatnagar"
-git config user.email "vibhuti.bhatnagar@scalerailabs.com"
+git config user.email "vibhuti.24bcs10288@sst.scaler.com"
 
 printf 'line one\n' > tracked.txt
 step git add tracked.txt
@@ -73,7 +73,7 @@ mkdir -p "$LAB/cherry"
 cd "$LAB/cherry"
 git init -b main -q .
 git config user.name  "Vibhuti Bhatnagar"
-git config user.email "vibhuti.bhatnagar@scalerailabs.com"
+git config user.email "vibhuti.24bcs10288@sst.scaler.com"
 
 echo
 echo "--- Three commits on main ---"

@@ -1,6 +1,7 @@
 # Git and GitHub
 
 - **Name:** Vibhuti Bhatnagar · **Roll no:** 24BCS10288 · **Batch:** B
+- **Email:** vibhuti.24bcs10288@sst.scaler.com
 
 Both tasks are in [`git-lab.sh`](git-lab.sh), which builds a throwaway repository so the practice
 history never lands in this one. Full transcript: [cherry-pick-output.txt](cherry-pick-output.txt).

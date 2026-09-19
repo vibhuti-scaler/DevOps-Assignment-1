@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lifecycle-running
+  namespace: devops-homework
+spec:
+  restartPolicy: Always
+  containers:
+  - name: app
+    image: busybox:1.37
+    command:
+    - sh
+    - -c
+    - echo running; sleep 3600

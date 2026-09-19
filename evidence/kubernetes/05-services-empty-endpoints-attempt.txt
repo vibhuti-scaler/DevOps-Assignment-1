@@ -1,0 +1,103 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-09-19T21:55:14.005225+00:00 | 05-services
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-services/deployment.yaml -f kubernetes-services/clusterip.yaml -f kubernetes-services/nodeport.yaml -f kubernetes-services/externalname.yaml -f kubernetes-services/headless.yaml
+deployment.apps/service-web unchanged
+service/web-clusterip unchanged
+service/web-nodeport unchanged
+service/external-docs unchanged
+service/web-headless unchanged
+statefulset.apps/stateful-web unchanged
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/service-web --timeout=180s
+deployment "service-web" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status statefulset/stateful-web --timeout=180s
+partitioned roll out complete: 2 new pods have been updated...
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup -type=A web-clusterip.devops-homework.svc.cluster.local.
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+PASS: DNS resolves web-clusterip.devops-homework.svc.cluster.local.
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup -type=CNAME external-docs.devops-homework.svc.cluster.local.
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+external-docs.devops-homework.svc.cluster.local	canonical name = kubernetes.io
+PASS: DNS resolves external-docs.devops-homework.svc.cluster.local.
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup -type=A web-headless.devops-homework.svc.cluster.local.
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+Name:	web-headless.devops-homework.svc.cluster.local
+Address: 10.244.0.53
+Name:	web-headless.devops-homework.svc.cluster.local
+Address: 10.244.0.54
+PASS: DNS resolves web-headless.devops-homework.svc.cluster.local.
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup -type=A stateful-web-0.web-headless.devops-homework.svc.cluster.local.
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+Name:	stateful-web-0.web-headless.devops-homework.svc.cluster.local
+Address: 10.244.0.53
+PASS: DNS resolves stateful-web-0.web-headless.devops-homework.svc.cluster.local.
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://web-clusterip
+Hello from v1
+PASS: HTTP contains Hello from v1
+
+$ curl --fail --silent --show-error --max-time 5 http://127.0.0.1:30081/
+Hello from v1
+PASS: host reaches real NodePort 30081
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get services,pods -o wide
+NAME                    TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)        AGE     SELECTOR
+service/blue-green      ClusterIP      10.96.214.138   <none>          80/TCP         9m28s   app=blue-green,slot=green
+service/canary-web      ClusterIP      10.96.36.226    <none>          80/TCP         9m26s   app=canary-web
+service/core-web        ClusterIP      10.96.13.38     <none>          80/TCP         9m59s   app=core-web
+service/external-docs   ExternalName   <none>          kubernetes.io   <none>         83s     <none>
+service/web-clusterip   ClusterIP      10.96.102.35    <none>          80/TCP         83s     app=service-web
+service/web-headless    ClusterIP      None            <none>          80/TCP         83s     app=stateful-web
+service/web-nodeport    NodePort       10.96.66.240    <none>          80:30081/TCP   83s     app=service-web
+
+NAME                                READY   STATUS    RESTARTS   AGE     IP            NODE                           NOMINATED NODE   READINESS GATES
+pod/core-web-74684c6599-4glcv       1/1     Running   0          9m31s   10.244.0.21   vibhuti-devops-control-plane   <none>           <none>
+pod/core-web-74684c6599-b56q4       1/1     Running   0          9m34s   10.244.0.19   vibhuti-devops-control-plane   <none>           <none>
+pod/core-web-74684c6599-ch87n       1/1     Running   0          9m32s   10.244.0.20   vibhuti-devops-control-plane   <none>           <none>
+pod/dns-client                      1/1     Running   0          10m     10.244.0.5    vibhuti-devops-control-plane   <none>           <none>
+pod/node-agent-q2ft7                1/1     Running   0          9m30s   10.244.0.22   vibhuti-devops-control-plane   <none>           <none>
+pod/recreate-web-666975496c-qlldm   1/1     Running   0          9m19s   10.244.0.33   vibhuti-devops-control-plane   <none>           <none>
+pod/recreate-web-666975496c-tbgmw   1/1     Running   0          9m19s   10.244.0.34   vibhuti-devops-control-plane   <none>           <none>
+pod/replica-web-8h8pc               1/1     Running   0          9m43s   10.244.0.14   vibhuti-devops-control-plane   <none>           <none>
+pod/replica-web-c675j               1/1     Running   0          9m43s   10.244.0.15   vibhuti-devops-control-plane   <none>           <none>
+pod/replica-web-tkvgw               1/1     Running   0          9m43s   10.244.0.13   vibhuti-devops-control-plane   <none>           <none>
+pod/service-web-9765cf76c-5bg6d     1/1     Running   0          83s     10.244.0.51   vibhuti-devops-control-plane   <none>           <none>
+pod/service-web-9765cf76c-smxdz     1/1     Running   0          83s     10.244.0.52   vibhuti-devops-control-plane   <none>           <none>
+pod/service-web-9765cf76c-zw6hk     1/1     Running   0          83s     10.244.0.50   vibhuti-devops-control-plane   <none>           <none>
+pod/stateful-web-0                  1/1     Running   0          83s     10.244.0.53   vibhuti-devops-control-plane   <none>           <none>
+pod/stateful-web-1                  1/1     Running   0          81s     10.244.0.54   vibhuti-devops-control-plane   <none>           <none>
+pod/web-blue-9d8dd9689-65w7d        1/1     Running   0          9m28s   10.244.0.24   vibhuti-devops-control-plane   <none>           <none>
+pod/web-blue-9d8dd9689-rc4d2        1/1     Running   0          9m28s   10.244.0.23   vibhuti-devops-control-plane   <none>           <none>
+pod/web-canary-844fd76f99-s2vqt     1/1     Running   0          9m26s   10.244.0.29   vibhuti-devops-control-plane   <none>           <none>
+pod/web-green-57559697f6-9wkw7      1/1     Running   0          9m28s   10.244.0.26   vibhuti-devops-control-plane   <none>           <none>
+pod/web-green-57559697f6-vfjn5      1/1     Running   0          9m28s   10.244.0.25   vibhuti-devops-control-plane   <none>           <none>
+pod/web-stable-7f76d6c9d6-ktvkw     1/1     Running   0          9m26s   10.244.0.27   vibhuti-devops-control-plane   <none>           <none>
+pod/web-stable-7f76d6c9d6-rrf2v     1/1     Running   0          9m26s   10.244.0.28   vibhuti-devops-control-plane   <none>           <none>
+pod/web-stable-7f76d6c9d6-vdp4w     1/1     Running   0          9m26s   10.244.0.30   vibhuti-devops-control-plane   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get endpointslices -l kubernetes.io/service-name=web-clusterip -o wide
+NAME                  ADDRESSTYPE   PORTS   ENDPOINTS                             AGE
+web-clusterip-xf8br   IPv4          80      10.244.0.50,10.244.0.52,10.244.0.51   83s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework patch service web-clusterip --type=merge -p '{"spec":{"selector":{"app":"deliberately-missing"}}}'
+service/web-clusterip patched
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-services/clusterip.yaml
+service/web-clusterip configured
+FAILED: 'NoneType' object is not iterable

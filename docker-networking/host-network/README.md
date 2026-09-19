@@ -1,6 +1,7 @@
 # Task 2 — Apache2 on the host network
 
 - **Name:** Vibhuti Bhatnagar · **Roll no:** 24BCS10288 · **Batch:** B
+- **Email:** vibhuti.24bcs10288@sst.scaler.com
 
 ```bash
 docker pull httpd:2.4-alpine

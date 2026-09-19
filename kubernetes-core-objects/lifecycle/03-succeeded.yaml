@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lifecycle-succeeded
+  namespace: devops-homework
+spec:
+  restartPolicy: Never
+  containers:
+  - name: app
+    image: busybox:1.37
+    command:
+    - sh
+    - -c
+    - echo finished; exit 0

@@ -1,0 +1,120 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-09-19T21:45:57.727695+00:00 | 04-lifecycle
+
+Exercise: running
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/lifecycle/01-running.yaml
+pod/lifecycle-running created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/lifecycle-running --timeout=180s
+pod/lifecycle-running condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod lifecycle-running -o wide
+NAME                READY   STATUS    RESTARTS   AGE   IP            NODE                           NOMINATED NODE   READINESS GATES
+lifecycle-running   1/1     Running   0          1s    10.244.0.35   vibhuti-devops-control-plane   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete -f kubernetes-core-objects/lifecycle/01-running.yaml --ignore-not-found --timeout=60s
+pod "lifecycle-running" deleted from devops-homework namespace
+
+Exercise: pending
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/lifecycle/02-pending.yaml
+pod/lifecycle-pending created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait '--for=jsonpath={.status.phase}=Pending' pod/lifecycle-pending --timeout=90s
+pod/lifecycle-pending condition met
+PASS: Pod is unschedulable
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod lifecycle-pending -o wide
+NAME                READY   STATUS    RESTARTS   AGE   IP       NODE     NOMINATED NODE   READINESS GATES
+lifecycle-pending   0/1     Pending   0          0s    <none>   <none>   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe pod lifecycle-pending
+Name:             lifecycle-pending
+Namespace:        devops-homework
+Priority:         0
+Service Account:  default
+Node:             <none>
+Labels:           <none>
+Annotations:      <none>
+Status:           Pending
+IP:
+IPs:              <none>
+Containers:
+  app:
+    Image:      busybox:1.37
+    Port:       <none>
+    Host Port:  <none>
+    Command:
+      sh
+      -c
+      sleep 3600
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-g76wv (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False
+Volumes:
+  kube-api-access-g76wv:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              devops-homework/unavailable-node=true
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age   From               Message
+  ----     ------            ----  ----               -------
+  Warning  FailedScheduling  0s    default-scheduler  0/1 nodes are available: 1 node(s) didn't match Pod's node affinity/selector. no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete -f kubernetes-core-objects/lifecycle/02-pending.yaml --ignore-not-found --timeout=60s
+pod "lifecycle-pending" deleted from devops-homework namespace
+
+Exercise: succeeded
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/lifecycle/03-succeeded.yaml
+pod/lifecycle-succeeded created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait '--for=jsonpath={.status.phase}=Succeeded' pod/lifecycle-succeeded --timeout=90s
+pod/lifecycle-succeeded condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework logs lifecycle-succeeded
+finished
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod lifecycle-succeeded -o wide
+NAME                  READY   STATUS      RESTARTS   AGE   IP            NODE                           NOMINATED NODE   READINESS GATES
+lifecycle-succeeded   0/1     Completed   0          2s    10.244.0.36   vibhuti-devops-control-plane   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete -f kubernetes-core-objects/lifecycle/03-succeeded.yaml --ignore-not-found --timeout=60s
+pod "lifecycle-succeeded" deleted from devops-homework namespace
+
+Exercise: failed
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/lifecycle/04-failed.yaml
+pod/lifecycle-failed created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait '--for=jsonpath={.status.phase}=Failed' pod/lifecycle-failed --timeout=90s
+pod/lifecycle-failed condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework logs lifecycle-failed
+intentional-failure
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod lifecycle-failed -o wide
+NAME               READY   STATUS   RESTARTS   AGE   IP            NODE                           NOMINATED NODE   READINESS GATES
+lifecycle-failed   0/1     Error    0          2s    10.244.0.37   vibhuti-devops-control-plane   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete -f kubernetes-core-objects/lifecycle/04-failed.yaml --ignore-not-found --timeout=60s
+pod "lifecycle-failed" deleted from devops-homework namespace
+
+Exercise: crashloop
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/lifecycle/05-crashloop.yaml
+pod/lifecycle-crashloop created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete -f kubernetes-core-objects/lifecycle/05-crashloop.yaml --ignore-not-found --timeout=60s
+pod "lifecycle-crashloop" deleted from devops-homework namespace
+FAILED: Timed out: CrashLoopBackOff

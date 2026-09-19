@@ -1,0 +1,13 @@
+127.0.0.1 - - [20/Sep/2026 03:26:24] "GET /api HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 03:26:24] "GET /api/ HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 03:26:24] "GET /api/health HTTP/1.1" 200 -
+127.0.0.1 - - [20/Sep/2026 03:26:24] code 404, message Not Found
+127.0.0.1 - - [20/Sep/2026 03:26:24] "GET / HTTP/1.1" 404 -
+127.0.0.1 - - [20/Sep/2026 03:26:24] code 404, message Not Found
+127.0.0.1 - - [20/Sep/2026 03:26:24] "GET /apix HTTP/1.1" 404 -
+127.0.0.1 - - [20/Sep/2026 03:26:24] code 404, message Not Found
+127.0.0.1 - - [20/Sep/2026 03:26:24] "GET /api/missing HTTP/1.1" 404 -
+127.0.0.1 - - [20/Sep/2026 03:26:24] "GET /api/health HTTP/1.1" 200 -
+PASS: 51 Kubernetes objects; labels, namespaces, workload selectors, Service target ports, Ingress backends, ConfigMap references, external Secret contract, StatefulSet service, rollout selectors
+PASS: API three success routes, three 404 routes, configuration values, secret presence/absence, and no secret-value disclosure
+PASS: 187 relative Markdown file links

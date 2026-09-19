@@ -2,6 +2,7 @@
 
 - **Name:** Vibhuti Bhatnagar
 - **Roll no:** 24BCS10288
+- **Email:** vibhuti.24bcs10288@sst.scaler.com
 - **Batch:** B
 
 Four exercises, each in its own folder with a runnable script and a captured transcript.

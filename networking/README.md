@@ -1,6 +1,7 @@
 # Networking command practice
 
 - **Name:** Vibhuti Bhatnagar · **Roll no:** 24BCS10288 · **Batch:** B
+- **Email:** vibhuti.24bcs10288@sst.scaler.com
 
 [`network-checks.sh`](network-checks.sh) runs the commands in the order I would actually use them
 when something is broken — start at the machine and work outwards:

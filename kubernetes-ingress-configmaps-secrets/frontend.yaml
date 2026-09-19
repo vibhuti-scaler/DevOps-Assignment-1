@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-frontend
+  namespace: devops-homework
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-frontend
+  template:
+    metadata:
+      labels:
+        app: demo-frontend
+        version: frontend-v1
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.28-alpine
+        env:
+        - name: APP_VERSION
+          value: DevOps session 12 frontend
+        command:
+        - /bin/sh
+        - -c
+        - |
+          printf 'Hello from %s\n' "$APP_VERSION" > /usr/share/nginx/html/index.html
+          exec nginx -g 'daemon off;'
+        ports:
+        - name: http
+          containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          periodSeconds: 3
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        envFrom:
+        - configMapRef:
+            name: demo-config
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-frontend
+  namespace: devops-homework
+spec:
+  type: ClusterIP
+  selector:
+    app: demo-frontend
+  ports:
+  - name: http
+    port: 80
+    targetPort: http

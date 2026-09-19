@@ -2,9 +2,10 @@
 
 - **Name:** Vibhuti Bhatnagar
 - **Roll no:** 24BCS10288
+- **Email:** vibhuti.24bcs10288@sst.scaler.com
 - **Batch:** B
 
-My work for the Linux, shell scripting, networking, Git, and Docker homework sessions. Each folder
+My work for the Linux, shell scripting, networking, Git, Docker, and Kubernetes homework sessions. Each folder
 holds the commands I ran, the captured output, and notes on what I actually observed.
 
 ## Contents
@@ -18,6 +19,17 @@ holds the commands I ran, the captured output, and notes on what I actually obse
 | Docker fundamentals | [Six Hello World applications](docker-apps/README.md) | [verification.txt](docker-apps/verification.txt) + screenshots |
 | Dockerfiles and images | [Multi-stage build on port 8080](multi-stage-build/README.md) | [verification.txt](multi-stage-build/verification.txt) + screenshot |
 | Docker networking and volumes | [Networks, host mode, bind mount, overlay](docker-networking/README.md) | four transcripts + screenshots |
+| Kubernetes Fundamentals | [Architecture and local kind setup](kubernetes-fundamentals/README.md) | [Live evidence](evidence/kubernetes/README.md) |
+| Kubernetes Pods, ReplicaSets & Deployments | [Workloads, rollout, lifecycle and strategies](kubernetes-core-objects/README.md) | [Live evidence](evidence/kubernetes/README.md) |
+| Kubernetes Networking & Services | [DNS, Service types and troubleshooting](kubernetes-services/README.md) | [Live evidence](evidence/kubernetes/README.md) |
+| Kubernetes Ingress, ConfigMaps & Secrets | [Routes, configuration, Secrets and TLS](kubernetes-ingress-configmaps-secrets/README.md) | [Live evidence](evidence/kubernetes/README.md) |
+
+**Submitting the form:** [SUBMISSION.md](SUBMISSION.md) has all eleven GitHub README links in
+the order shown in the Section B screenshot, with my name, roll number, and student email.
+
+The Kubernetes additions are adapted from the requested reference repository's commits.
+[REFERENCES.md](REFERENCES.md) records provenance and corrections;
+[KUBERNETES-VALIDATION.md](KUBERNETES-VALIDATION.md) records checks executed in this repository.
 
 ## Screenshots
 
@@ -51,8 +63,8 @@ never restarted between the two:
 | --- | --- |
 | ![Hello students](docker-networking/screenshots/02-bind-mount-before.png) | ![Edited page](docker-networking/screenshots/03-bind-mount-after.png) |
 
-**Task 2** (host network) has no browser screenshot, because `--network host` is not reachable
-from macOS — Docker Desktop runs containers inside a Linux VM. It is verified from inside that
+**Task 2** (host network) has no browser screenshot, because Docker Desktop host networking was not enabled in the recorded
+macOS run. It is verified from inside that
 namespace instead, and the reason is written up in
 [docker-networking/host-network/README.md](docker-networking/host-network/README.md).
 
@@ -61,12 +73,12 @@ output in [overlay-demo-output.txt](docker-networking/overlay-demo-output.txt).
 
 ## How this is put together
 
-Every task has a **runnable script** and a **captured transcript**, so each claim in a README can be
-traced back to output from a real run rather than to a description of what should happen. Each
-script cleans up after itself with a `trap`, including leaving the Swarm in the overlay demo, so
-running them leaves the machine as it was.
+The existing Linux, shell, networking, Git and Docker tasks include runnable scripts and captured
+transcripts. Kubernetes has a separate runner that records each session and retains its dedicated
+kind cluster for inspection. Follow the Kubernetes cleanup command when finished.
 
-Everything was run on macOS 26.4.1 with Docker 29.4.2. Anything that needs real Linux — `adduser`,
+The original Docker evidence was captured on macOS 26.4.1 with Docker 29.4.2.
+Versions used for the new Kubernetes checks are recorded in the validation report. Anything that needs real Linux — `adduser`,
 `useradd`, `journalctl`, `ip`, `ss` — was run inside a disposable Ubuntu container, so no test user
 or stray package ever landed on my laptop.
 
@@ -94,7 +106,7 @@ cd git-github && ./git-lab.sh && cd ..
 
 # Docker applications
 cd docker-apps && for d in nodejs-app python-app java-app Apache-app React-app nginx-app; do
-  docker build -t "vibhuti-${d%%-*}" "./$d"; done && cd ..
+  docker build -t "vibhuti-$(printf '%s' "${d%%-*}" | tr '[:upper:]' '[:lower:]')" "./$d"; done && cd ..
 
 # Multi-stage build
 docker build -t vibhuti-multi-stage ./multi-stage-build
@@ -107,6 +119,9 @@ cd docker-networking
 (cd bind-mount   && ./bind-mount-lab.sh)
 ./overlay-demo.sh
 ```
+
+For the Kubernetes sessions, follow the [local cluster setup](kubernetes-fundamentals/README.md#local-lab-setup),
+then run `bash scripts/run-kubernetes-labs.sh` from the repository root.
 
 ## Things worth pointing out
 
@@ -123,7 +138,7 @@ that worked first time:
   not caught up. Measured and worked around.
   → [docker-networking/bind-mount/README.md](docker-networking/bind-mount/README.md)
 
-- **`--network host` does not reach macOS.** The container really is on port 80 of its host, but
+- **The recorded host-network run required Docker Desktop opt-in for access from macOS.** The container really is on port 80 of its host, but
   that host is Docker Desktop's Linux VM. Two in-namespace checks prove it works; the caveat is
   documented rather than hidden.
   → [docker-networking/host-network/README.md](docker-networking/host-network/README.md)
@@ -143,4 +158,5 @@ that worked first time:
 No credentials are needed to run any of this. The MySQL password in the Docker networking lab comes
 from an untracked `.env`; only `.env.example` is committed, and Compose refuses to start if the
 variable is unset rather than falling back to a default. The Swarm join token in the overlay
-transcript is redacted.
+transcript is redacted. Kubernetes credentials and generated TLS keys are ignored. The Kubernetes
+runner creates a disposable token without printing its value, and uses an isolated `.lab/kubeconfig`.

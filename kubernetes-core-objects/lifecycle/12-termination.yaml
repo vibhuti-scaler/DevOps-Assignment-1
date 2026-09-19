@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lifecycle-termination
+  namespace: devops-homework
+spec:
+  restartPolicy: Always
+  containers:
+  - name: app
+    image: busybox:1.37
+    command:
+    - sh
+    - -c
+    - |
+      trap 'echo received-SIGTERM; sleep 3; echo cleanup-complete; exit 0' TERM
+      while true; do sleep 1 & wait $!; done
+  terminationGracePeriodSeconds: 10

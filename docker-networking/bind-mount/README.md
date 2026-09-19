@@ -1,6 +1,7 @@
 # Task 3 — bind mount into Nginx
 
 - **Name:** Vibhuti Bhatnagar · **Roll no:** 24BCS10288 · **Batch:** B
+- **Email:** vibhuti.24bcs10288@sst.scaler.com
 
 A folder on the local machine, [`site/`](site/), containing an `index.html` that says
 **Hello students**, mounted into an Nginx container.

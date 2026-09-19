@@ -1,6 +1,7 @@
 # Linux fundamentals
 
 - **Name:** Vibhuti Bhatnagar · **Roll no:** 24BCS10288 · **Batch:** B
+- **Email:** vibhuti.24bcs10288@sst.scaler.com
 
 Everything here was run inside disposable Ubuntu containers, so no test user was ever created on my
 laptop — and because macOS has neither `adduser`, `useradd`, nor `journalctl`, a real Linux

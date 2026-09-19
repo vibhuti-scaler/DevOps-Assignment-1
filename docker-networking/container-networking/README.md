@@ -1,6 +1,7 @@
 # Task 1 — three containers across three networks
 
 - **Name:** Vibhuti Bhatnagar · **Roll no:** 24BCS10288 · **Batch:** B
+- **Email:** vibhuti.24bcs10288@sst.scaler.com
 
 Three containers, three user-defined bridge networks, and the **backend attached to two** of them.
 

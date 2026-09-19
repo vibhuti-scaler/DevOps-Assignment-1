@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-stable
+  namespace: devops-homework
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: canary-web
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: canary-web
+        track: stable
+        version: stable
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.28-alpine
+        env:
+        - name: APP_VERSION
+          value: stable
+        command:
+        - /bin/sh
+        - -c
+        - |
+          printf 'Hello from %s\n' "$APP_VERSION" > /usr/share/nginx/html/index.html
+          exec nginx -g 'daemon off;'
+        ports:
+        - name: http
+          containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          periodSeconds: 3
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-canary
+  namespace: devops-homework
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: canary-web
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: canary-web
+        track: canary
+        version: canary
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.28-alpine
+        env:
+        - name: APP_VERSION
+          value: canary
+        command:
+        - /bin/sh
+        - -c
+        - |
+          printf 'Hello from %s\n' "$APP_VERSION" > /usr/share/nginx/html/index.html
+          exec nginx -g 'daemon off;'
+        ports:
+        - name: http
+          containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          periodSeconds: 3
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: canary-web
+  namespace: devops-homework
+spec:
+  type: ClusterIP
+  selector:
+    app: canary-web
+  ports:
+  - name: http
+    port: 80
+    targetPort: http

@@ -1,6 +1,7 @@
 # Shell scripting — system information script
 
 - **Name:** Vibhuti Bhatnagar · **Roll no:** 24BCS10288 · **Batch:** B
+- **Email:** vibhuti.24bcs10288@sst.scaler.com
 
 [`system-info.sh`](system-info.sh) collects the system details the homework asks for, prompts for
 the student's details, and writes the process list to a generated file.

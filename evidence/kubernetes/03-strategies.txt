@@ -1,0 +1,154 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-09-19T21:45:46.548797+00:00 | 03-strategies
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/strategies/blue-green.yaml
+deployment.apps/web-blue created
+deployment.apps/web-green created
+service/blue-green created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/web-blue --timeout=180s
+Waiting for deployment "web-blue" rollout to finish: 0 of 2 updated replicas are available...
+Waiting for deployment "web-blue" rollout to finish: 1 of 2 updated replicas are available...
+deployment "web-blue" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/web-green --timeout=180s
+deployment "web-green" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://blue-green
+Hello from blue
+PASS: HTTP contains Hello from blue
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get endpointslices -l kubernetes.io/service-name=blue-green -o wide
+NAME               ADDRESSTYPE   PORTS   ENDPOINTS                 AGE
+blue-green-22nhm   IPv4          80      10.244.0.24,10.244.0.23   2s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework patch service blue-green --type=merge -p '{"spec":{"selector":{"app":"blue-green","slot":"green"}}}'
+service/blue-green patched
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://blue-green
+Hello from green
+PASS: HTTP contains Hello from green
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get endpointslices -l kubernetes.io/service-name=blue-green -o wide
+NAME               ADDRESSTYPE   PORTS   ENDPOINTS                 AGE
+blue-green-22nhm   IPv4          80      10.244.0.25,10.244.0.26   2s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/strategies/canary.yaml
+deployment.apps/web-stable created
+deployment.apps/web-canary created
+service/canary-web created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/web-stable --timeout=180s
+Waiting for deployment "web-stable" rollout to finish: 0 of 3 updated replicas are available...
+Waiting for deployment "web-stable" rollout to finish: 1 of 3 updated replicas are available...
+Waiting for deployment "web-stable" rollout to finish: 2 of 3 updated replicas are available...
+deployment "web-stable" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/web-canary --timeout=180s
+deployment "web-canary" successfully rolled out
+PASS: canary Service has four ready endpoints
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods -l app=canary-web --show-labels
+NAME                          READY   STATUS    RESTARTS   AGE   LABELS
+web-canary-844fd76f99-s2vqt   1/1     Running   0          2s    app=canary-web,pod-template-hash=844fd76f99,track=canary,version=canary
+web-stable-7f76d6c9d6-ktvkw   1/1     Running   0          2s    app=canary-web,pod-template-hash=7f76d6c9d6,track=stable,version=stable
+web-stable-7f76d6c9d6-rrf2v   1/1     Running   0          2s    app=canary-web,pod-template-hash=7f76d6c9d6,track=stable,version=stable
+web-stable-7f76d6c9d6-vdp4w   1/1     Running   0          2s    app=canary-web,pod-template-hash=7f76d6c9d6,track=stable,version=stable
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- sh -c 'for i in $(seq 1 20); do wget -T 5 -qO- http://canary-web; done'
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from stable
+Hello from canary
+Hello from stable
+Hello from canary
+Hello from stable
+Hello from canary
+Hello from stable
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/strategies/recreate-v1.yaml
+deployment.apps/recreate-web created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/recreate-web --timeout=180s
+Waiting for deployment "recreate-web" rollout to finish: 0 of 2 updated replicas are available...
+Waiting for deployment "recreate-web" rollout to finish: 1 of 2 updated replicas are available...
+deployment "recreate-web" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/strategies/recreate-v2.yaml
+deployment.apps/recreate-web configured
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/recreate-web --timeout=180s
+Waiting for deployment "recreate-web" rollout to finish: 0 out of 2 new replicas have been updated...
+Waiting for deployment "recreate-web" rollout to finish: 0 out of 2 new replicas have been updated...
+Waiting for deployment "recreate-web" rollout to finish: 0 out of 2 new replicas have been updated...
+Waiting for deployment "recreate-web" rollout to finish: 0 out of 2 new replicas have been updated...
+Waiting for deployment "recreate-web" rollout to finish: 0 of 2 updated replicas are available...
+Waiting for deployment "recreate-web" rollout to finish: 1 of 2 updated replicas are available...
+deployment "recreate-web" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec deployment/recreate-web -- wget -qO- http://127.0.0.1
+Hello from v2
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe deployment recreate-web
+Name:               recreate-web
+Namespace:          devops-homework
+CreationTimestamp:  Sun, 20 Sep 2026 03:15:51 +0530
+Labels:             <none>
+Annotations:        deployment.kubernetes.io/revision: 2
+Selector:           app=recreate-web
+Replicas:           2 desired | 2 updated | 2 total | 2 available | 0 unavailable
+StrategyType:       Recreate
+MinReadySeconds:    0
+Pod Template:
+  Labels:  app=recreate-web
+           version=v2
+  Containers:
+   web:
+    Image:      nginx:1.28-alpine
+    Port:       80/TCP (http)
+    Host Port:  0/TCP (http)
+    Command:
+      /bin/sh
+      -c
+      printf 'Hello from %s\n' "$APP_VERSION" > /usr/share/nginx/html/index.html
+      exec nginx -g 'daemon off;'
+
+    Limits:
+      cpu:     100m
+      memory:  128Mi
+    Requests:
+      cpu:      10m
+      memory:   32Mi
+    Readiness:  http-get http://:http/ delay=0s timeout=1s period=3s #success=1 #failure=3
+    Environment:
+      APP_VERSION:  v2
+    Mounts:         <none>
+  Volumes:          <none>
+  Node-Selectors:   <none>
+  Tolerations:      <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  recreate-web-75789bbbcc (0/0 replicas created)
+NewReplicaSet:   recreate-web-666975496c (2/2 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  6s    deployment-controller  Scaled up replica set recreate-web-75789bbbcc from 0 to 2
+  Normal  ScalingReplicaSet  4s    deployment-controller  Scaled down replica set recreate-web-75789bbbcc from 2 to 0
+  Normal  ScalingReplicaSet  2s    deployment-controller  Scaled up replica set recreate-web-666975496c from 0 to 2
+PASS: Recreate v1 to v2 completed; no continuous availability measurement claimed
+PASS: 03-strategies completed

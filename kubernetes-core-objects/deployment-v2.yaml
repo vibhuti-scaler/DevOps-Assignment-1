@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-web
+  namespace: devops-homework
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: core-web
+  template:
+    metadata:
+      labels:
+        app: core-web
+        version: v2
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.28-alpine
+        env:
+        - name: APP_VERSION
+          value: v2
+        command:
+        - /bin/sh
+        - -c
+        - |
+          printf 'Hello from %s\n' "$APP_VERSION" > /usr/share/nginx/html/index.html
+          exec nginx -g 'daemon off;'
+        ports:
+        - name: http
+          containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          periodSeconds: 3
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0

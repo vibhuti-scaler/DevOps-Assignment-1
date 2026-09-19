@@ -2,6 +2,7 @@
 
 - **Name:** Vibhuti Bhatnagar
 - **Roll no:** 24BCS10288
+- **Email:** vibhuti.24bcs10288@sst.scaler.com
 - **Batch:** B
 
 ## Task 1 — run a multi-stage Dockerfile on port 8080

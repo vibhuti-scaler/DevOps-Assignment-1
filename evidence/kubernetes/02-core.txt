@@ -1,0 +1,137 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-09-19T21:45:15.429420+00:00 | 02-core
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/pod.yaml -f kubernetes-core-objects/replicaset.yaml -f kubernetes-core-objects/deployment-v1.yaml -f kubernetes-core-objects/service.yaml
+pod/standalone-web created
+replicaset.apps/replica-web created
+deployment.apps/core-web created
+service/core-web created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/standalone-web --timeout=180s
+pod/standalone-web condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/core-web --timeout=180s
+Waiting for deployment "core-web" rollout to finish: 0 of 3 updated replicas are available...
+Waiting for deployment "core-web" rollout to finish: 1 of 3 updated replicas are available...
+Waiting for deployment "core-web" rollout to finish: 2 of 3 updated replicas are available...
+deployment "core-web" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework scale replicaset/replica-web --replicas=3
+replicaset.apps/replica-web scaled
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait '--for=jsonpath={.status.readyReplicas}=3' replicaset/replica-web --timeout=180s
+replicaset.apps/replica-web condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods -l app=replica-web -o wide
+NAME                READY   STATUS    RESTARTS   AGE   IP            NODE                           NOMINATED NODE   READINESS GATES
+replica-web-rvkf7   1/1     Running   0          16s   10.244.0.8    vibhuti-devops-control-plane   <none>           <none>
+replica-web-tdqmv   1/1     Running   0          16s   10.244.0.7    vibhuti-devops-control-plane   <none>           <none>
+replica-web-wcpt5   1/1     Running   0          2s    10.244.0.12   vibhuti-devops-control-plane   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pods -l app=replica-web
+pod "replica-web-rvkf7" deleted from devops-homework namespace
+pod "replica-web-tdqmv" deleted from devops-homework namespace
+pod "replica-web-wcpt5" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait '--for=jsonpath={.status.readyReplicas}=3' replicaset/replica-web --timeout=180s
+replicaset.apps/replica-web condition met
+PASS: ReplicaSet replaced all three deleted Pods with new identities
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods -l app=replica-web -o wide
+NAME                READY   STATUS    RESTARTS   AGE   IP            NODE                           NOMINATED NODE   READINESS GATES
+replica-web-8h8pc   1/1     Running   0          4s    10.244.0.14   vibhuti-devops-control-plane   <none>           <none>
+replica-web-c675j   1/1     Running   0          4s    10.244.0.15   vibhuti-devops-control-plane   <none>           <none>
+replica-web-tkvgw   1/1     Running   0          4s    10.244.0.13   vibhuti-devops-control-plane   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://core-web
+Hello from v1
+PASS: HTTP contains Hello from v1
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/deployment-v2.yaml
+deployment.apps/core-web configured
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/core-web --timeout=180s
+Waiting for deployment "core-web" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "core-web" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "core-web" rollout to finish: 1 old replicas are pending termination...
+deployment "core-web" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://core-web
+wget: can't connect to remote host (10.96.13.38): Connection refused
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://core-web
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://core-web
+Hello from v2
+PASS: HTTP contains Hello from v2
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout undo deployment/core-web
+Warning: resource deployments/core-web was previously managed with 'kubectl apply'. Rolling back will not update the kubectl.kubernetes.io/last-applied-configuration annotation, which may cause unexpected behavior on future 'kubectl apply' operations. Consider using 'kubectl apply' with your previous configuration file instead.
+deployment.apps/core-web rolled back
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/core-web --timeout=180s
+Waiting for deployment "core-web" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "core-web" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "core-web" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "core-web" rollout to finish: 1 old replicas are pending termination...
+deployment "core-web" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://core-web
+Hello from v1
+PASS: HTTP contains Hello from v1
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout history deployment/core-web
+deployment.apps/core-web
+REVISION  CHANGE-CAUSE
+2         <none>
+3         <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-core-objects/daemonset.yaml
+daemonset.apps/node-agent created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status daemonset/node-agent --timeout=180s
+Waiting for daemon set "node-agent" rollout to finish: 0 of 1 updated pods are available...
+daemon set "node-agent" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods,replicasets,deployments,daemonsets -o wide
+NAME                            READY   STATUS    RESTARTS   AGE   IP            NODE                           NOMINATED NODE   READINESS GATES
+pod/core-web-74684c6599-4glcv   1/1     Running   0          2s    10.244.0.21   vibhuti-devops-control-plane   <none>           <none>
+pod/core-web-74684c6599-b56q4   1/1     Running   0          5s    10.244.0.19   vibhuti-devops-control-plane   <none>           <none>
+pod/core-web-74684c6599-ch87n   1/1     Running   0          3s    10.244.0.20   vibhuti-devops-control-plane   <none>           <none>
+pod/dns-client                  1/1     Running   0          41s   10.244.0.5    vibhuti-devops-control-plane   <none>           <none>
+pod/node-agent-q2ft7            1/1     Running   0          1s    10.244.0.22   vibhuti-devops-control-plane   <none>           <none>
+pod/replica-web-8h8pc           1/1     Running   0          14s   10.244.0.14   vibhuti-devops-control-plane   <none>           <none>
+pod/replica-web-c675j           1/1     Running   0          14s   10.244.0.15   vibhuti-devops-control-plane   <none>           <none>
+pod/replica-web-tkvgw           1/1     Running   0          14s   10.244.0.13   vibhuti-devops-control-plane   <none>           <none>
+pod/standalone-web              1/1     Running   0          30s   10.244.0.6    vibhuti-devops-control-plane   <none>           <none>
+
+NAME                                  DESIRED   CURRENT   READY   AGE   CONTAINERS   IMAGES              SELECTOR
+replicaset.apps/core-web-6dd7c48fb9   0         0         0       10s   web          nginx:1.28-alpine   app=core-web,pod-template-hash=6dd7c48fb9
+replicaset.apps/core-web-74684c6599   3         3         3       30s   web          nginx:1.28-alpine   app=core-web,pod-template-hash=74684c6599
+replicaset.apps/replica-web           3         3         3       30s   web          nginx:1.28-alpine   app=replica-web
+
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES              SELECTOR
+deployment.apps/core-web   3/3     3            3           30s   web          nginx:1.28-alpine   app=core-web
+
+NAME                        DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE   CONTAINERS   IMAGES         SELECTOR
+daemonset.apps/node-agent   1         1         1       1            1           <none>          1s    agent        busybox:1.37   app=node-agent
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod standalone-web
+pod "standalone-web" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod standalone-web --ignore-not-found -o name
+PASS: a standalone Pod is not recreated by a controller
+PASS: 02-core completed

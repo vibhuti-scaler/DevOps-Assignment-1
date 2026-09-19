@@ -1,0 +1,593 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-09-19T21:53:51.118440+00:00 | 05-services
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-services/deployment.yaml -f kubernetes-services/clusterip.yaml -f kubernetes-services/nodeport.yaml -f kubernetes-services/externalname.yaml -f kubernetes-services/headless.yaml
+deployment.apps/service-web created
+service/web-clusterip created
+service/web-nodeport created
+service/external-docs created
+service/web-headless created
+statefulset.apps/stateful-web created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/service-web --timeout=180s
+Waiting for deployment "service-web" rollout to finish: 0 of 3 updated replicas are available...
+Waiting for deployment "service-web" rollout to finish: 1 of 3 updated replicas are available...
+Waiting for deployment "service-web" rollout to finish: 2 of 3 updated replicas are available...
+deployment "service-web" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status statefulset/stateful-web --timeout=180s
+Waiting for 2 pods to be ready...
+Waiting for 1 pods to be ready...
+Waiting for 1 pods to be ready...
+partitioned roll out complete: 2 new pods have been updated...
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+Name:	web-clusterip.devops-homework.svc.cluster.local
+Address: 10.96.102.35
+
+** server can't find web-clusterip.cluster.local: NXDOMAIN
+
+
+** server can't find web-clusterip.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- nslookup web-clusterip
+FAILED: Timed out: DNS resolves web-clusterip

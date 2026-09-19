@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-agent
+  namespace: devops-homework
+spec:
+  selector:
+    matchLabels:
+      app: node-agent
+  template:
+    metadata:
+      labels:
+        app: node-agent
+        version: v1
+    spec:
+      containers:
+      - name: agent
+        image: busybox:1.37
+        command:
+        - sh
+        - -c
+        - echo "node agent started"; sleep 3600

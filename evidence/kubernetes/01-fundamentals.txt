@@ -1,0 +1,55 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-09-19T21:45:03.925195+00:00 | 01-fundamentals
+
+$ docker inspect vibhuti-devops-control-plane --format '{{.Config.Image}}'
+kindest/node:v1.35.0
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework cluster-info
+Kubernetes control plane is running at https://127.0.0.1:53719
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework version
+Client Version: v1.36.1
+Kustomize Version: v5.8.1
+Server Version: v1.35.0
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready nodes --all --timeout=180s
+node/vibhuti-devops-control-plane condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get nodes -o wide
+NAME                           STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                         KERNEL-VERSION    CONTAINER-RUNTIME
+vibhuti-devops-control-plane   Ready    control-plane   42s   v1.35.0   172.19.0.2    <none>        Debian GNU/Linux 12 (bookworm)   7.0.12-linuxkit   containerd://2.2.0
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n kube-system rollout status deployment/coredns --timeout=180s
+deployment "coredns" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n kube-system get pods -o wide
+NAME                                                   READY   STATUS    RESTARTS   AGE   IP           NODE                           NOMINATED NODE   READINESS GATES
+coredns-7d764666f9-f88t5                               1/1     Running   0          32s   10.244.0.2   vibhuti-devops-control-plane   <none>           <none>
+coredns-7d764666f9-zshxb                               1/1     Running   0          32s   10.244.0.4   vibhuti-devops-control-plane   <none>           <none>
+etcd-vibhuti-devops-control-plane                      1/1     Running   0          40s   172.19.0.2   vibhuti-devops-control-plane   <none>           <none>
+kindnet-rd2fl                                          1/1     Running   0          32s   172.19.0.2   vibhuti-devops-control-plane   <none>           <none>
+kube-apiserver-vibhuti-devops-control-plane            1/1     Running   0          40s   172.19.0.2   vibhuti-devops-control-plane   <none>           <none>
+kube-controller-manager-vibhuti-devops-control-plane   1/1     Running   0          40s   172.19.0.2   vibhuti-devops-control-plane   <none>           <none>
+kube-proxy-62gdz                                       1/1     Running   0          32s   172.19.0.2   vibhuti-devops-control-plane   <none>           <none>
+kube-scheduler-vibhuti-devops-control-plane            1/1     Running   0          40s   172.19.0.2   vibhuti-devops-control-plane   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-fundamentals/namespace.yaml
+namespace/devops-homework created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get serviceaccount default
+NAME      AGE
+default   0s
+PASS: default ServiceAccount created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-services/client.yaml
+pod/dns-client created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/dns-client --timeout=180s
+pod/dns-client condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get namespace devops-homework
+NAME              STATUS   AGE
+devops-homework   Active   11s
+PASS: 01-fundamentals completed

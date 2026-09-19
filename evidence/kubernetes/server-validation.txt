@@ -1,0 +1,131 @@
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/daemonset.yaml
+daemonset.apps/node-agent unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/deployment-v1.yaml
+deployment.apps/core-web configured (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/deployment-v2.yaml
+deployment.apps/core-web configured (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/pod.yaml
+pod/standalone-web created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/replicaset.yaml
+replicaset.apps/replica-web configured (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/service.yaml
+service/core-web unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-fundamentals/namespace.yaml
+namespace/devops-homework unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-ingress-configmaps-secrets/backend-code.yaml
+configmap/demo-backend-code created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-ingress-configmaps-secrets/backend.yaml
+deployment.apps/demo-backend created (server dry run)
+service/demo-backend created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-ingress-configmaps-secrets/configmap.yaml
+configmap/demo-config created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-ingress-configmaps-secrets/controller.yaml
+serviceaccount/lab-ingress created (server dry run)
+role.rbac.authorization.k8s.io/lab-ingress created (server dry run)
+rolebinding.rbac.authorization.k8s.io/lab-ingress created (server dry run)
+clusterrole.rbac.authorization.k8s.io/vibhuti-lab-ingress created (server dry run)
+clusterrolebinding.rbac.authorization.k8s.io/vibhuti-lab-ingress created (server dry run)
+ingressclass.networking.k8s.io/traefik created (server dry run)
+deployment.apps/lab-ingress created (server dry run)
+service/lab-ingress created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-ingress-configmaps-secrets/frontend.yaml
+deployment.apps/demo-frontend created (server dry run)
+service/demo-frontend created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-ingress-configmaps-secrets/ingress.yaml
+ingress.networking.k8s.io/demo-ingress created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-services/client.yaml
+pod/dns-client unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-services/clusterip.yaml
+service/web-clusterip created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-services/deployment.yaml
+deployment.apps/service-web created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-services/externalname.yaml
+service/external-docs created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-services/headless.yaml
+service/web-headless created (server dry run)
+statefulset.apps/stateful-web created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-services/nodeport.yaml
+service/web-nodeport created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/01-running.yaml
+pod/lifecycle-running created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/02-pending.yaml
+pod/lifecycle-pending created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/03-succeeded.yaml
+pod/lifecycle-succeeded created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/04-failed.yaml
+pod/lifecycle-failed created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/05-crashloop.yaml
+pod/lifecycle-crashloop unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/06-image-pull.yaml
+pod/lifecycle-image-error created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/07-readiness.yaml
+pod/lifecycle-readiness created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/08-liveness.yaml
+pod/lifecycle-liveness created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/09-startup.yaml
+pod/lifecycle-startup created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/10-init-container.yaml
+pod/lifecycle-init created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/11-multi-container.yaml
+pod/lifecycle-multi created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/12-termination.yaml
+pod/lifecycle-termination created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/strategies/blue-green.yaml
+deployment.apps/web-blue unchanged (server dry run)
+deployment.apps/web-green unchanged (server dry run)
+service/blue-green configured (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/strategies/canary.yaml
+deployment.apps/web-stable unchanged (server dry run)
+deployment.apps/web-canary unchanged (server dry run)
+service/canary-web unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/strategies/recreate-v1.yaml
+deployment.apps/recreate-web configured (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/strategies/recreate-v2.yaml
+deployment.apps/recreate-web unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-ingress-configmaps-secrets/optional/ingress-tls.yaml
+ingress.networking.k8s.io/demo-tls created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-services/optional/loadbalancer.yaml
+service/web-loadbalancer created (server dry run)
+
+PASS: server accepted all Kubernetes objects in 37 manifest files
+
+Follow-up check after the TLS-router annotation correction (run separately):
+$ kubectl --kubeconfig .lab/kubeconfig --context kind-vibhuti-devops apply --dry-run=server --validate=strict -f kubernetes-ingress-configmaps-secrets/optional/ingress-tls.yaml
+ingress.networking.k8s.io/demo-tls unchanged (server dry run)

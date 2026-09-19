@@ -14,3 +14,12 @@ npm-debug.log*
 
 # Playwright MCP scratch output
 .playwright-mcp/
+
+# Kubernetes local credentials and generated files
+.env.*
+!.env.example
+.lab/
+__pycache__/
+*.pyc
+/kubernetes-ingress-configmaps-secrets/tls.key
+/kubernetes-ingress-configmaps-secrets/tls.crt

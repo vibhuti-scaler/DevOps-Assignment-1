@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-backend-code
+  namespace: devops-homework
+data:
+  app.py: |
+    import json
+    import os
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path not in ("/api", "/api/", "/api/health"):
+                self.send_error(404)
+                return
+            body = json.dumps({
+                "service": "DevOps session 12 API",
+                "environment": os.environ["ENVIRONMENT"],
+                "log_level": os.environ["LOG_LEVEL"],
+                "currency": os.environ["DEFAULT_CURRENCY"],
+                "secret_loaded": bool(os.environ.get("DEMO_TOKEN")),
+            }).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+
+    if __name__ == "__main__":
+        HTTPServer(("0.0.0.0", 5000), Handler).serve_forever()

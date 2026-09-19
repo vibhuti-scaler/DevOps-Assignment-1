@@ -1,0 +1,278 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-09-19T21:55:46.133676+00:00 | 06-ingress
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-ingress-configmaps-secrets/configmap.yaml -f kubernetes-ingress-configmaps-secrets/backend-code.yaml -f kubernetes-ingress-configmaps-secrets/controller.yaml
+configmap/demo-config created
+configmap/demo-backend-code created
+serviceaccount/lab-ingress created
+role.rbac.authorization.k8s.io/lab-ingress created
+rolebinding.rbac.authorization.k8s.io/lab-ingress created
+clusterrole.rbac.authorization.k8s.io/vibhuti-lab-ingress created
+clusterrolebinding.rbac.authorization.k8s.io/vibhuti-lab-ingress created
+ingressclass.networking.k8s.io/traefik created
+deployment.apps/lab-ingress created
+service/lab-ingress created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework create secret generic demo-credentials --from-env-file=/var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-secret-f722w_gf/.env.secret
+secret/demo-credentials created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe secret demo-credentials
+Name:         demo-credentials
+Namespace:    devops-homework
+Labels:       <none>
+Annotations:  <none>
+
+Type:  Opaque
+
+Data
+====
+DEMO_TOKEN:  32 bytes
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-ingress-configmaps-secrets/frontend.yaml -f kubernetes-ingress-configmaps-secrets/backend.yaml -f kubernetes-ingress-configmaps-secrets/ingress.yaml
+deployment.apps/demo-frontend created
+service/demo-frontend created
+deployment.apps/demo-backend created
+service/demo-backend created
+ingress.networking.k8s.io/demo-ingress created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/demo-frontend --timeout=180s
+Waiting for deployment "demo-frontend" rollout to finish: 0 of 2 updated replicas are available...
+Waiting for deployment "demo-frontend" rollout to finish: 1 of 2 updated replicas are available...
+deployment "demo-frontend" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/demo-backend --timeout=180s
+Waiting for deployment "demo-backend" rollout to finish: 0 of 2 updated replicas are available...
+Waiting for deployment "demo-backend" rollout to finish: 1 of 2 updated replicas are available...
+deployment "demo-backend" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/lab-ingress --timeout=180s
+deployment "lab-ingress" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout restart deployment/demo-backend
+deployment.apps/demo-backend restarted
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/demo-backend --timeout=180s
+Waiting for deployment "demo-backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "demo-backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "demo-backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "demo-backend" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "demo-backend" rollout to finish: 1 old replicas are pending termination...
+deployment "demo-backend" successfully rolled out
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: devops.test' http://127.0.0.1:18084/
+curl: (7) Failed to connect to 127.0.0.1 port 18084 after 0 ms: Couldn't connect to server
+Command exited 7: curl --fail --silent --show-error --max-time 5 -H 'Host: devops.test' http://127.0.0.1:18084/
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: devops.test' http://127.0.0.1:18084/
+Hello from DevOps session 12 frontend
+PASS: Ingress / contains Hello from DevOps session 12 frontend
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: devops.test' http://127.0.0.1:18084/api
+{"service": "DevOps session 12 API", "environment": "coursework", "log_level": "INFO", "currency": "INR", "secret_loaded": true}
+PASS: Ingress /api contains "environment": "coursework"
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: devops.test' http://127.0.0.1:18084/api/
+{"service": "DevOps session 12 API", "environment": "coursework", "log_level": "INFO", "currency": "INR", "secret_loaded": true}
+PASS: Ingress /api/ contains "environment": "coursework"
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: devops.test' http://127.0.0.1:18084/api/health
+{"service": "DevOps session 12 API", "environment": "coursework", "log_level": "INFO", "currency": "INR", "secret_loaded": true}
+PASS: Ingress /api/health contains "environment": "coursework"
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework patch configmap demo-config --type=merge -p '{"data":{"ENVIRONMENT":"staging"}}'
+configmap/demo-config patched
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: devops.test' http://127.0.0.1:18084/api/health
+{"service": "DevOps session 12 API", "environment": "coursework", "log_level": "INFO", "currency": "INR", "secret_loaded": true}
+PASS: Ingress /api/health contains "environment": "coursework"
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout restart deployment/demo-backend
+deployment.apps/demo-backend restarted
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/demo-backend --timeout=180s
+Waiting for deployment "demo-backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "demo-backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "demo-backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "demo-backend" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "demo-backend" rollout to finish: 1 old replicas are pending termination...
+deployment "demo-backend" successfully rolled out
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: devops.test' http://127.0.0.1:18084/api/health
+{"service": "DevOps session 12 API", "environment": "coursework", "log_level": "INFO", "currency": "INR", "secret_loaded": true}
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: devops.test' http://127.0.0.1:18084/api/health
+{"service": "DevOps session 12 API", "environment": "coursework", "log_level": "INFO", "currency": "INR", "secret_loaded": true}
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: devops.test' http://127.0.0.1:18084/api/health
+{"service": "DevOps session 12 API", "environment": "staging", "log_level": "INFO", "currency": "INR", "secret_loaded": true}
+PASS: Ingress /api/health contains "environment": "staging"
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete secret demo-tls --ignore-not-found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework create secret tls demo-tls --cert=/var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --key=/var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.key
+secret/demo-tls created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-ingress-configmaps-secrets/optional/ingress-tls.yaml
+ingress.networking.k8s.io/demo-tls created
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (60) SSL certificate problem: unable to get local issuer certificate
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+Command exited 60: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+curl: (56) The requested URL returned error: 404
+Command exited 56: curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve portal.devops.test:18443:127.0.0.1 https://portal.devops.test:18443/
+Hello from DevOps session 12 frontend
+PASS: verified TLS certificate for portal.devops.test
+
+$ curl --fail --silent --show-error --max-time 5 --noproxy '*' --cacert /var/folders/my/mg81915s7zl0rl3b_56k2pkm0000gn/T/vibhuti-tls-2kdq7wvw/tls.crt --resolve api.devops.test:18443:127.0.0.1 https://api.devops.test:18443/api/health
+{"service": "DevOps session 12 API", "environment": "staging", "log_level": "INFO", "currency": "INR", "secret_loaded": true}
+PASS: verified TLS certificate for api.devops.test
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get ingress,configmaps,services
+NAME                                     CLASS     HOSTS                                ADDRESS   PORTS     AGE
+ingress.networking.k8s.io/demo-ingress   traefik   devops.test                                    80        108s
+ingress.networking.k8s.io/demo-tls       traefik   portal.devops.test,api.devops.test             80, 443   57s
+
+NAME                          DATA   AGE
+configmap/demo-backend-code   1      108s
+configmap/demo-config         3      108s
+configmap/kube-root-ca.crt    1      12m
+
+NAME                    TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+service/blue-green      ClusterIP      10.96.214.138   <none>          80/TCP           11m
+service/canary-web      ClusterIP      10.96.36.226    <none>          80/TCP           11m
+service/core-web        ClusterIP      10.96.13.38     <none>          80/TCP           12m
+service/demo-backend    ClusterIP      10.96.152.43    <none>          80/TCP           108s
+service/demo-frontend   ClusterIP      10.96.136.96    <none>          80/TCP           108s
+service/external-docs   ExternalName   <none>          kubernetes.io   <none>           3m43s
+service/lab-ingress     ClusterIP      10.96.127.63    <none>          80/TCP,443/TCP   108s
+service/web-clusterip   ClusterIP      10.96.102.35    <none>          80/TCP           3m43s
+service/web-headless    ClusterIP      None            <none>          80/TCP           3m43s
+service/web-nodeport    NodePort       10.96.66.240    <none>          80:30081/TCP     3m43s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-ingress-configmaps-secrets/configmap.yaml
+configmap/demo-config configured
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout restart deployment/demo-backend
+deployment.apps/demo-backend restarted
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/DEVOPS ASSINGMENT/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/demo-backend --timeout=180s
+Waiting for deployment "demo-backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "demo-backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "demo-backend" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "demo-backend" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "demo-backend" rollout to finish: 1 old replicas are pending termination...
+deployment "demo-backend" successfully rolled out
+PASS: 06-ingress completed
