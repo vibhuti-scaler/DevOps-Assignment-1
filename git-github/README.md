@@ -140,6 +140,33 @@ original commit.
 It had not: picking a commit onto its own parent just recreates it. The lab now adds a commit to
 `main` first, so the branches actually diverge and the copy is visibly a different object.
 
+## Terminal captures
+
+Live captures from a fresh run of [`git-lab.sh`](git-lab.sh), which builds a throwaway repository so the practice history never lands in this one.
+
+**Task 1 — `git commit -m` leaves the modified tracked file behind; `git commit -a -m` stages it first.**
+
+![commit -m versus commit -a -m](screenshots/terminal/01-commit-a-vs-commit-m.png)
+
+**Task 2 — three commits on `main`, then three more on a new branch.**
+
+![commits on both branches](screenshots/terminal/02-branch-commits.png)
+
+**Task 2 — the cherry-pick itself, and the log on both branches afterwards.**
+
+![git cherry-pick](screenshots/terminal/03-cherry-pick.png)
+
+**The branch graph after the cherry-pick, with both branches visible.**
+
+![branch graph](screenshots/terminal/04-branch-graph.png)
+
+**`main` after the cherry-pick, next to the branch the commit was copied from.**
+
+![main and the source branch](screenshots/terminal/05-cherry-picked-commit.png)
+
+**The same change now exists as two different commit objects. A cherry-pick copies the change, it does not move the commit — which is why the SHAs differ.**
+
+![two SHAs for the same change](screenshots/terminal/06-different-sha.png)
 ## Appendix — a conflicting cherry-pick
 
 Cherry-pick applies a **patch**, so it fails when the surrounding lines have moved. After `main`

@@ -27,6 +27,7 @@ __pycache__/
 terraform.tfstate
 terraform.tfstate.*
 *.tfplan
+tfplan
 crash.log
 
 # Python test and coverage output

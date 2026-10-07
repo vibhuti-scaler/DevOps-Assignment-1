@@ -278,6 +278,45 @@ backwards.
 - **SSH open to the world.** `ssh_ingress_cidr` defaults to the VPC's own range. Session Manager is
   the better answer and needs no inbound rule at all.
 
+## Terminal captures
+
+Live captures of the whole workflow against the local AWS emulator, taken in a browser-attached terminal.
+
+**`terraform init` — providers resolved and pinned in the lock file.**
+
+![terraform init](screenshots/terminal/01-init.png)
+
+**`fmt -check` and `validate` — both clean.**
+
+![fmt and validate](screenshots/terminal/02-fmt-validate.png)
+
+**The plan for the whole environment.**
+
+![terraform plan](screenshots/terminal/03-plan.png)
+
+**The apply, filtered to the create lines. The order is the dependency graph Terraform derived from the references alone — VPC first, then the gateway, subnets and security groups, then the instance.**
+
+![apply in dependency order](screenshots/terminal/04-apply-dependency-order.png)
+
+**The outputs, including subnet IDs returned as a map keyed by Availability Zone.**
+
+![terraform outputs](screenshots/terminal/05-outputs.png)
+
+**`terraform state list` — every resource the configuration owns.**
+
+![terraform state list](screenshots/terminal/06-state-list.png)
+
+**`terraform state show` for the EC2 instance.**
+
+![state show instance](screenshots/terminal/07-state-show-instance.png)
+
+**A second plan reports no changes.**
+
+![idempotent plan](screenshots/terminal/08-idempotent.png)
+
+**`terraform destroy` — the reverse of the dependency order.**
+
+![terraform destroy](screenshots/terminal/09-destroy.png)
 ## Background notes
 
 | Topic | Notes |

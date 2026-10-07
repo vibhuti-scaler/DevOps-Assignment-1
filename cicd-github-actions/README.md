@@ -193,6 +193,41 @@ actually run before pushing.
 The Dockerfile resolves dependencies into wheels in a builder stage, so the runtime image carries no
 compiler and no pip cache, and runs as UID 10001 with a `HEALTHCHECK` Docker can act on.
 
+## Terminal captures
+
+Live captures, taken in a browser-attached terminal. The workflow listings come from `act` parsing the real files in [.github/workflows/](../.github/workflows/); the lint, test and build steps run the same commands the jobs run.
+
+**Every workflow in the repository, with the dependency order `act` derived from each job's `needs:`.**
+
+![act listing the workflows](screenshots/terminal/01-workflow-jobs.png)
+
+**The CI workflow on its own: lint, then the test matrix, then build.**
+
+![CI job order](screenshots/terminal/02-ci-job-order.png)
+
+**The lint job's command — flake8 over the application and its tests.**
+
+![flake8 clean](screenshots/terminal/03-lint.png)
+
+**The test job's command: 16 tests and the coverage report.**
+
+![pytest with coverage](screenshots/terminal/04-tests-and-coverage.png)
+
+**The build job's image build, from the two-stage Dockerfile.**
+
+![docker build](screenshots/terminal/05-docker-build.png)
+
+**The smoke test the build job runs: the image answers `/api/health`, and a real task can be created through the API. A green test suite says the code is right; this says the image actually starts.**
+
+![smoke test against the built image](screenshots/terminal/06-smoke-test.png)
+
+**The container runs as UID 10001, not root — which is what `USER 10001` in the Dockerfile is for.**
+
+![container runs unprivileged](screenshots/terminal/07-runs-unprivileged.png)
+
+**Cleaning up the demo container and image.**
+
+![cleanup](screenshots/terminal/08-cleanup.png)
 ## Secrets
 
 Nothing in this folder contains a credential.

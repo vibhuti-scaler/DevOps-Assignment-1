@@ -325,6 +325,41 @@ than to files.
 
 ---
 
+## Terminal captures
+
+Every image below is a live capture, taken in a browser-attached terminal. The link and user commands run in a throwaway `ubuntu:24.04` container; the `journalctl` ones run in the systemd image built from [systemd-image/](systemd-image/), because the journal needs systemd as PID 1.
+
+**Task 1 — a soft link and a hard link, with inode numbers. `file.txt` and `hard.link` share inode 2114717 and both show a link count of 2; the symlink has its own inode and is a separate 8-byte file holding the path.**
+
+![ls -li showing soft and hard links](screenshots/terminal/01-soft-vs-hard-link.png)
+
+**Task 1 — deleting the target. The hard link still reads the data; the soft link is left dangling.**
+
+![hard link survives, soft link dangles](screenshots/terminal/02-deleting-the-target.png)
+
+**Task 2 — `useradd` is the low-level binary, `adduser` the Perl wrapper Debian and Ubuntu prefer.**
+
+![adduser versus useradd](screenshots/terminal/03-adduser-vs-useradd.png)
+
+**Task 2 — creating a user, and the `/etc/passwd` entry and home directory it produced.**
+
+![useradd creating a test user](screenshots/terminal/04-create-a-user.png)
+
+**Task 3 — `journalctl -b` against a container genuinely running systemd.**
+
+![journalctl boot log](screenshots/terminal/05-journalctl-boot.png)
+
+**Task 3 — failed units and error-priority journal entries.**
+
+![systemctl --failed and journalctl -p err](screenshots/terminal/06-journalctl-errors.png)
+
+**Task 3 — the service list the journal is drawn from.**
+
+![systemctl list-units](screenshots/terminal/07-services.png)
+**Task 4 — a few of the cheat-sheet commands: disk usage, running processes and kernel details.**
+
+![cheat sheet commands](screenshots/terminal/08-cheat-sheet.png)
+
 ## Task 4 — command cheat sheet
 
 Reference material is in the session repository:

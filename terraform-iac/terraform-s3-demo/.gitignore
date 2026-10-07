@@ -4,4 +4,5 @@ terraform.tfstate
 terraform.tfstate.*
 crash.log
 *.tfplan
+tfplan
 # .terraform.lock.hcl is intentionally NOT ignored: it pins provider checksums.

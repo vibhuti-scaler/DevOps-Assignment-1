@@ -1,13 +1,13 @@
-127.0.0.1 - - [07/Oct/2026 15:26:47] "GET /api HTTP/1.1" 200 -
-127.0.0.1 - - [07/Oct/2026 15:26:47] "GET /api/ HTTP/1.1" 200 -
-127.0.0.1 - - [07/Oct/2026 15:26:47] "GET /api/health HTTP/1.1" 200 -
-127.0.0.1 - - [07/Oct/2026 15:26:47] code 404, message Not Found
-127.0.0.1 - - [07/Oct/2026 15:26:47] "GET / HTTP/1.1" 404 -
-127.0.0.1 - - [07/Oct/2026 15:26:47] code 404, message Not Found
-127.0.0.1 - - [07/Oct/2026 15:26:47] "GET /apix HTTP/1.1" 404 -
-127.0.0.1 - - [07/Oct/2026 15:26:47] code 404, message Not Found
-127.0.0.1 - - [07/Oct/2026 15:26:47] "GET /api/missing HTTP/1.1" 404 -
-127.0.0.1 - - [07/Oct/2026 15:26:47] "GET /api/health HTTP/1.1" 200 -
+127.0.0.1 - - [07/Oct/2026 23:45:06] "GET /api HTTP/1.1" 200 -
+127.0.0.1 - - [07/Oct/2026 23:45:06] "GET /api/ HTTP/1.1" 200 -
+127.0.0.1 - - [07/Oct/2026 23:45:06] "GET /api/health HTTP/1.1" 200 -
+127.0.0.1 - - [07/Oct/2026 23:45:06] code 404, message Not Found
+127.0.0.1 - - [07/Oct/2026 23:45:06] "GET / HTTP/1.1" 404 -
+127.0.0.1 - - [07/Oct/2026 23:45:06] code 404, message Not Found
+127.0.0.1 - - [07/Oct/2026 23:45:06] "GET /apix HTTP/1.1" 404 -
+127.0.0.1 - - [07/Oct/2026 23:45:06] code 404, message Not Found
+127.0.0.1 - - [07/Oct/2026 23:45:06] "GET /api/missing HTTP/1.1" 404 -
+127.0.0.1 - - [07/Oct/2026 23:45:06] "GET /api/health HTTP/1.1" 200 -
 PASS: 113 Kubernetes objects; labels, namespaces, workload selectors, Service target ports, Ingress backends, ConfigMap references, external Secret contract, StatefulSet service, rollout selectors
 PASS: API three success routes, three 404 routes, configuration values, secret presence/absence, and no secret-value disclosure
-PASS: 409 relative Markdown file links
+PASS: 578 relative Markdown file links

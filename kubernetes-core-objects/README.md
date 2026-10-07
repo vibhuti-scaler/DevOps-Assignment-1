@@ -130,6 +130,45 @@ and `ImagePullBackOff` are displayed waiting reasons, not additional Pod phases.
 A status snapshot can fall between transitions; correlate it with restart counts and events
 for the same Pod UID. The runner uses both sources when checking backoff.
 
+## Terminal captures
+
+Live captures against the running kind cluster.
+
+**Applying the standalone Pod, the ReplicaSet, the Deployment and its Service.**
+
+![applying the core objects](screenshots/terminal/01-apply-core-objects.png)
+
+**The three object types side by side — note the Deployment owns a ReplicaSet, which owns the Pods.**
+
+![pods, replicasets and deployments](screenshots/terminal/02-objects.png)
+
+**A rolling update from v1 to v2, Pod by Pod.**
+
+![rolling update](screenshots/terminal/03-rolling-update.png)
+
+**The Service now answers with v2.**
+
+![v2 response](screenshots/terminal/04-v2-response.png)
+
+**`rollout history` — both revisions are retained.**
+
+![rollout history](screenshots/terminal/05-rollout-history.png)
+
+**`rollout undo` scales the previous ReplicaSet back up.**
+
+![rollout undo](screenshots/terminal/06-rollback.png)
+
+**The Service answers with v1 again — the rollback is why the old ReplicaSet was kept.**
+
+![v1 after rollback](screenshots/terminal/07-v1-after-rollback.png)
+
+**Both ReplicaSets still exist: the current one at full size, the other scaled to zero.**
+
+![replicasets retained](screenshots/terminal/08-replicasets-kept.png)
+
+**The DaemonSet — one Pod per node, so one Pod on this single-node cluster.**
+
+![daemonset](screenshots/terminal/09-daemonset.png)
 ## Execution evidence
 
 Run `bash scripts/run-kubernetes-labs.sh` from the repository root. The runner records

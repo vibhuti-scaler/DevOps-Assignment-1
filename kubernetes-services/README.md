@@ -105,6 +105,49 @@ The three documentation tasks in this session have their own folders:
 | Task 3 - FQDN | [fqdn/README.md](fqdn/README.md) - the DNS naming convention, the `search` list, `ndots`, and how a request actually reaches a Pod. |
 | Task 4 - CoreDNS | [coredns/README.md](coredns/README.md) - what CoreDNS is, the Corefile line by line, and a DNS troubleshooting order. |
 
+## Terminal captures
+
+Live captures against the running kind cluster.
+
+**Deploying the application, its ClusterIP Service and the DNS client used to test from inside the cluster.**
+
+![applying the service objects](screenshots/terminal/01-apply.png)
+
+**Services and Pods together, with addresses.**
+
+![services and pods](screenshots/terminal/02-services-pods.png)
+
+**Resolving the Service's fully qualified name. The answer is the ClusterIP, not a Pod address.**
+
+![DNS for a ClusterIP service](screenshots/terminal/03-dns-clusterip.png)
+
+**An HTTP request through the Service name.**
+
+![HTTP through ClusterIP](screenshots/terminal/04-clusterip-http.png)
+
+**The EndpointSlice behind the Service — the ready Pod addresses traffic is sent to.**
+
+![endpointslices](screenshots/terminal/05-endpointslices.png)
+
+**NodePort: the same Service also published on a port of every node.**
+
+![nodeport service](screenshots/terminal/06-nodeport.png)
+
+**ExternalName resolves to a CNAME outside the cluster, with no selector and no proxying.**
+
+![externalname service](screenshots/terminal/07-externalname.png)
+
+**A headless Service with a StatefulSet behind it.**
+
+![headless statefulset](screenshots/terminal/08-headless-statefulset.png)
+
+**Headless DNS returns the Pod addresses directly — one A record per ready Pod, no virtual IP.**
+
+![headless DNS](screenshots/terminal/09-headless-dns.png)
+
+**The StatefulSet's stable, ordered Pod names.**
+
+![stable pod names](screenshots/terminal/10-stable-names.png)
 ## Execution evidence and cleanup
 
 [Raw logs](../evidence/kubernetes/README.md) record DNS answers, ClusterIP and NodePort

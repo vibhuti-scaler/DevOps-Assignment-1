@@ -375,6 +375,60 @@ artifact server being unreachable, cAdvisor's missing container names — each i
 environment rather than of the code, and writing down which is which is the difference between a
 result and a claim.
 
+## The running application
+
+The Notes service as served through the Ingress, listing notes created through its own API
+and held on the PersistentVolumeClaim:
+
+![The Notes application in a browser](screenshots/01-notes-app.png)
+
+## Terminal captures
+
+Live captures, taken in a browser-attached terminal. The browser screenshot of the application is above; these show the infrastructure and the deployed service.
+
+**`terraform init` for the project's own cloud infrastructure.**
+
+![terraform init](screenshots/terminal/01-terraform-init.png)
+
+**The container registry is valid Terraform and appears in a plan. It is left out of the applied run because ECR is not implemented in the community edition of the emulator.**
+
+![ECR planned](screenshots/terminal/02-terraform-ecr-planned.png)
+
+**`terraform apply` and the outputs the rest of the project would consume.**
+
+![terraform apply and outputs](screenshots/terminal/03-terraform-apply-output.png)
+
+**`terraform destroy` — nothing is left behind.**
+
+![terraform destroy](screenshots/terminal/04-terraform-destroy.png)
+
+**Everything the project deploys, in one namespace: Deployment, Service, Ingress, HPA, PVC and the NetworkPolicies.**
+
+![everything deployed](screenshots/terminal/05-everything-deployed.png)
+
+**The container is genuinely confined: it runs as UID 10001, the root filesystem refuses a write, and only the mounted data volume accepts one.**
+
+![hardened container](screenshots/terminal/06-hardened-container.png)
+
+**The two probe endpoints. `/healthz` says the process is alive; `/readyz` additionally checks the data volume accepts writes.**
+
+![liveness and readiness endpoints](screenshots/terminal/07-liveness-and-readiness.png)
+
+**The API, serving notes from the PersistentVolumeClaim.**
+
+![the notes API](screenshots/terminal/08-api.png)
+
+**A write without the token is refused — the Secret is doing something rather than merely existing.**
+
+![secret gates writes](screenshots/terminal/09-secret-gates-writes.png)
+
+**The application's own Prometheus metrics, which the in-cluster Prometheus scrapes.**
+
+![application metrics](screenshots/terminal/10-metrics.png)
+
+**The HorizontalPodAutoscaler and the NetworkPolicy that denies everything except the three sources the service needs.**
+
+![HPA and NetworkPolicy](screenshots/terminal/11-hpa-and-networkpolicy.png)
 ## Repository map
 
 ```text

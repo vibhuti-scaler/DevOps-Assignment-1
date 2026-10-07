@@ -99,6 +99,37 @@ Continue with [core objects](../kubernetes-core-objects/README.md),
 [Services](../kubernetes-services/README.md), and
 [Ingress, ConfigMaps and Secrets](../kubernetes-ingress-configmaps-secrets/README.md).
 
+## Terminal captures
+
+Live captures against the running kind cluster, taken in a browser-attached terminal.
+
+**`kubectl cluster-info` — the control plane and CoreDNS endpoints.**
+
+![kubectl cluster-info](screenshots/terminal/01-cluster-info.png)
+
+**The node, with its internal address, OS image, kernel and container runtime.**
+
+![kubectl get nodes -o wide](screenshots/terminal/02-nodes.png)
+
+**Client and server versions.**
+
+![kubectl version](screenshots/terminal/03-version.png)
+
+**The control plane itself, running as Pods: etcd, API server, controller manager, scheduler, kube-proxy, CoreDNS and the CNI.**
+
+![kube-system pods](screenshots/terminal/04-control-plane.png)
+
+**Namespaces, including the `devops-homework` namespace this coursework uses.**
+
+![kubectl get namespaces](screenshots/terminal/05-namespaces.png)
+
+**Creating the namespace and the client Pod the later sessions test from.**
+
+![applying the namespace and client](screenshots/terminal/06-namespace-and-client.png)
+**What the namespace holds once the client is running.**
+
+![contents of the devops-homework namespace](screenshots/terminal/07-namespace-contents.png)
+
 ## Evidence and cleanup
 
 [Validation results](../KUBERNETES-VALIDATION.md) and [actual logs](../evidence/kubernetes/README.md)

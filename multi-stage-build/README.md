@@ -84,6 +84,25 @@ There is a security benefit too: a smaller runtime image has fewer packages, so 
 it that can carry a vulnerability, and the application source is not readable inside a running
 container.
 
+## Terminal captures
+
+Live captures, taken in a browser-attached terminal.
+
+**The multi-stage build. The first stage installs Node and builds; only the built assets are copied into the runtime stage.**
+
+![multi-stage docker build](screenshots/terminal/01-build.png)
+
+**The page the container serves.**
+
+![application response](screenshots/terminal/02-running-on-8080.png)
+
+**`docker ps` confirming the container and its mapping to host port 8080.**
+
+![docker ps showing port 8080](screenshots/terminal/03-docker-ps-8080.png)
+
+**The runtime image size and its layers. Node, npm and `node_modules` are all in the build stage, so none of them reach this image.**
+
+![image size and layers](screenshots/terminal/04-image-size.png)
 ## Task 3 — three different application types
 
 Node.js, Python, and Java, built from [`../docker-apps`](../docker-apps) and run at the same time:

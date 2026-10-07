@@ -178,6 +178,41 @@ PY
 `echo` normally adds a newline; `printf '%s' VALUE` does not. Decoded bytes determine the
 value, so check the bytes instead of guessing from a base64 suffix.
 
+## Terminal captures
+
+Live captures against the running kind cluster.
+
+**Applying the ConfigMaps and the namespaced Ingress controller.**
+
+![applying config and controller](screenshots/terminal/01-apply-config-and-controller.png)
+
+**Creating the Secret from a value generated at run time — it is never committed.**
+
+![creating the secret](screenshots/terminal/02-create-secret.png)
+
+**The ConfigMap the application reads its configuration from.**
+
+![the configmap](screenshots/terminal/03-configmap.png)
+
+**Deploying the frontend, the API and the Ingress that routes between them.**
+
+![applying the apps and ingress](screenshots/terminal/04-apply-apps-and-ingress.png)
+
+**Pods, Services and the Ingress together.**
+
+![all objects](screenshots/terminal/05-objects.png)
+
+**A request through the Ingress, routed by Host header to the frontend.**
+
+![ingress to frontend](screenshots/terminal/06-ingress-frontend.png)
+
+**The `/api` path routed to the API, which reports the ConfigMap values and that the Secret was loaded — without disclosing it.**
+
+![ingress to API](screenshots/terminal/07-ingress-api.png)
+
+**The Secret as the API server stores it. Base64 is encoding, not encryption, which is exactly why a Secret manifest with real data does not belong in Git.**
+
+![secret is base64 encoded](screenshots/terminal/08-secret-is-encoded-not-encrypted.png)
 ## Evidence, troubleshooting, and cleanup
 
 [Raw logs](../evidence/kubernetes/README.md) and [validation results](../KUBERNETES-VALIDATION.md)

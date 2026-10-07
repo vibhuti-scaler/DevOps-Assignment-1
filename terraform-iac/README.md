@@ -229,6 +229,45 @@ $ terraform plan -var enable_lifecycle_rule=true -target=aws_s3_bucket_lifecycle
           + abort_incomplete_multipart_upload { + days_after_initiation = 7 }
 ```
 
+## Terminal captures
+
+Live captures of the whole workflow against the local AWS emulator, taken in a browser-attached terminal.
+
+**`terraform init` — providers downloaded and the lock file written.**
+
+![terraform init](screenshots/terminal/01-init.png)
+
+**`terraform fmt -check` and `terraform validate` — the two checks that cost nothing and belong in CI.**
+
+![fmt and validate](screenshots/terminal/02-fmt-and-validate.png)
+
+**`terraform plan -out=tfplan`, so the apply executes exactly what was reviewed.**
+
+![terraform plan](screenshots/terminal/03-plan.png)
+
+**`terraform apply` against the saved plan.**
+
+![terraform apply](screenshots/terminal/04-apply.png)
+
+**`terraform output` — the configuration's public interface.**
+
+![terraform output](screenshots/terminal/05-output.png)
+
+**`terraform state list` — the private record of what exists.**
+
+![terraform state list](screenshots/terminal/06-state-list.png)
+
+**A second plan reports no changes. `-detailed-exitcode` returns 0 for no changes and 2 for drift, which is what makes a scheduled drift check possible.**
+
+![idempotent plan](screenshots/terminal/07-idempotent.png)
+
+**The lifecycle rule is valid Terraform and appears in a plan. It is left out of the applied run because the provider's post-create consistency poll never converges against the emulator.**
+
+![lifecycle rule planned](screenshots/terminal/08-lifecycle-rule-planned.png)
+
+**`terraform destroy` — recorded as deliberately as the apply.**
+
+![terraform destroy](screenshots/terminal/09-destroy.png)
 ## Task 2: AWS services
 
 | Service | Notes |

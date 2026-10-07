@@ -249,6 +249,49 @@ kubectl get endpointslices -l kubernetes.io/service-name=<service>
 An empty slice turns a vague network problem into a specific labelling problem, and it takes one
 command to find out.
 
+## Terminal captures
+
+Live captures. Every failure below was created on purpose and diagnosed with the commands shown.
+
+**Task 1 — `get` with `-o wide` and `--show-labels`: the first command in any investigation.**
+
+![kubectl get -o wide](screenshots/terminal/01-get-and-wide.png)
+
+**Task 1 — the Events at the bottom of `describe`, which is where the control plane says why it could not proceed.**
+
+![describe events](screenshots/terminal/02-describe-events.png)
+
+**Task 1 — `exec` into a running container to test it from the inside.**
+
+![kubectl exec](screenshots/terminal/03-exec.png)
+
+**CrashLoopBackOff — and the log from the previous attempt, which is the only place the real error appears.**
+
+![CrashLoopBackOff](screenshots/terminal/04-crashloopbackoff.png)
+
+**ImagePullBackOff — the tag does not exist, and only the Events say so.**
+
+![ImagePullBackOff](screenshots/terminal/05-imagepullbackoff.png)
+
+**Pending — the scheduler reports `Insufficient cpu`; no node can satisfy the request.**
+
+![Pending with FailedScheduling](screenshots/terminal/06-pending.png)
+
+**OOMKilled — exit code 137, which is 128 + SIGKILL.**
+
+![OOMKilled](screenshots/terminal/07-oomkilled.png)
+
+**CreateContainerConfigError — the Pod is scheduled, but a referenced ConfigMap does not exist.**
+
+![CreateContainerConfigError](screenshots/terminal/08-config-error.png)
+
+**A Service whose selector matches nothing: healthy Pods, an empty EndpointSlice, and a mismatch visible in the labels.**
+
+![service with no endpoints](screenshots/terminal/09-service-no-endpoints.png)
+
+**The same Service after the selector is corrected — endpoints appear and the request succeeds.**
+
+![selector fixed](screenshots/terminal/10-selector-fixed.png)
 ## Cleanup
 
 The sections clean up after themselves. The shared `devops-homework` namespace is left in place for

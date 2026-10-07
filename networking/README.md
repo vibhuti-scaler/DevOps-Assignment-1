@@ -98,6 +98,37 @@ The reverse is also true: an interface with an address proves nothing on its own
 route, DNS has to resolve, the remote port has to be open, and the service behind it has to answer.
 Working outwards in that order finds the broken layer in a few commands instead of guessing.
 
+## Terminal captures
+
+Live captures. Each command runs in a `nicolaka/netshoot` container, which carries the modern Linux networking tools.
+
+**Interface addresses and the routing table — where every connectivity investigation starts.**
+
+![ip addr and ip route](screenshots/terminal/01-interface-and-route.png)
+
+**Listening sockets, the modern replacement for `netstat`.**
+
+![ss -tulpn](screenshots/terminal/02-listening-sockets.png)
+
+**DNS resolution with `dig`, showing the answer section only.**
+
+![dig github.com](screenshots/terminal/03-dns-dig.png)
+
+**`ping` — reachability and round-trip time.**
+
+![ping 1.1.1.1](screenshots/terminal/04-ping.png)
+
+**`curl` with a timing format: TCP connect, TLS handshake and total time separated.**
+
+![curl timing breakdown](screenshots/terminal/05-curl-timing.png)
+
+**`traceroute` — the path, hop by hop.**
+
+![traceroute](screenshots/terminal/06-traceroute.png)
+
+**The repository's own check script, running the whole sequence in order.**
+
+![network-checks.sh](screenshots/terminal/07-full-check-script.png)
 ## Task 1 — session repository
 
 The [`session4-networking`](https://github.com/Nency-Ravaliya/devops-heros/tree/main/session4-networking)

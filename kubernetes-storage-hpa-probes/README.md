@@ -260,6 +260,49 @@ never have been in the EndpointSlice.
 | Pod `Running` but `0/1` and no traffic | Readiness probe failing. | Check `describe pod` for the probe path and port. |
 | `RESTARTS` climbing steadily | Liveness probe failing. | Check whether the endpoint is genuinely hung or merely slow. |
 
+## Terminal captures
+
+Live captures against the running kind cluster, taken in a browser-attached terminal.
+
+**Task 1 — the reader container printing lines the writer container appended to the same `emptyDir`.**
+
+![emptyDir shared between containers](screenshots/terminal/01-emptydir-shared.png)
+
+**Task 1 — the `hostPath` file read directly on the node, outside Kubernetes entirely.**
+
+![hostPath file on the node](screenshots/terminal/02-hostpath-on-the-node.png)
+
+**Task 1 — a hand-written PersistentVolume and the claim that bound to it. Note `Retain` rather than `Delete`.**
+
+![static PV bound](screenshots/terminal/03-static-pv-bound.png)
+
+**Task 1 — a claim against the default StorageClass stays `Pending` with a `WaitForFirstConsumer` event. That is the binding mode working, not a fault.**
+
+![WaitForFirstConsumer](screenshots/terminal/04-waitforfirstconsumer.png)
+
+**Task 1 — creating the consumer Pod provisions the volume. The name is generated and the reclaim policy is `Delete`.**
+
+![dynamic provisioning](screenshots/terminal/05-dynamic-provisioned.png)
+
+**Task 1 — the default StorageClass kind installs.**
+
+![storageclass](screenshots/terminal/06-storageclass.png)
+
+**Task 2 — the HPA at rest. The reading is a real percentage rather than `<unknown>`, because the Deployment declares a CPU request.**
+
+![HPA idle](screenshots/terminal/07-hpa-idle.png)
+
+**Task 2 — the same HPA under load from four looping clients, scaled to its ceiling of five replicas.**
+
+![HPA scaled out](screenshots/terminal/08-hpa-scaled-out.png)
+
+**Task 2 — `kubectl top` showing the CPU the autoscaler is reacting to.**
+
+![kubectl top pods](screenshots/terminal/09-top-pods.png)
+
+**Task 2b — a readiness probe pointed at a path the app answers with 404. The Pod is `Running` with `RESTARTS 0` and never reaches `1/1`: readiness failure does not restart anything. The EndpointSlice lists the address but marks it not ready, which is the field `kubectl get endpointslices -o yaml` shows and the [transcript](../evidence/kubernetes/08-hpa-probes.txt) checks.**
+
+![readiness failure removes endpoints](screenshots/terminal/10-readiness-no-endpoints.png)
 ## Cleanup
 
 ```bash

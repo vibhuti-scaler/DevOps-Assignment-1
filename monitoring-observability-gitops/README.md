@@ -341,6 +341,45 @@ A deployment is a merged pull request. A rollback is `git revert`. Who deployed 
 - **Anything that must be ordered across repositories.** Reconciliation is eventually consistent.
 - **One-off operational tasks.** A database migration is not a desired state.
 
+## Terminal captures
+
+Live captures, taken in a browser-attached terminal. The Grafana and Prometheus browser screenshots are above; these show the in-cluster Prometheus and the Argo CD reconciliation.
+
+**Prometheus running inside the cluster, with its own ServiceAccount and read-only ClusterRole.**
+
+![prometheus in the cluster](screenshots/terminal/01-prometheus-in-cluster.png)
+
+**The service-discovery configuration: any Pod carrying the `prometheus.io/scrape` annotation is scraped, with no static target list.**
+
+![service discovery config](screenshots/terminal/02-service-discovery-config.png)
+
+**The targets discovery actually found, with their health.**
+
+![discovered targets](screenshots/terminal/03-discovered-targets.png)
+
+**The application's own metric, read back through Prometheus — one series per replica.**
+
+![application metric in prometheus](screenshots/terminal/04-application-metric.png)
+
+**The alert rules, loaded and inactive.**
+
+![alert rules loaded](screenshots/terminal/05-alert-rules-loaded.png)
+
+**Argo CD running in the cluster.**
+
+![argo cd running](screenshots/terminal/06-argocd-up.png)
+
+**The Application reporting `Synced` and `Healthy` against the Git revision it deployed.**
+
+![application synced](screenshots/terminal/07-application-synced.png)
+
+**Continuous reconciliation: the Deployment is scaled to 5 by hand, and Argo CD returns it to the 1 that Git specifies. `kubectl scale` is drift, not a deployment mechanism.**
+
+![self-heal reverts drift](screenshots/terminal/08-selfheal-reverts-drift.png)
+
+**The same for deletion — a managed Service removed by hand is recreated.**
+
+![self-heal recreates a deleted service](screenshots/terminal/09-selfheal-recreates.png)
 ## Stopping everything
 
 ```bash

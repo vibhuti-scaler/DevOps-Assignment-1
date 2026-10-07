@@ -73,6 +73,41 @@ running together is in [verification.txt](verification.txt).
 | `React-app` — http://localhost:8205 | ![React app](screenshots/05-React-app.png) |
 | `nginx-app` — http://localhost:8206 | ![Nginx app](screenshots/06-nginx-app.png) |
 
+## Terminal captures
+
+Live captures, taken in a browser-attached terminal. Each image was built from the Dockerfile in this folder, and each response came from the running container.
+
+**The six images, one per runtime, with their sizes.**
+
+![the six application images](screenshots/terminal/01-six-images.png)
+
+**Node.js — the built-in `http` server on `node:22-alpine`.**
+
+![Node.js Hello World response](screenshots/terminal/02-nodejs.png)
+
+**Python — `http.server` on `python:3.12-alpine`.**
+
+![Python Hello World response](screenshots/terminal/03-python.png)
+
+**Java — `com.sun.net.httpserver` on `eclipse-temurin:21`.**
+
+![Java Hello World response](screenshots/terminal/04-java.png)
+
+**Apache — a static page served by `httpd:2.4-alpine`.**
+
+![Apache Hello World response](screenshots/terminal/05-apache.png)
+
+**React — a production build served by Nginx, from a two-stage Dockerfile.**
+
+![React Hello World response](screenshots/terminal/06-react.png)
+
+**Nginx — a static page on `nginx:1.27-alpine`.**
+
+![Nginx Hello World response](screenshots/terminal/07-nginx.png)
+
+**All six running at once, each published on its own host port.**
+
+![all six containers running](screenshots/terminal/08-all-six-running.png)
 ## Notes on the Dockerfiles
 
 **Alpine base images.** Every application uses an Alpine variant. It keeps the images small

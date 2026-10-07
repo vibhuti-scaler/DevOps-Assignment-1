@@ -86,6 +86,37 @@ Research notes in [overlay-network.md](overlay-network.md), plus a real single-n
 discovery, and the ingress routing mesh. The write-up is explicit about what one node **cannot**
 demonstrate — traffic actually crossing hosts — and gives the two-host commands that would.
 
+## Terminal captures
+
+Live captures, taken in a browser-attached terminal. The browser screenshots of the served pages are above; these show the network topology and the connectivity tests behind them.
+
+**Task 1 — three user-defined bridge networks.**
+
+![three docker networks](screenshots/terminal/01-three-networks.png)
+
+**Task 1 — the three containers: an Nginx frontend, an Alpine backend and a MySQL database.**
+
+![three containers running](screenshots/terminal/02-three-containers.png)
+
+**Task 1 — which networks each container is attached to. The backend is on two, which is what lets it bridge the web tier and the data tier.**
+
+![backend attached to two networks](screenshots/terminal/03-backend-on-two-networks.png)
+
+**Task 1 — frontend to backend. They share `net-app-net`, so Docker's embedded DNS resolves the container name.**
+
+![frontend reaches backend](screenshots/terminal/04-frontend-to-backend.png)
+
+**Task 1 — backend to database. They share `net-data-net`.**
+
+![backend reaches db](screenshots/terminal/05-backend-to-db.png)
+
+**Task 1 — frontend to database fails. They share no network, so the name does not even resolve. That isolation is the reason for three networks rather than one.**
+
+![frontend cannot reach db](screenshots/terminal/06-isolation-proved.png)
+
+**Task 2 — Apache on the host network, answering on port 80 of its host with no published port mapping.**
+
+![apache on the host network](screenshots/terminal/07-host-network.png)
 ## Secrets
 
 The MySQL password for Task 1 comes from an untracked `.env`. Only `.env.example` is committed, and

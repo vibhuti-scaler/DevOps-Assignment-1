@@ -206,6 +206,41 @@ base still wins on the metric that matters over time: fewer packages means fewer
 smaller image, and the multi-stage build keeps the compiler and the pip cache out of the runtime
 layer entirely.
 
+## Terminal captures
+
+Live captures, taken in a browser-attached terminal. These are the stages re-run after the three findings were fixed, so they show the state that passes the gate.
+
+**SAST — Bandit over the application source, clean at medium severity and above after the `0.0.0.0` bind was fixed.**
+
+![bandit clean](screenshots/terminal/01-sast-clean.png)
+
+**SCA — pip-audit against the declared dependencies, clean after Flask was moved to 3.1.3.**
+
+![pip-audit clean](screenshots/terminal/02-sca-clean.png)
+
+**Secret scanning over the repository and its history.**
+
+![gitleaks over the repository](screenshots/terminal/03-secret-scan-history.png)
+
+**The negative control: a throwaway file with a randomly generated AWS key and GitHub token. Gitleaks reports two leaks, which is what makes the clean result above mean something.**
+
+![gitleaks detects planted credentials](screenshots/terminal/04-secret-scan-control.png)
+
+**Building the image that the scanners then examine.**
+
+![build for scanning](screenshots/terminal/05-build-for-scan.png)
+
+**Trivy's image scan for fixable HIGH and CRITICAL vulnerabilities.**
+
+![trivy image scan](screenshots/terminal/06-image-scan.png)
+
+**Trivy's misconfiguration scan over the Kubernetes manifests — the stage that produced AVD-KSV-0014 and AVD-KSV-0118 before the securityContext was added.**
+
+![trivy misconfiguration scan](screenshots/terminal/07-misconfig-scan.png)
+
+**Cleaning up the scanned image.**
+
+![cleanup](screenshots/terminal/08-cleanup.png)
 ## What this pipeline does not cover
 
 - **Image signing and provenance.** Nothing verifies that the image the cluster pulls is the one

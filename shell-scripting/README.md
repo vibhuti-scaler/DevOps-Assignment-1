@@ -62,6 +62,33 @@ INPUT
 
 The same file also shows the script running on the macOS host, to confirm it is portable.
 
+## Terminal captures
+
+Live captures of the script running, including the four `read -p` prompts being answered interactively.
+
+**The script run end to end. The four answers were typed at the `read -p` prompts and appear in the report header.**
+
+![system-info.sh running with interactive input](screenshots/terminal/01-run-the-script.png)
+
+**The section of the script that covers the required commands: variables, `read -p`, `mkdir`, `touch` and `>` redirection.**
+
+![the required commands in the script](screenshots/terminal/04-the-required-commands.png)
+
+**What `mkdir` and `touch` created.**
+
+![the generated system-report directory](screenshots/terminal/02-files-created.png)
+
+**The report files and the summary the script wrote.**
+
+![report contents](screenshots/terminal/05-report-contents.png)
+
+**The process list captured into `processes.txt` through `>` redirection.**
+
+![redirected process list](screenshots/terminal/03-redirected-output.png)
+
+**Line counts for each generated file, and the head of the captured process list.**
+
+![process capture](screenshots/terminal/06-process-capture.png)
 ## Two things I had to handle
 
 **`ps --sort` is GNU-only.** The BSD `ps` on macOS rejects `--sort=-%mem`, so the script tries the
