@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-pv-writer
+  labels:
+    app: static-pv-writer
+spec:
+  restartPolicy: Never
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: static-pvc
+  containers:
+    - name: writer
+      image: busybox:1.36
+      command:
+        - /bin/sh
+        - -c
+        - 'echo "Vibhuti Bhatnagar 24BCS10288" > /data/student.txt && cat /data/student.txt && sleep 3600'
+      volumeMounts:
+        - name: data
+          mountPath: /data

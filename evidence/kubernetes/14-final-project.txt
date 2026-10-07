@@ -1,0 +1,638 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T09:11:05.675323+00:00 | 14-final-project
+
+$ '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/bin/kind' --name vibhuti-devops load docker-image notes-app:local
+Image: "notes-app:local" with ID "sha256:2fcba7d113c25b851c6e7849e4414da4ee5f2943017eb54e4f6c79760c700b90" not yet present on node "vibhuti-devops-control-plane", loading...
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework label node vibhuti-devops-control-plane ingress-ready=true --overwrite
+node/vibhuti-devops-control-plane not labeled
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n ingress-nginx apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.0/deploy/static/provider/kind/deploy.yaml
+namespace/ingress-nginx unchanged
+serviceaccount/ingress-nginx unchanged
+serviceaccount/ingress-nginx-admission unchanged
+role.rbac.authorization.k8s.io/ingress-nginx unchanged
+role.rbac.authorization.k8s.io/ingress-nginx-admission unchanged
+clusterrole.rbac.authorization.k8s.io/ingress-nginx unchanged
+clusterrole.rbac.authorization.k8s.io/ingress-nginx-admission unchanged
+rolebinding.rbac.authorization.k8s.io/ingress-nginx unchanged
+rolebinding.rbac.authorization.k8s.io/ingress-nginx-admission unchanged
+clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx unchanged
+clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx-admission unchanged
+configmap/ingress-nginx-controller configured
+service/ingress-nginx-controller unchanged
+service/ingress-nginx-controller-admission unchanged
+deployment.apps/ingress-nginx-controller configured
+job.batch/ingress-nginx-admission-create unchanged
+job.batch/ingress-nginx-admission-patch unchanged
+ingressclass.networking.k8s.io/nginx unchanged
+validatingwebhookconfiguration.admissionregistration.k8s.io/ingress-nginx-admission configured
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=300s
+deployment "ingress-nginx-controller" successfully rolled out
+PASS: the ingress-nginx admission webhook is answering
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n ingress-nginx get pods
+NAME                                        READY   STATUS      RESTARTS   AGE
+ingress-nginx-admission-create-bgjhl        0/1     Completed   0          15m
+ingress-nginx-admission-patch-6wxv8         0/1     Completed   1          15m
+ingress-nginx-controller-86bdd9fd4d-vpq88   1/1     Running     0          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes apply -f final-devops-project/kubernetes/00-namespace.yaml
+namespace/notes unchanged
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes delete secret notes-secret --ignore-not-found
+secret "notes-secret" deleted from notes namespace
+
+$ kubectl -n notes create secret generic notes-secret --from-literal=API_TOKEN=<generated>
+secret/notes-secret created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get secret notes-secret
+NAME           TYPE     DATA   AGE
+notes-secret   Opaque   1      0s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes apply -f final-devops-project/kubernetes/01-configmap.yaml -f final-devops-project/kubernetes/03-pvc.yaml -f final-devops-project/kubernetes/04-deployment.yaml -f final-devops-project/kubernetes/05-service.yaml -f final-devops-project/kubernetes/06-ingress.yaml -f final-devops-project/kubernetes/07-hpa.yaml
+configmap/notes-config unchanged
+persistentvolumeclaim/notes-data unchanged
+deployment.apps/notes unchanged
+service/notes unchanged
+ingress.networking.k8s.io/notes unchanged
+horizontalpodautoscaler.autoscaling/notes unchanged
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout restart deployment/notes
+deployment.apps/notes restarted
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout status deployment/notes --timeout=300s
+Waiting for deployment "notes" rollout to finish: 0 out of 2 new replicas have been updated...
+Waiting for deployment "notes" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "notes" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "notes" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "notes" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "notes" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "notes" rollout to finish: 1 old replicas are pending termination...
+deployment "notes" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get pods,svc,ingress,hpa,pvc -o wide
+NAME                         READY   STATUS        RESTARTS   AGE     IP            NODE                           NOMINATED NODE   READINESS GATES
+pod/notes-7f7c4d88bd-nmrpx   1/1     Running       0          3s      10.244.0.89   vibhuti-devops-control-plane   <none>           <none>
+pod/notes-7f7c4d88bd-vljv7   1/1     Running       0          5s      10.244.0.88   vibhuti-devops-control-plane   <none>           <none>
+pod/notes-f85f7ffb4-v5qzv    1/1     Terminating   0          5m26s   10.244.0.85   vibhuti-devops-control-plane   <none>           <none>
+
+NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+service/notes   ClusterIP   10.96.146.90   <none>        80/TCP    13m   app=notes
+
+NAME                              CLASS   HOSTS               ADDRESS     PORTS   AGE
+ingress.networking.k8s.io/notes   nginx   notes.devops.test   localhost   80      12m
+
+NAME                                        REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/notes   Deployment/notes   cpu: 4%/60%   2         6         2          13m
+
+NAME                               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE   VOLUMEMODE
+persistentvolumeclaim/notes-data   Bound    pvc-d3203380-1b54-47a3-b2b2-64181a149676   1Gi        RWO            standard       <unset>                 13m   Filesystem
+PASS: the 1Gi claim is bound
+PASS: a Ready Pod that is not being terminated
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes exec notes-7f7c4d88bd-nmrpx -- id
+uid=10001(appuser) gid=999(appuser) groups=999(appuser),10001
+PASS: the container runs as the unprivileged user from the image
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes exec notes-7f7c4d88bd-nmrpx -- sh -c 'touch /srv/should-fail 2>&1 || echo '"'"'read-only root filesystem: write refused'"'"''
+touch: cannot touch '/srv/should-fail': Read-only file system
+read-only root filesystem: write refused
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes exec notes-7f7c4d88bd-nmrpx -- sh -c 'touch /data/writable && echo '"'"'/data is writable'"'"''
+/data is writable
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-services/client.yaml
+pod/dns-client unchanged
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/dns-client --timeout=180s
+pod/dns-client condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://notes.notes.svc.cluster.local/readyz
+wget: download timed out
+command terminated with exit code 1
+Command exited 1: kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://notes.notes.svc.cluster.local/readyz
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://notes.notes.svc.cluster.local/readyz
+{"environment":"production","status":"ready"}
+PASS: the readiness endpoint reports the volume is usable
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://notes.notes.svc.cluster.local/healthz
+{"status":"ok","version":"1.0.0"}
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- sh -c 'wget -T 5 -qO- --post-data='"'"'{"title":"no token"}'"'"' --header='"'"'Content-Type: application/json'"'"' http://notes.notes.svc.cluster.local/api/notes 2>&1 || echo '"'"'rejected: 401 unauthorised'"'"''
+wget: server returned error: HTTP/1.1 401 UNAUTHORIZED
+rejected: 401 unauthorised
+PASS: the Secret reached the container: an unauthenticated write is refused
+
+$ kubectl -n devops-homework exec dns-client -- wget -qO- --post-data='{"title": "deployed to kubernetes"}' --header='X-API-Token: <generated>' http://notes.notes.svc.cluster.local/api/notes
+PASS: an authenticated write is accepted
+{"body":"session 21","id":3,"title":"deployed to kubernetes"}
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://notes.notes.svc.cluster.local/api/notes
+{"notes":[{"body":"session 21","id":1,"title":"deployed to kubernetes"},{"body":"session 21","id":2,"title":"deployed to kubernetes"},{"body":"session 21","id":3,"title":"deployed to kubernetes"}]}
+PASS: the note is readable back through the API
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes delete pod notes-7f7c4d88bd-nmrpx --wait=true
+pod "notes-7f7c4d88bd-nmrpx" deleted from notes namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout status deployment/notes --timeout=300s
+Waiting for deployment "notes" rollout to finish: 1 of 2 updated replicas are available...
+deployment "notes" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://notes.notes.svc.cluster.local/api/notes
+{"notes":[{"body":"session 21","id":1,"title":"deployed to kubernetes"},{"body":"session 21","id":2,"title":"deployed to kubernetes"},{"body":"session 21","id":3,"title":"deployed to kubernetes"}]}
+PASS: the note written before the Pod was deleted is still served
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: notes.devops.test' http://127.0.0.1:18080/
+curl: (7) Failed to connect to 127.0.0.1 port 18080 after 0 ms: Couldn't connect to server
+Command exited 7: curl --fail --silent --show-error --max-time 5 -H 'Host: notes.devops.test' http://127.0.0.1:18080/
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: notes.devops.test' http://127.0.0.1:18080/
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notes</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 42rem; padding: 0 1rem; }
+      .meta { color: #555; font-size: .9rem; }
+      article { border-left: 3px solid #ddd; padding-left: .75rem; margin: 1rem 0; }
+      h2 { font-size: 1rem; margin: 0 0 .25rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Notes</h1>
+    <p class="meta">version 1.0.0 &middot; production</p>
+    
+      <article>
+        <h2>#1 deployed to kubernetes</h2>
+        <p>session 21</p>
+      </article>
+    
+      <article>
+        <h2>#2 deployed to kubernetes</h2>
+        <p>session 21</p>
+      </article>
+    
+      <article>
+        <h2>#3 deployed to kubernetes</h2>
+        <p>session 21</p>
+      </article>
+    
+  </body>
+</html>
+PASS: the Ingress routes notes.devops.test to the Service
+
+$ curl --fail --silent --show-error --max-time 5 -H 'Host: notes.devops.test' http://127.0.0.1:18080/healthz
+{"status":"ok","version":"1.0.0"}
+PASS: the application exports Prometheus metrics
+
+$ curl -H 'Host: notes.devops.test' http://127.0.0.1:18080/metrics | grep notes_
+notes_stored_total 3.0
+notes_storage_writable 1.0
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: <unknown>/60%   2         6         2          13m
+PASS: the HPA reads CPU rather than <unknown>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes apply -f final-devops-project/kubernetes/load-generator.yaml
+deployment.apps/notes-load created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout status deployment/notes-load --timeout=240s
+Waiting for deployment "notes-load" rollout to finish: 0 of 4 updated replicas are available...
+Waiting for deployment "notes-load" rollout to finish: 1 of 4 updated replicas are available...
+Waiting for deployment "notes-load" rollout to finish: 2 of 4 updated replicas are available...
+Waiting for deployment "notes-load" rollout to finish: 3 of 4 updated replicas are available...
+deployment "notes-load" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 6%/60%   2         6         2          13m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 6%/60%   2         6         2          13m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 6%/60%   2         6         2          13m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 6%/60%   2         6         2          13m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 6%/60%   2         6         2          13m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 6%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 6%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 5%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 5%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 5%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 5%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 5%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 5%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 5%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 599%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 599%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 599%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 599%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 599%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 599%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 599%/60%   2         6         2          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 897%/60%   2         6         6          14m
+PASS: the HPA scaled the application out under load
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes top pods -l app=notes
+NAME                     CPU(cores)   MEMORY(bytes)   
+notes-7f7c4d88bd-f49rb   131m         59Mi            
+notes-7f7c4d88bd-fs4jc   343m         65Mi            
+notes-7f7c4d88bd-h49gs   134m         60Mi            
+notes-7f7c4d88bd-vljv7   187m         66Mi            
+notes-7f7c4d88bd-wjr7d   119m         60Mi            
+notes-7f7c4d88bd-xncnr   131m         59Mi
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes delete deployment notes-load --wait=true
+deployment.apps "notes-load" deleted from notes namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 897%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 897%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 897%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 897%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 897%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 897%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 897%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 530%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 530%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 530%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 530%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 530%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 530%/60%   2         6         6          14m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 530%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 253%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 253%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 253%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 253%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 253%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 253%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 253%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 285%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 285%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 285%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 285%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 285%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 285%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 285%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 22%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 22%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 22%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 22%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 22%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 22%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 22%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 22%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          15m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 3%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         6          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         3          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         3          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         3          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         3          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         3          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         3          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 2%/60%   2         6         3          16m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get hpa notes
+NAME    REFERENCE          TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+notes   Deployment/notes   cpu: 17%/60%   2         6         2          16m
+PASS: the HPA returned to its two-replica floor
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes apply -f final-devops-project/kubernetes/08-networkpolicy.yaml
+networkpolicy.networking.k8s.io/notes-default-deny created
+networkpolicy.networking.k8s.io/notes-allow created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get networkpolicies
+NAME                 POD-SELECTOR   AGE
+notes-allow          app=notes      0s
+notes-default-deny   <none>         0s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes describe networkpolicy notes-allow
+Name:         notes-allow
+Namespace:    notes
+Created on:   2026-10-07 14:44:55 +0530 IST
+Labels:       <none>
+Annotations:  <none>
+Spec:
+  PodSelector:     app=notes
+  Allowing ingress traffic:
+    To Port: 8000/TCP
+    From:
+      NamespaceSelector: kubernetes.io/metadata.name=ingress-nginx
+    From:
+      NamespaceSelector: kubernetes.io/metadata.name=monitoring
+    From:
+      NamespaceSelector: kubernetes.io/metadata.name=devops-homework
+  Allowing egress traffic:
+    To Port: 53/UDP
+    To Port: 53/TCP
+    To:
+      NamespaceSelector: kubernetes.io/metadata.name=kube-system
+      PodSelector: k8s-app=kube-dns
+  Policy Types: Ingress, Egress
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get all,pvc,ingress,hpa,networkpolicy
+NAME                         READY   STATUS    RESTARTS   AGE
+pod/notes-7f7c4d88bd-fs4jc   1/1     Running   0          3m26s
+pod/notes-7f7c4d88bd-vljv7   1/1     Running   0          3m40s
+
+NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/notes   ClusterIP   10.96.146.90   <none>        80/TCP    16m
+
+NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/notes   2/2     2            2           16m
+
+NAME                               DESIRED   CURRENT   READY   AGE
+replicaset.apps/notes-576484d8c4   0         0         0       16m
+replicaset.apps/notes-5bb8b548d6   0         0         0       14m
+replicaset.apps/notes-64d47c8545   0         0         0       13m
+replicaset.apps/notes-7f7c4d88bd   2         2         2       3m40s
+replicaset.apps/notes-84f5658f45   0         0         0       12m
+replicaset.apps/notes-f85f7ffb4    0         0         0       9m1s
+
+NAME                                        REFERENCE          TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/notes   Deployment/notes   cpu: 17%/60%   2         6         2          16m
+
+NAME                               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/notes-data   Bound    pvc-d3203380-1b54-47a3-b2b2-64181a149676   1Gi        RWO            standard       <unset>                 16m
+
+NAME                              CLASS   HOSTS               ADDRESS     PORTS   AGE
+ingress.networking.k8s.io/notes   nginx   notes.devops.test   localhost   80      15m
+
+NAME                                                 POD-SELECTOR   AGE
+networkpolicy.networking.k8s.io/notes-allow          app=notes      1s
+networkpolicy.networking.k8s.io/notes-default-deny   <none>         1s
+PASS: 14-final-project completed

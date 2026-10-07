@@ -1,0 +1,45 @@
+replicaCount: 2
+
+image:
+  repository: notes-app
+  tag: "local"
+  pullPolicy: IfNotPresent
+
+app:
+  environment: production
+  version: "1.0.0"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  host: notes.devops.test
+
+persistence:
+  enabled: true
+  storageClass: standard
+  size: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 60
+
+# The token is never written here. It is supplied at install time with
+# --set-string secret.apiToken=... or by referencing an existing Secret.
+secret:
+  create: true
+  existingSecret: ""
+  apiToken: ""
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

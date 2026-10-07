@@ -1,0 +1,67 @@
+groups:
+  - name: availability
+    rules:
+      - alert: TargetDown
+        expr: up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} target {{ $labels.instance }} is not responding"
+          description: >-
+            Prometheus has failed to scrape {{ $labels.instance }} for more
+            than 30 seconds. Check whether the container is running.
+
+  - name: application
+    rules:
+      - alert: NotesStorageNotWritable
+        expr: notes_storage_writable == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "The Notes data volume is not accepting writes"
+
+      - alert: NotesHighErrorRate
+        expr: >-
+          sum(rate(notes_http_requests_total{status=~"5.."}[5m]))
+          / sum(rate(notes_http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 5% of Notes requests are returning a server error"
+
+  - name: saturation
+    rules:
+      - alert: HostHighCpu
+        # 100% minus the share of time the CPUs spent idle, averaged over 2m.
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU above 85% on {{ $labels.instance }}"
+
+      - alert: HostLowMemory
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Less than 10% memory available on {{ $labels.instance }}"
+
+      # cAdvisor identifies containers by cgroup id here rather than by name:
+      # on Docker Desktop it cannot read the overlay layer database, so the
+      # name label is never populated. On a Linux host this would read
+      # {{ $labels.name }}.
+      - alert: ContainerHighMemory
+        expr: >-
+          (container_memory_working_set_bytes{id=~"/docker/.+"} /
+           container_spec_memory_limit_bytes{id=~"/docker/.+"}) * 100 > 90
+          and container_spec_memory_limit_bytes{id=~"/docker/.+"} > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.id }} is using over 90% of its memory limit"

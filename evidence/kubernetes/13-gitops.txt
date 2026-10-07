@@ -1,0 +1,186 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T07:56:15.326856+00:00 | 13-gitops
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework create namespace argocd
+Error from server (AlreadyExists): namespaces "argocd" already exists
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd apply -f https://raw.githubusercontent.com/argoproj/argo-cd/v2.13.3/manifests/install.yaml
+customresourcedefinition.apiextensions.k8s.io/applications.argoproj.io unchanged
+customresourcedefinition.apiextensions.k8s.io/applicationsets.argoproj.io unchanged
+customresourcedefinition.apiextensions.k8s.io/appprojects.argoproj.io unchanged
+serviceaccount/argocd-application-controller unchanged
+serviceaccount/argocd-applicationset-controller unchanged
+serviceaccount/argocd-dex-server unchanged
+serviceaccount/argocd-notifications-controller unchanged
+serviceaccount/argocd-redis unchanged
+serviceaccount/argocd-repo-server unchanged
+serviceaccount/argocd-server unchanged
+role.rbac.authorization.k8s.io/argocd-application-controller unchanged
+role.rbac.authorization.k8s.io/argocd-applicationset-controller unchanged
+role.rbac.authorization.k8s.io/argocd-dex-server unchanged
+role.rbac.authorization.k8s.io/argocd-notifications-controller unchanged
+role.rbac.authorization.k8s.io/argocd-redis unchanged
+role.rbac.authorization.k8s.io/argocd-server unchanged
+clusterrole.rbac.authorization.k8s.io/argocd-application-controller unchanged
+clusterrole.rbac.authorization.k8s.io/argocd-applicationset-controller unchanged
+clusterrole.rbac.authorization.k8s.io/argocd-server unchanged
+rolebinding.rbac.authorization.k8s.io/argocd-application-controller unchanged
+rolebinding.rbac.authorization.k8s.io/argocd-applicationset-controller unchanged
+rolebinding.rbac.authorization.k8s.io/argocd-dex-server unchanged
+rolebinding.rbac.authorization.k8s.io/argocd-notifications-controller unchanged
+rolebinding.rbac.authorization.k8s.io/argocd-redis unchanged
+rolebinding.rbac.authorization.k8s.io/argocd-server unchanged
+clusterrolebinding.rbac.authorization.k8s.io/argocd-application-controller unchanged
+clusterrolebinding.rbac.authorization.k8s.io/argocd-applicationset-controller unchanged
+clusterrolebinding.rbac.authorization.k8s.io/argocd-server unchanged
+configmap/argocd-cm unchanged
+configmap/argocd-cmd-params-cm unchanged
+configmap/argocd-gpg-keys-cm unchanged
+configmap/argocd-notifications-cm unchanged
+configmap/argocd-rbac-cm unchanged
+configmap/argocd-ssh-known-hosts-cm unchanged
+configmap/argocd-tls-certs-cm unchanged
+secret/argocd-notifications-secret unchanged
+secret/argocd-secret unchanged
+service/argocd-applicationset-controller unchanged
+service/argocd-dex-server unchanged
+service/argocd-metrics unchanged
+service/argocd-notifications-controller-metrics unchanged
+service/argocd-redis unchanged
+service/argocd-repo-server unchanged
+service/argocd-server unchanged
+service/argocd-server-metrics unchanged
+deployment.apps/argocd-applicationset-controller unchanged
+deployment.apps/argocd-dex-server unchanged
+deployment.apps/argocd-notifications-controller unchanged
+deployment.apps/argocd-redis unchanged
+deployment.apps/argocd-repo-server unchanged
+deployment.apps/argocd-server unchanged
+statefulset.apps/argocd-application-controller unchanged
+networkpolicy.networking.k8s.io/argocd-application-controller-network-policy configured
+networkpolicy.networking.k8s.io/argocd-applicationset-controller-network-policy unchanged
+networkpolicy.networking.k8s.io/argocd-dex-server-network-policy unchanged
+networkpolicy.networking.k8s.io/argocd-notifications-controller-network-policy unchanged
+networkpolicy.networking.k8s.io/argocd-redis-network-policy unchanged
+networkpolicy.networking.k8s.io/argocd-repo-server-network-policy configured
+networkpolicy.networking.k8s.io/argocd-server-network-policy unchanged
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd scale deployment argocd-dex-server --replicas=0
+deployment.apps/argocd-dex-server scaled
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd scale deployment argocd-notifications-controller --replicas=0
+deployment.apps/argocd-notifications-controller scaled
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd scale deployment argocd-applicationset-controller --replicas=0
+deployment.apps/argocd-applicationset-controller scaled
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd rollout status deployment/argocd-repo-server --timeout=300s
+deployment "argocd-repo-server" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd rollout status statefulset/argocd-application-controller --timeout=300s
+partitioned roll out complete: 1 new pods have been updated...
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd get pods
+NAME                                  READY   STATUS    RESTARTS   AGE
+argocd-application-controller-0       1/1     Running   0          2m36s
+argocd-redis-5587bfd996-2mmd8         1/1     Running   0          2m37s
+argocd-repo-server-7c9fc5b5b9-pkmrq   1/1     Running   0          2m36s
+argocd-server-c985f9b54-zc8rd         1/1     Running   0          2m36s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd apply -f monitoring-observability-gitops/gitops/guestbook-application.yaml
+Warning: metadata.finalizers: "resources-finalizer.argocd.argoproj.io": prefer a domain-qualified finalizer name including a path (/) to avoid accidental conflicts with other finalizer writers
+application.argoproj.io/guestbook created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd get application guestbook -o wide
+NAME        SYNC STATUS   HEALTH STATUS   REVISION   PROJECT
+guestbook                                            default
+PASS: Argo CD synced the application from Git
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd get application guestbook -o wide
+NAME        SYNC STATUS   HEALTH STATUS   REVISION                                   PROJECT
+guestbook   Synced        Healthy         8088f4c0d970abb09e250248cc97e35623447cb5   default
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n guestbook get all
+NAME                                READY   STATUS    RESTARTS   AGE
+pod/guestbook-ui-6595f948db-wn8dk   1/1     Running   0          37s
+
+NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/guestbook-ui   ClusterIP   10.96.214.176   <none>        80/TCP    37s
+
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/guestbook-ui   1/1     1            1           37s
+
+NAME                                      DESIRED   CURRENT   READY   AGE
+replicaset.apps/guestbook-ui-6595f948db   1         1         1       37s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd get application guestbook -o 'jsonpath={range .status.resources[*]}{.kind}/{.name} -> {.status}{"\n"}{end}'
+Service/guestbook-ui -> Synced
+Deployment/guestbook-ui -> Synced
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n guestbook scale deployment/guestbook-ui --replicas=5
+deployment.apps/guestbook-ui scaled
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n guestbook get deployment/guestbook-ui
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+guestbook-ui   1/5     5            1           37s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n guestbook get deployment/guestbook-ui
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+guestbook-ui   1/5     5            1           38s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n guestbook get deployment/guestbook-ui
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+guestbook-ui   1/1     1            1           40s
+PASS: Argo CD reverted the hand-made change back to the Git revision
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd get application guestbook -o wide
+NAME        SYNC STATUS   HEALTH STATUS   REVISION                                   PROJECT
+guestbook   Synced        Healthy         8088f4c0d970abb09e250248cc97e35623447cb5   default
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n guestbook delete service guestbook-ui
+service "guestbook-ui" deleted from guestbook namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n guestbook get service guestbook-ui
+Error from server (NotFound): services "guestbook-ui" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n guestbook get service guestbook-ui
+Error from server (NotFound): services "guestbook-ui" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n guestbook get service guestbook-ui
+Error from server (NotFound): services "guestbook-ui" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n guestbook get service guestbook-ui
+NAME           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+guestbook-ui   ClusterIP   10.96.23.67   <none>        80/TCP    1s
+PASS: Argo CD recreated the Service it manages
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n guestbook get service guestbook-ui
+NAME           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+guestbook-ui   ClusterIP   10.96.23.67   <none>        80/TCP    1s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd get application guestbook -o wide
+NAME        SYNC STATUS   HEALTH STATUS   REVISION                                   PROJECT
+guestbook   Synced        Healthy         8088f4c0d970abb09e250248cc97e35623447cb5   default
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n argocd get events --field-selector involvedObject.name=guestbook
+LAST SEEN   TYPE     REASON               OBJECT                  MESSAGE
+49s         Normal   OperationStarted     application/guestbook   Initiated automated sync to '8088f4c0d970abb09e250248cc97e35623447cb5'
+49s         Normal   ResourceUpdated      application/guestbook   Updated sync status:  -> OutOfSync
+49s         Normal   ResourceUpdated      application/guestbook   Updated health status:  -> Missing
+46s         Normal   ResourceUpdated      application/guestbook   Updated sync status: OutOfSync -> Synced
+46s         Normal   ResourceUpdated      application/guestbook   Updated health status: Missing -> Progressing
+45s         Normal   OperationCompleted   application/guestbook   Sync operation to 8088f4c0d970abb09e250248cc97e35623447cb5 succeeded
+9s          Normal   ResourceUpdated      application/guestbook   Updated health status: Progressing -> Healthy
+9s          Normal   OperationStarted     application/guestbook   Initiated automated sync to '8088f4c0d970abb09e250248cc97e35623447cb5'
+9s          Normal   ResourceUpdated      application/guestbook   Updated sync status: Synced -> OutOfSync
+9s          Normal   ResourceUpdated      application/guestbook   Updated health status: Healthy -> Progressing
+8s          Normal   OperationCompleted   application/guestbook   Partial sync operation to 8088f4c0d970abb09e250248cc97e35623447cb5 succeeded
+8s          Normal   ResourceUpdated      application/guestbook   Updated sync status: OutOfSync -> Synced
+8s          Normal   ResourceUpdated      application/guestbook   Updated health status: Progressing -> Healthy
+1s          Normal   OperationStarted     application/guestbook   Initiated automated sync to '8088f4c0d970abb09e250248cc97e35623447cb5'
+1s          Normal   ResourceUpdated      application/guestbook   Updated sync status: Synced -> OutOfSync
+1s          Normal   ResourceUpdated      application/guestbook   Updated health status: Healthy -> Missing
+1s          Normal   OperationCompleted   application/guestbook   Partial sync operation to 8088f4c0d970abb09e250248cc97e35623447cb5 succeeded
+1s          Normal   ResourceUpdated      application/guestbook   Updated sync status: OutOfSync -> Synced
+1s          Normal   ResourceUpdated      application/guestbook   Updated health status: Missing -> Healthy
+PASS: 13-gitops completed

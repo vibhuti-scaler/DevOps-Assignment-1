@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: static-pv
+  labels:
+    usage: devops-homework
+spec:
+  capacity:
+    storage: 256Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  # An empty storageClassName stops the default dynamic provisioner from
+  # answering the claim, so the binding below is genuinely static.
+  storageClassName: ""
+  hostPath:
+    path: /var/lib/devops-homework/static-pv
+    type: DirectoryOrCreate

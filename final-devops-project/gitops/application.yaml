@@ -1,0 +1,43 @@
+# GitOps definition for the Notes service.
+#
+# Apply this once; after that the cluster follows this repository. Changing
+# the image tag in kubernetes/04-deployment.yaml and merging it is the whole
+# deployment procedure - no kubectl apply, no pipeline with cluster
+# credentials.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: notes
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/vibhuti-scaler/DevOps-Assignment-1.git
+    targetRevision: main
+    path: final-devops-project/kubernetes
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: notes
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      # The Secret is created out of band, so Argo CD must not try to manage
+      # or prune it.
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m
+  ignoreDifferences:
+    # The HPA owns the replica count once it is running; Git must not fight it.
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas

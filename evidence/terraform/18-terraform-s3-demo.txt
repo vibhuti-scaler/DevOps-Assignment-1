@@ -1,0 +1,581 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T08:50:02Z | 18-terraform-s3-demo
+Target: LocalStack at http://localhost:4566 (no real AWS account is involved)
+
+$ /Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/bin/terraform version
+Terraform v1.16.5
+on darwin_arm64
+
+$ terraform init -upgrade
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding hashicorp/aws versions matching "~> 5.80"...
+- Finding hashicorp/random versions matching "~> 3.6"...
+- Using previously-installed hashicorp/aws v5.100.0
+- Using previously-installed hashicorp/random v3.9.1
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+PASS: terraform init
+
+$ terraform fmt -check -recursive
+
+PASS: terraform fmt -check (every file already canonical)
+
+$ terraform validate
+Success! The configuration is valid.
+
+
+PASS: terraform validate
+
+The lifecycle rule is valid Terraform and appears in the plan. It is left
+out of the applied run because the AWS provider's post-create consistency
+poll never converges against the emulator; see the project README.
+
+$ terraform plan -var enable_lifecycle_rule=true -target=aws_s3_bucket_lifecycle_configuration.homework
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_s3_bucket.homework will be created
+  + resource "aws_s3_bucket" "homework" {
+      + acceleration_status         = (known after apply)
+      + acl                         = (known after apply)
+      + arn                         = (known after apply)
+      + bucket                      = (known after apply)
+      + bucket_domain_name          = (known after apply)
+      + bucket_prefix               = (known after apply)
+      + bucket_regional_domain_name = (known after apply)
+      + force_destroy               = false
+      + hosted_zone_id              = (known after apply)
+      + id                          = (known after apply)
+      + object_lock_enabled         = (known after apply)
+      + policy                      = (known after apply)
+      + region                      = (known after apply)
+      + request_payer               = (known after apply)
+      + tags                        = (known after apply)
+      + tags_all                    = (known after apply)
+      + website_domain              = (known after apply)
+      + website_endpoint            = (known after apply)
+
+      + cors_rule (known after apply)
+
+      + grant (known after apply)
+
+      + lifecycle_rule (known after apply)
+
+      + logging (known after apply)
+
+      + object_lock_configuration (known after apply)
+
+      + replication_configuration (known after apply)
+
+      + server_side_encryption_configuration (known after apply)
+
+      + versioning (known after apply)
+
+      + website (known after apply)
+    }
+
+  # aws_s3_bucket_lifecycle_configuration.homework[0] will be created
+  + resource "aws_s3_bucket_lifecycle_configuration" "homework" {
+      + bucket                                 = (known after apply)
+      + expected_bucket_owner                  = (known after apply)
+      + id                                     = (known after apply)
+      + transition_default_minimum_object_size = "all_storage_classes_128K"
+
+      + rule {
+          + id     = "expire-old-versions"
+          + status = "Enabled"
+            # (1 unchanged attribute hidden)
+
+          + abort_incomplete_multipart_upload {
+              + days_after_initiation = 7
+            }
+
+          + filter {
+                # (1 unchanged attribute hidden)
+            }
+
+          + noncurrent_version_expiration {
+              + noncurrent_days = 30
+            }
+        }
+    }
+
+  # aws_s3_bucket_versioning.homework will be created
+  + resource "aws_s3_bucket_versioning" "homework" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+
+      + versioning_configuration {
+          + mfa_delete = (known after apply)
+          + status     = "Enabled"
+        }
+    }
+
+  # random_id.suffix will be created
+  + resource "random_id" "suffix" {
+      + b64_std     = (known after apply)
+      + b64_url     = (known after apply)
+      + byte_length = 4
+      + dec         = (known after apply)
+      + hex         = (known after apply)
+      + id          = (known after apply)
+    }
+
+Plan: 4 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + bucket_arn        = (known after apply)
+  + bucket_name       = (known after apply)
+  + bucket_region     = (known after apply)
+  + versioning_status = "Enabled"
+
+Warning: Resource targeting is in effect
+
+You are creating a plan with the -target option, which means that the result
+of this plan may not represent all of the changes requested by the current
+configuration.
+
+The -target option is not for routine use, and is provided only for
+exceptional situations such as recovering from errors or mistakes, or when
+Terraform specifically suggests to use it as part of an error message.
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
+
+$ terraform plan -out=tfplan
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_s3_bucket.homework will be created
+  + resource "aws_s3_bucket" "homework" {
+      + acceleration_status         = (known after apply)
+      + acl                         = (known after apply)
+      + arn                         = (known after apply)
+      + bucket                      = (known after apply)
+      + bucket_domain_name          = (known after apply)
+      + bucket_prefix               = (known after apply)
+      + bucket_regional_domain_name = (known after apply)
+      + force_destroy               = false
+      + hosted_zone_id              = (known after apply)
+      + id                          = (known after apply)
+      + object_lock_enabled         = (known after apply)
+      + policy                      = (known after apply)
+      + region                      = (known after apply)
+      + request_payer               = (known after apply)
+      + tags                        = (known after apply)
+      + tags_all                    = (known after apply)
+      + website_domain              = (known after apply)
+      + website_endpoint            = (known after apply)
+
+      + cors_rule (known after apply)
+
+      + grant (known after apply)
+
+      + lifecycle_rule (known after apply)
+
+      + logging (known after apply)
+
+      + object_lock_configuration (known after apply)
+
+      + replication_configuration (known after apply)
+
+      + server_side_encryption_configuration (known after apply)
+
+      + versioning (known after apply)
+
+      + website (known after apply)
+    }
+
+  # aws_s3_bucket_public_access_block.homework will be created
+  + resource "aws_s3_bucket_public_access_block" "homework" {
+      + block_public_acls       = true
+      + block_public_policy     = true
+      + bucket                  = (known after apply)
+      + id                      = (known after apply)
+      + ignore_public_acls      = true
+      + restrict_public_buckets = true
+    }
+
+  # aws_s3_bucket_server_side_encryption_configuration.homework will be created
+  + resource "aws_s3_bucket_server_side_encryption_configuration" "homework" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+
+      + rule {
+          + apply_server_side_encryption_by_default {
+              + sse_algorithm     = "AES256"
+                # (1 unchanged attribute hidden)
+            }
+        }
+    }
+
+  # aws_s3_bucket_versioning.homework will be created
+  + resource "aws_s3_bucket_versioning" "homework" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+
+      + versioning_configuration {
+          + mfa_delete = (known after apply)
+          + status     = "Enabled"
+        }
+    }
+
+  # aws_s3_object.readme will be created
+  + resource "aws_s3_object" "readme" {
+      + acl                    = (known after apply)
+      + arn                    = (known after apply)
+      + bucket                 = (known after apply)
+      + bucket_key_enabled     = (known after apply)
+      + checksum_crc32         = (known after apply)
+      + checksum_crc32c        = (known after apply)
+      + checksum_crc64nvme     = (known after apply)
+      + checksum_sha1          = (known after apply)
+      + checksum_sha256        = (known after apply)
+      + content                = <<-EOT
+            Session 18 - Terraform and Infrastructure as Code
+            Owner: vibhuti-24bcs10288
+            Bucket created and managed by Terraform.
+        EOT
+      + content_type           = "text/plain"
+      + etag                   = (known after apply)
+      + force_destroy          = false
+      + id                     = (known after apply)
+      + key                    = "README.txt"
+      + kms_key_id             = (known after apply)
+      + server_side_encryption = (known after apply)
+      + storage_class          = (known after apply)
+      + tags_all               = {
+          + "ManagedBy" = "terraform"
+          + "Owner"     = "vibhuti-24bcs10288"
+          + "Project"   = "devops-homework"
+          + "Session"   = "18-terraform-iac"
+        }
+      + version_id             = (known after apply)
+    }
+
+  # random_id.suffix will be created
+  + resource "random_id" "suffix" {
+      + b64_std     = (known after apply)
+      + b64_url     = (known after apply)
+      + byte_length = 4
+      + dec         = (known after apply)
+      + hex         = (known after apply)
+      + id          = (known after apply)
+    }
+
+Plan: 6 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + bucket_arn        = (known after apply)
+  + bucket_name       = (known after apply)
+  + bucket_region     = (known after apply)
+  + object_key        = "README.txt"
+  + versioning_status = "Enabled"
+
+─────────────────────────────────────────────────────────────────────────────
+
+Saved the plan to: tfplan
+
+To perform exactly these actions, run the following command to apply:
+    terraform apply "tfplan"
+
+PASS: terraform plan
+
+$ terraform apply -auto-approve tfplan
+random_id.suffix: Creating...
+random_id.suffix: Creation complete after 0s [id=bmm4Ng]
+aws_s3_bucket.homework: Creating...
+aws_s3_bucket.homework: Creation complete after 1s [id=devops-homework-6e69b836]
+aws_s3_bucket_public_access_block.homework: Creating...
+aws_s3_bucket_versioning.homework: Creating...
+aws_s3_bucket_server_side_encryption_configuration.homework: Creating...
+aws_s3_object.readme: Creating...
+aws_s3_bucket_server_side_encryption_configuration.homework: Creation complete after 0s [id=devops-homework-6e69b836]
+aws_s3_bucket_public_access_block.homework: Creation complete after 0s [id=devops-homework-6e69b836]
+aws_s3_object.readme: Creation complete after 0s [id=README.txt]
+aws_s3_bucket_versioning.homework: Creation complete after 1s [id=devops-homework-6e69b836]
+
+Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+bucket_arn = "arn:aws:s3:::devops-homework-6e69b836"
+bucket_name = "devops-homework-6e69b836"
+bucket_region = "ap-south-1"
+object_key = "README.txt"
+versioning_status = "Enabled"
+
+PASS: terraform apply
+
+$ terraform output
+bucket_arn = "arn:aws:s3:::devops-homework-6e69b836"
+bucket_name = "devops-homework-6e69b836"
+bucket_region = "ap-south-1"
+object_key = "README.txt"
+versioning_status = "Enabled"
+
+PASS: terraform output
+
+$ terraform state list
+aws_s3_bucket.homework
+aws_s3_bucket_public_access_block.homework
+aws_s3_bucket_server_side_encryption_configuration.homework
+aws_s3_bucket_versioning.homework
+aws_s3_object.readme
+random_id.suffix
+
+PASS: terraform state list
+
+Reading the bucket back through the AWS API, independently of Terraform:
+
+$ awslocal s3api head-bucket --bucket devops-homework-6e69b836
+{
+    "BucketRegion": "ap-south-1"
+}
+
+$ awslocal s3api get-bucket-versioning --bucket devops-homework-6e69b836
+{
+    "Status": "Enabled"
+}
+
+$ awslocal s3api get-bucket-encryption --bucket devops-homework-6e69b836
+{
+    "ServerSideEncryptionConfiguration": {
+        "Rules": [
+            {
+                "ApplyServerSideEncryptionByDefault": {
+                    "SSEAlgorithm": "AES256"
+                },
+                "BucketKeyEnabled": false
+            }
+        ]
+    }
+}
+
+$ awslocal s3api get-public-access-block --bucket devops-homework-6e69b836
+{
+    "PublicAccessBlockConfiguration": {
+        "BlockPublicAcls": true,
+        "IgnorePublicAcls": true,
+        "BlockPublicPolicy": true,
+        "RestrictPublicBuckets": true
+    }
+}
+
+$ awslocal s3 ls s3://devops-homework-6e69b836
+2026-10-07 14:20:12        117 README.txt
+
+$ awslocal s3 cp s3://devops-homework-6e69b836/README.txt -
+Session 18 - Terraform and Infrastructure as Code
+Owner: vibhuti-24bcs10288
+Bucket created and managed by Terraform.
+
+A second plan with no source change must report no differences:
+
+$ terraform plan -detailed-exitcode
+random_id.suffix: Refreshing state... [id=bmm4Ng]
+aws_s3_bucket.homework: Refreshing state... [id=devops-homework-6e69b836]
+aws_s3_bucket_versioning.homework: Refreshing state... [id=devops-homework-6e69b836]
+aws_s3_bucket_public_access_block.homework: Refreshing state... [id=devops-homework-6e69b836]
+aws_s3_bucket_server_side_encryption_configuration.homework: Refreshing state... [id=devops-homework-6e69b836]
+aws_s3_object.readme: Refreshing state... [id=README.txt]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+
+PASS: the configuration is idempotent (exit 0, no changes)
+
+$ terraform destroy -auto-approve
+random_id.suffix: Refreshing state... [id=bmm4Ng]
+aws_s3_bucket.homework: Refreshing state... [id=devops-homework-6e69b836]
+aws_s3_object.readme: Refreshing state... [id=README.txt]
+aws_s3_bucket_versioning.homework: Refreshing state... [id=devops-homework-6e69b836]
+aws_s3_bucket_public_access_block.homework: Refreshing state... [id=devops-homework-6e69b836]
+aws_s3_bucket_server_side_encryption_configuration.homework: Refreshing state... [id=devops-homework-6e69b836]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # aws_s3_bucket.homework will be destroyed
+  - resource "aws_s3_bucket" "homework" {
+      - arn                         = "arn:aws:s3:::devops-homework-6e69b836" -> null
+      - bucket                      = "devops-homework-6e69b836" -> null
+      - bucket_domain_name          = "devops-homework-6e69b836.s3.amazonaws.com" -> null
+      - bucket_regional_domain_name = "devops-homework-6e69b836.s3.ap-south-1.amazonaws.com" -> null
+      - force_destroy               = false -> null
+      - hosted_zone_id              = "Z11RGJOFQNVJUP" -> null
+      - id                          = "devops-homework-6e69b836" -> null
+      - object_lock_enabled         = false -> null
+      - region                      = "ap-south-1" -> null
+      - request_payer               = "BucketOwner" -> null
+      - tags                        = {
+          - "Name" = "devops-homework-6e69b836"
+        } -> null
+      - tags_all                    = {
+          - "ManagedBy" = "terraform"
+          - "Name"      = "devops-homework-6e69b836"
+          - "Owner"     = "vibhuti-24bcs10288"
+          - "Project"   = "devops-homework"
+          - "Session"   = "18-terraform-iac"
+        } -> null
+        # (3 unchanged attributes hidden)
+
+      - grant {
+          - id          = "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a" -> null
+          - permissions = [
+              - "FULL_CONTROL",
+            ] -> null
+          - type        = "CanonicalUser" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - server_side_encryption_configuration {
+          - rule {
+              - bucket_key_enabled = false -> null
+
+              - apply_server_side_encryption_by_default {
+                  - sse_algorithm     = "AES256" -> null
+                    # (1 unchanged attribute hidden)
+                }
+            }
+        }
+
+      - versioning {
+          - enabled    = true -> null
+          - mfa_delete = false -> null
+        }
+    }
+
+  # aws_s3_bucket_public_access_block.homework will be destroyed
+  - resource "aws_s3_bucket_public_access_block" "homework" {
+      - block_public_acls       = true -> null
+      - block_public_policy     = true -> null
+      - bucket                  = "devops-homework-6e69b836" -> null
+      - id                      = "devops-homework-6e69b836" -> null
+      - ignore_public_acls      = true -> null
+      - restrict_public_buckets = true -> null
+    }
+
+  # aws_s3_bucket_server_side_encryption_configuration.homework will be destroyed
+  - resource "aws_s3_bucket_server_side_encryption_configuration" "homework" {
+      - bucket                = "devops-homework-6e69b836" -> null
+      - id                    = "devops-homework-6e69b836" -> null
+        # (1 unchanged attribute hidden)
+
+      - rule {
+          - bucket_key_enabled = false -> null
+
+          - apply_server_side_encryption_by_default {
+              - sse_algorithm     = "AES256" -> null
+                # (1 unchanged attribute hidden)
+            }
+        }
+    }
+
+  # aws_s3_bucket_versioning.homework will be destroyed
+  - resource "aws_s3_bucket_versioning" "homework" {
+      - bucket                = "devops-homework-6e69b836" -> null
+      - id                    = "devops-homework-6e69b836" -> null
+        # (1 unchanged attribute hidden)
+
+      - versioning_configuration {
+          - status     = "Enabled" -> null
+            # (1 unchanged attribute hidden)
+        }
+    }
+
+  # aws_s3_object.readme will be destroyed
+  - resource "aws_s3_object" "readme" {
+      - arn                           = "arn:aws:s3:::devops-homework-6e69b836/README.txt" -> null
+      - bucket                        = "devops-homework-6e69b836" -> null
+      - bucket_key_enabled            = false -> null
+      - content                       = <<-EOT
+            Session 18 - Terraform and Infrastructure as Code
+            Owner: vibhuti-24bcs10288
+            Bucket created and managed by Terraform.
+        EOT -> null
+      - content_type                  = "text/plain" -> null
+      - etag                          = "ae8a48e375d49b03f6b4fabe7fd74568" -> null
+      - force_destroy                 = false -> null
+      - id                            = "README.txt" -> null
+      - key                           = "README.txt" -> null
+      - metadata                      = {} -> null
+      - server_side_encryption        = "AES256" -> null
+      - storage_class                 = "STANDARD" -> null
+      - tags                          = {} -> null
+      - tags_all                      = {
+          - "ManagedBy" = "terraform"
+          - "Owner"     = "vibhuti-24bcs10288"
+          - "Project"   = "devops-homework"
+          - "Session"   = "18-terraform-iac"
+        } -> null
+      - version_id                    = "VoOTfqhnLMl89wWYzDVXNMq7QjjPe9TS" -> null
+        # (13 unchanged attributes hidden)
+    }
+
+  # random_id.suffix will be destroyed
+  - resource "random_id" "suffix" {
+      - b64_std     = "bmm4Ng==" -> null
+      - b64_url     = "bmm4Ng" -> null
+      - byte_length = 4 -> null
+      - dec         = "1852422198" -> null
+      - hex         = "6e69b836" -> null
+      - id          = "bmm4Ng" -> null
+    }
+
+Plan: 0 to add, 0 to change, 6 to destroy.
+
+Changes to Outputs:
+  - bucket_arn        = "arn:aws:s3:::devops-homework-6e69b836" -> null
+  - bucket_name       = "devops-homework-6e69b836" -> null
+  - bucket_region     = "ap-south-1" -> null
+  - object_key        = "README.txt" -> null
+  - versioning_status = "Enabled" -> null
+aws_s3_bucket_public_access_block.homework: Destroying... [id=devops-homework-6e69b836]
+aws_s3_bucket_versioning.homework: Destroying... [id=devops-homework-6e69b836]
+aws_s3_bucket_server_side_encryption_configuration.homework: Destroying... [id=devops-homework-6e69b836]
+aws_s3_object.readme: Destroying... [id=README.txt]
+aws_s3_bucket_server_side_encryption_configuration.homework: Destruction complete after 0s
+aws_s3_bucket_versioning.homework: Destruction complete after 0s
+aws_s3_object.readme: Destruction complete after 0s
+aws_s3_bucket_public_access_block.homework: Destruction complete after 0s
+aws_s3_bucket.homework: Destroying... [id=devops-homework-6e69b836]
+aws_s3_bucket.homework: Destruction complete after 0s
+random_id.suffix: Destroying... [id=bmm4Ng]
+random_id.suffix: Destruction complete after 0s
+
+Destroy complete! Resources: 6 destroyed.
+
+PASS: terraform destroy
+
+The bucket is gone after destroy (an error here is the expected result):
+
+$ awslocal s3api head-bucket --bucket devops-homework-6e69b836
+
+An error occurred (404) when calling the HeadBucket operation: Not Found

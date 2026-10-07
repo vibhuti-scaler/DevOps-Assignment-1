@@ -1,0 +1,9 @@
+tests/
+.github/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+README.md

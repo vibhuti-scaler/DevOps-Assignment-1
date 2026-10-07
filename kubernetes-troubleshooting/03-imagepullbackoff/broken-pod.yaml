@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: imagepull-broken
+  labels:
+    app: imagepull-demo
+spec:
+  containers:
+    - name: web
+      # The tag does not exist. The first failure is ErrImagePull; once the
+      # kubelet starts backing off between retries it becomes ImagePullBackOff.
+      image: nginx:1.27-alpine-this-tag-does-not-exist

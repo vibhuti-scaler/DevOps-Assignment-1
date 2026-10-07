@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: oom-broken
+  labels:
+    app: oom-demo
+spec:
+  restartPolicy: Never
+  containers:
+    - name: hungry
+      image: busybox:1.36
+      # Allocates roughly 80Mi into a tmpfs that counts against the container's
+      # memory cgroup, while the limit is 32Mi. The kernel OOM killer stops it
+      # and the container status reason becomes OOMKilled.
+      command:
+        - /bin/sh
+        - -c
+        - 'dd if=/dev/zero of=/dev/shm/fill bs=1M count=80; sleep 3600'
+      resources:
+        requests:
+          memory: 16Mi
+        limits:
+          memory: 32Mi

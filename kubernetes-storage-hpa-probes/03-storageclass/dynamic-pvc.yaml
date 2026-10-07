@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dynamic-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  # "standard" is the default StorageClass that kind installs
+  # (rancher.io/local-path). No PersistentVolume is written by hand: the
+  # provisioner creates one when this claim is first consumed.
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 256Mi

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: missing-config
+data:
+  APP_MODE: "coursework"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: config-fixed
+  labels:
+    app: config-demo
+spec:
+  containers:
+    - name: web
+      image: nginx:1.27-alpine
+      env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: missing-config
+              key: APP_MODE

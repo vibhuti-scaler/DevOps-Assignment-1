@@ -1,0 +1,990 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T07:52:26.454187+00:00 | 12-helm
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-fundamentals/namespace.yaml
+namespace/devops-homework unchanged
+
+$ helm version
+version.BuildInfo{Version:"v3.19.0", GitCommit:"3d8990f0836691f0229297773f3524598f46bda6", GitTreeState:"clean", GoVersion:"go1.24.7"}
+
+$ helm uninstall notes-dev -n devops-homework --ignore-not-found
+release "notes-dev" uninstalled
+
+$ helm lint helm/notes-chart
+==> Linting helm/notes-chart
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+
+$ helm lint helm/notes-chart -f helm/notes-chart/values-prod.yaml
+==> Linting helm/notes-chart
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+
+$ helm template notes-dev helm/notes-chart
+---
+# Source: notes-chart/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notes-dev-notes-chart-config
+  labels:
+    app.kubernetes.io/name: notes-chart
+    app.kubernetes.io/instance: notes-dev
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: notes-chart-0.1.0
+    environment: development
+data:
+  APP_NAME: "notes-app"
+  ENVIRONMENT: "development"
+  # The page the container serves is rendered from values, so the running Pod
+  # proves which values file produced the release.
+  index.html: |
+    <!doctype html>
+    <html lang="en">
+      <head><meta charset="utf-8"><title>notes-app</title></head>
+      <body>
+        <h1>Notes app - development release</h1>
+        <p>release: notes-dev</p>
+        <p>revision: 1</p>
+        <p>environment: development</p>
+        <p>image: nginx:1.27-alpine</p>
+      </body>
+    </html>
+---
+# Source: notes-chart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: notes-dev-notes-chart
+  labels:
+    app.kubernetes.io/name: notes-chart
+    app.kubernetes.io/instance: notes-dev
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: notes-chart-0.1.0
+    environment: development
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: notes-chart
+    app.kubernetes.io/instance: notes-dev
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30090
+---
+# Source: notes-chart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notes-dev-notes-chart
+  labels:
+    app.kubernetes.io/name: notes-chart
+    app.kubernetes.io/instance: notes-dev
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: notes-chart-0.1.0
+    environment: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: notes-chart
+      app.kubernetes.io/instance: notes-dev
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: notes-chart
+        app.kubernetes.io/instance: notes-dev
+      annotations:
+        # Changing the ConfigMap alone does not restart Pods. Hashing it into an
+        # annotation makes `helm upgrade` roll the Deployment when the page or
+        # the environment values change.
+        checksum/config: 2af483414808f1eb2869318aa40e30aec4c855cd02ca5704061b3d6e786727b2
+    spec:
+      volumes:
+        - name: content
+          configMap:
+            name: notes-dev-notes-chart-config
+            items:
+              - key: index.html
+                path: index.html
+      containers:
+        - name: notes
+          image: "nginx:1.27-alpine"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: notes-dev-notes-chart-config
+          volumeMounts:
+            - name: content
+              mountPath: /usr/share/nginx/html
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              cpu: 25m
+              memory: 32Mi
+
+$ helm install notes-dev helm/notes-chart -n devops-homework --wait --timeout 5m
+NAME: notes-dev
+LAST DEPLOYED: Wed Oct  7 13:22:26 2026
+NAMESPACE: devops-homework
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+notes-app release "notes-dev" is at revision 1
+in namespace devops-homework (development).
+
+Replicas: 1
+Image:    nginx:1.27-alpine
+
+Reach it with:
+  kubectl -n devops-homework port-forward svc/notes-dev-notes-chart 8088:80
+  curl http://127.0.0.1:8088
+
+Useful follow-ups:
+  helm status notes-dev
+  helm history notes-dev
+  helm rollback notes-dev <revision>
+
+$ helm list -n devops-homework
+NAME     	NAMESPACE      	REVISION	UPDATED                             	STATUS  	CHART            	APP VERSION
+notes-dev	devops-homework	1       	2026-10-07 13:22:26.850879 +0530 IST	deployed	notes-chart-0.1.0	1.0
+
+$ helm status notes-dev -n devops-homework
+NAME: notes-dev
+LAST DEPLOYED: Wed Oct  7 13:22:26 2026
+NAMESPACE: devops-homework
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+notes-app release "notes-dev" is at revision 1
+in namespace devops-homework (development).
+
+Replicas: 1
+Image:    nginx:1.27-alpine
+
+Reach it with:
+  kubectl -n devops-homework port-forward svc/notes-dev-notes-chart 8088:80
+  curl http://127.0.0.1:8088
+
+Useful follow-ups:
+  helm status notes-dev
+  helm history notes-dev
+  helm rollback notes-dev <revision>
+
+$ helm get values notes-dev -n devops-homework
+USER-SUPPLIED VALUES:
+null
+
+$ helm get manifest notes-dev -n devops-homework
+---
+# Source: notes-chart/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notes-dev-notes-chart-config
+  labels:
+    app.kubernetes.io/name: notes-chart
+    app.kubernetes.io/instance: notes-dev
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: notes-chart-0.1.0
+    environment: development
+data:
+  APP_NAME: "notes-app"
+  ENVIRONMENT: "development"
+  # The page the container serves is rendered from values, so the running Pod
+  # proves which values file produced the release.
+  index.html: |
+    <!doctype html>
+    <html lang="en">
+      <head><meta charset="utf-8"><title>notes-app</title></head>
+      <body>
+        <h1>Notes app - development release</h1>
+        <p>release: notes-dev</p>
+        <p>revision: 1</p>
+        <p>environment: development</p>
+        <p>image: nginx:1.27-alpine</p>
+      </body>
+    </html>
+---
+# Source: notes-chart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: notes-dev-notes-chart
+  labels:
+    app.kubernetes.io/name: notes-chart
+    app.kubernetes.io/instance: notes-dev
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: notes-chart-0.1.0
+    environment: development
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: notes-chart
+    app.kubernetes.io/instance: notes-dev
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30090
+---
+# Source: notes-chart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notes-dev-notes-chart
+  labels:
+    app.kubernetes.io/name: notes-chart
+    app.kubernetes.io/instance: notes-dev
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: notes-chart-0.1.0
+    environment: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: notes-chart
+      app.kubernetes.io/instance: notes-dev
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: notes-chart
+        app.kubernetes.io/instance: notes-dev
+      annotations:
+        # Changing the ConfigMap alone does not restart Pods. Hashing it into an
+        # annotation makes `helm upgrade` roll the Deployment when the page or
+        # the environment values change.
+        checksum/config: 2af483414808f1eb2869318aa40e30aec4c855cd02ca5704061b3d6e786727b2
+    spec:
+      volumes:
+        - name: content
+          configMap:
+            name: notes-dev-notes-chart-config
+            items:
+              - key: index.html
+                path: index.html
+      containers:
+        - name: notes
+          image: "nginx:1.27-alpine"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: notes-dev-notes-chart-config
+          volumeMounts:
+            - name: content
+              mountPath: /usr/share/nginx/html
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              cpu: 25m
+              memory: 32Mi
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get deployment,svc,configmap -l app.kubernetes.io/instance=notes-dev
+NAME                                    READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/notes-dev-notes-chart   1/1     1            1           3s
+
+NAME                            TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+service/notes-dev-notes-chart   NodePort   10.96.138.241   <none>        80:30090/TCP   3s
+
+NAME                                     DATA   AGE
+configmap/notes-dev-notes-chart-config   3      3s
+PASS: one replica in the development release
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-services/client.yaml
+pod/dns-client unchanged
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/dns-client --timeout=180s
+pod/dns-client condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://notes-dev-notes-chart
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>notes-app</title></head>
+  <body>
+    <h1>Notes app - development release</h1>
+    <p>release: notes-dev</p>
+    <p>revision: 1</p>
+    <p>environment: development</p>
+    <p>image: nginx:1.27-alpine</p>
+  </body>
+</html>
+PASS: the rendered page reports the development release
+
+$ helm upgrade notes-dev helm/notes-chart -n devops-homework -f helm/notes-chart/values-prod.yaml --wait --timeout 5m
+Release "notes-dev" has been upgraded. Happy Helming!
+NAME: notes-dev
+LAST DEPLOYED: Wed Oct  7 13:22:29 2026
+NAMESPACE: devops-homework
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+NOTES:
+notes-app release "notes-dev" is at revision 2
+in namespace devops-homework (production).
+
+Replicas: 3
+Image:    nginx:1.27
+
+Reach it with:
+  kubectl -n devops-homework port-forward svc/notes-dev-notes-chart 8088:80
+  curl http://127.0.0.1:8088
+
+Useful follow-ups:
+  helm status notes-dev
+  helm history notes-dev
+  helm rollback notes-dev <revision>
+
+$ helm history notes-dev -n devops-homework
+REVISION	UPDATED                 	STATUS    	CHART            	APP VERSION	DESCRIPTION     
+1       	Wed Oct  7 13:22:26 2026	superseded	notes-chart-0.1.0	1.0        	Install complete
+2       	Wed Oct  7 13:22:29 2026	deployed  	notes-chart-0.1.0	1.0        	Upgrade complete
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods -l app.kubernetes.io/instance=notes-dev
+NAME                                     READY   STATUS      RESTARTS   AGE
+notes-dev-notes-chart-545c54d6cc-76ng7   0/1     Completed   0          19s
+notes-dev-notes-chart-86b4676669-fbq2c   1/1     Running     0          16s
+notes-dev-notes-chart-86b4676669-pbx5f   1/1     Running     0          2s
+notes-dev-notes-chart-86b4676669-zrh48   1/1     Running     0          1s
+PASS: three replicas after the production upgrade
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://notes-dev-notes-chart
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>notes-app</title></head>
+  <body>
+    <h1>Notes app - production release</h1>
+    <p>release: notes-dev</p>
+    <p>revision: 2</p>
+    <p>environment: production</p>
+    <p>image: nginx:1.27</p>
+  </body>
+</html>
+PASS: the rendered page reports the production release at revision 2
+
+$ helm upgrade notes-dev helm/notes-chart -n devops-homework -f helm/notes-chart/values-prod.yaml --set image.tag=broken-tag-does-not-exist
+Release "notes-dev" has been upgraded. Happy Helming!
+NAME: notes-dev
+LAST DEPLOYED: Wed Oct  7 13:22:45 2026
+NAMESPACE: devops-homework
+STATUS: deployed
+REVISION: 3
+TEST SUITE: None
+NOTES:
+notes-app release "notes-dev" is at revision 3
+in namespace devops-homework (production).
+
+Replicas: 3
+Image:    nginx:broken-tag-does-not-exist
+
+Reach it with:
+  kubectl -n devops-homework port-forward svc/notes-dev-notes-chart 8088:80
+  curl http://127.0.0.1:8088
+
+Useful follow-ups:
+  helm status notes-dev
+  helm history notes-dev
+  helm rollback notes-dev <revision>
+PASS: the bad revision leaves a Pod unable to pull its image
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods -l app.kubernetes.io/instance=notes-dev
+NAME                                     READY   STATUS         RESTARTS   AGE
+notes-dev-notes-chart-68d7c49c5d-czfkb   0/1     ErrImagePull   0          4s
+notes-dev-notes-chart-86b4676669-fbq2c   1/1     Running        0          21s
+notes-dev-notes-chart-86b4676669-pbx5f   1/1     Running        0          7s
+notes-dev-notes-chart-86b4676669-zrh48   1/1     Running        0          6s
+
+$ helm history notes-dev -n devops-homework
+REVISION	UPDATED                 	STATUS    	CHART            	APP VERSION	DESCRIPTION     
+1       	Wed Oct  7 13:22:26 2026	superseded	notes-chart-0.1.0	1.0        	Install complete
+2       	Wed Oct  7 13:22:29 2026	superseded	notes-chart-0.1.0	1.0        	Upgrade complete
+3       	Wed Oct  7 13:22:45 2026	deployed  	notes-chart-0.1.0	1.0        	Upgrade complete
+
+$ helm rollback notes-dev 2 -n devops-homework --wait --timeout 5m
+Rollback was a success! Happy Helming!
+
+$ helm history notes-dev -n devops-homework
+REVISION	UPDATED                 	STATUS    	CHART            	APP VERSION	DESCRIPTION     
+1       	Wed Oct  7 13:22:26 2026	superseded	notes-chart-0.1.0	1.0        	Install complete
+2       	Wed Oct  7 13:22:29 2026	superseded	notes-chart-0.1.0	1.0        	Upgrade complete
+3       	Wed Oct  7 13:22:45 2026	superseded	notes-chart-0.1.0	1.0        	Upgrade complete
+4       	Wed Oct  7 13:22:50 2026	deployed  	notes-chart-0.1.0	1.0        	Rollback to 2
+
+$ helm status notes-dev -n devops-homework
+NAME: notes-dev
+LAST DEPLOYED: Wed Oct  7 13:22:50 2026
+NAMESPACE: devops-homework
+STATUS: deployed
+REVISION: 4
+TEST SUITE: None
+NOTES:
+notes-app release "notes-dev" is at revision 2
+in namespace devops-homework (production).
+
+Replicas: 3
+Image:    nginx:1.27
+
+Reach it with:
+  kubectl -n devops-homework port-forward svc/notes-dev-notes-chart 8088:80
+  curl http://127.0.0.1:8088
+
+Useful follow-ups:
+  helm status notes-dev
+  helm history notes-dev
+  helm rollback notes-dev <revision>
+PASS: rollback restored three healthy replicas
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods -l app.kubernetes.io/instance=notes-dev
+NAME                                     READY   STATUS    RESTARTS   AGE
+notes-dev-notes-chart-86b4676669-fbq2c   1/1     Running   0          23s
+notes-dev-notes-chart-86b4676669-pbx5f   1/1     Running   0          9s
+notes-dev-notes-chart-86b4676669-zrh48   1/1     Running   0          8s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://notes-dev-notes-chart
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>notes-app</title></head>
+  <body>
+    <h1>Notes app - production release</h1>
+    <p>release: notes-dev</p>
+    <p>revision: 3</p>
+    <p>environment: production</p>
+    <p>image: nginx:broken-tag-does-not-exist</p>
+  </body>
+</html>
+PASS: the page is served again after the rollback
+
+$ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+"ingress-nginx" has been added to your repositories
+
+$ helm repo list
+NAME         	URL                                       
+ingress-nginx	https://kubernetes.github.io/ingress-nginx
+
+$ helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "ingress-nginx" chart repository
+Update Complete. ⎈Happy Helming!⎈
+
+$ helm search repo ingress-nginx --versions --max-col-width 60
+NAME                       	CHART VERSION	APP VERSION	DESCRIPTION                                                 
+ingress-nginx/ingress-nginx	4.15.1       	1.15.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.15.0       	1.15.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.14.5       	1.14.5     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.14.4       	1.14.4     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.14.3       	1.14.3     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.14.2       	1.14.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.14.1       	1.14.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.14.0       	1.14.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.13.9       	1.13.9     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.13.8       	1.13.8     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.13.7       	1.13.7     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.13.6       	1.13.6     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.13.5       	1.13.5     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.13.4       	1.13.4     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.13.3       	1.13.3     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.13.2       	1.13.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.13.1       	1.13.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.13.0       	1.13.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.12.8       	1.12.8     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.12.7       	1.12.7     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.12.6       	1.12.6     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.12.5       	1.12.5     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.12.4       	1.12.4     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.12.3       	1.12.3     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.12.2       	1.12.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.12.1       	1.12.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.12.0       	1.12.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.11.8       	1.11.8     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.11.7       	1.11.7     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.11.6       	1.11.6     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.11.5       	1.11.5     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.11.4       	1.11.4     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.11.3       	1.11.3     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.11.2       	1.11.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.11.1       	1.11.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.11.0       	1.11.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.10.6       	1.10.6     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.10.5       	1.10.5     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.10.4       	1.10.4     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.10.3       	1.10.3     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.10.2       	1.10.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.10.1       	1.10.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.10.0       	1.10.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.9.1        	1.9.6      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.9.0        	1.9.5      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.8.3        	1.9.4      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.8.2        	1.9.3      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.8.1        	1.9.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.8.0        	1.9.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.7.5        	1.8.5      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.7.3        	1.8.4      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.7.2        	1.8.2      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.7.1        	1.8.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.7.0        	1.8.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.6.1        	1.7.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.6.0        	1.7.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.5.2        	1.6.4      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.5.0        	1.6.3      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.4.2        	1.5.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.4.0        	1.5.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.3.0        	1.4.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.2.5        	1.3.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.2.4        	1.3.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.2.3        	1.3.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.2.2        	1.3.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.2.1        	1.3.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.2.0        	1.3.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.1.4        	1.2.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.1.3        	1.2.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.1.2        	1.2.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.1.1        	1.2.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.1.0        	1.2.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.19       	1.1.3      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.18       	1.1.2      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.17       	1.1.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.16       	1.1.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.15       	1.1.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.13       	1.1.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.12       	1.1.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.11       	1.1.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.10       	1.1.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.9        	1.0.5      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.8        	1.0.5      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.6        	1.0.4      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.5        	1.0.3      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.3        	1.0.2      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.2        	1.0.1      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	4.0.1        	1.0.0      	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.41.0       	0.51.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.40.0       	0.50.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.39.0       	0.49.3     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.38.0       	0.49.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.37.0       	0.49.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.36.0       	0.49.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.35.0       	0.48.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.34.0       	0.47.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.33.0       	0.47.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.32.0       	0.46.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.31.0       	0.46.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.30.0       	0.46.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.29.0       	0.45.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.28.0       	0.45.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.27.0       	0.45.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.26.0       	0.44.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.25.0       	0.44.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.24.0       	0.44.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.23.0       	0.44.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.22.0       	0.43.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.21.0       	0.43.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.20.1       	0.43.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.20.0       	0.43.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.19.0       	0.43.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.18.0       	0.42.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.17.0       	0.42.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.16.1       	0.41.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.15.2       	0.41.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.13.0       	0.41.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.12.0       	0.41.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.11.1       	0.41.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.11.0       	0.41.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.10.1       	0.41.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.10.0       	0.41.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.9.0        	0.41.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.8.0        	0.41.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.7.1        	0.40.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.7.0        	0.40.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.6.0        	0.40.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.5.1        	0.40.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.4.1        	0.40.2     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.4.0        	0.40.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.3.1        	0.40.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.3.0        	0.35.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.2.0        	0.35.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.1.0        	0.35.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	3.0.0        	0.35.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.16.0       	0.35.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.15.0       	0.35.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.14.0       	0.35.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.13.0       	0.35.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.12.1       	0.34.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.12.0       	0.34.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.11.3       	0.34.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.11.2       	0.34.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.11.1       	0.34.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.11.0       	0.34.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.10.0       	0.33.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.9.1        	0.33.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.9.0        	0.33.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.8.0        	0.33.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.7.1        	0.33.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.7.0        	0.33.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.6.0        	0.33.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.5.0        	0.33.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.4.0        	0.33.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.3.0        	0.32.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.2.0        	0.32.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.1.0        	0.32.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.0.3        	0.32.0     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.0.2        	0.31.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.0.1        	0.31.1     	Ingress controller for Kubernetes using NGINX as a revers...
+ingress-nginx/ingress-nginx	2.0.0        	0.31.0     	An nginx Ingress controller that uses ConfigMap to store ...
+
+$ helm search hub nginx --max-col-width 60
+URL                                                         	CHART VERSION  	APP VERSION                                     	DESCRIPTION                                                 
+https://artifacthub.io/packages/helm/cloudpirates-nginx/n...	0.16.12        	1.31.6                                          	Nginx is a high-performance HTTP server and reverse proxy.  
+https://artifacthub.io/packages/helm/quench-nginx/nginx     	0.0.15         	1.30.5                                          	High-performance web server, reverse proxy, and load bala...
+https://artifacthub.io/packages/helm/krakazyabra/nginx      	1.0.0          	1.19.0                                          	Nginx Helm chart for Kubernetes                             
+https://artifacthub.io/packages/helm/dhinesh/nginx          	25.2.1         	1.31.6                                          	NGINX Open Source is a web server that can be also used a...
+https://artifacthub.io/packages/helm/bitnami/nginx          	25.2.1         	1.31.6                                          	NGINX Open Source is a web server that can be also used a...
+https://artifacthub.io/packages/helm/niceos/nginx           	1.31.1+niceos.2	1.31.1                                          	Bitnami-compatible NGINX Helm chart for NiceOS              
+https://artifacthub.io/packages/helm/bitnami-aks/nginx      	13.2.12        	1.23.2                                          	NGINX Open Source is a web server that can be also used a...
+https://artifacthub.io/packages/helm/wiremind/nginx         	2.1.1          	                                                	An NGINX HTTP server                                        
+https://artifacthub.io/packages/helm/ashu-nginx-chart/nginx 	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/zrepo-test/nginx       	5.1.5          	1.16.1                                          	Chart for the nginx server                                  
+https://artifacthub.io/packages/helm/cloudnativeapp/nginx   	3.2.0          	1.16.0                                          	Chart for the nginx server                                  
+https://artifacthub.io/packages/helm/jfrog/nginx            	15.1.5         	1.25.2                                          	NGINX Open Source is a web server that can be also used a...
+https://artifacthub.io/packages/helm/dysnix/nginx           	7.1.8          	1.19.4                                          	Chart for the nginx server                                  
+https://artifacthub.io/packages/helm/shubhamtatvamasi/nginx 	0.1.12         	1.19.6                                          	Nginx Helm chart for Kubernetes                             
+https://artifacthub.io/packages/helm/test-nginx/nginx       	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/kubegemsapp/nginx      	9.3.4          	1.21.0                                          	Chart for the nginx server                                  
+https://artifacthub.io/packages/helm/matic-insurance/nginx  	1.1.1          	1.1.1                                           	A Nginx Helm chart for Kubernetes                           
+https://artifacthub.io/packages/helm/slamdev/nginx          	0.0.21         	1.19.10                                         	Helm chart to deploy [nginx](https://www.nginx.com).  Cha...
+https://artifacthub.io/packages/helm/mombe090/nginx         	3.0.1          	1.22.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/onurs-repo/nginx       	0.2.0          	1.20.2                                          	Helm chart for nginx-1.20.2                                 
+https://artifacthub.io/packages/helm/kubesphere/nginx       	1.3.5          	1.18.0                                          	nginx is an HTTP and reverse proxy server, a mail proxy s...
+https://artifacthub.io/packages/helm/t3n/nginx              	0.2.1          	                                                	Simple nginx deployment usable for deploying proxies or s...
+https://artifacthub.io/packages/helm/kubesphere-carryon-m...	1.3.5          	1.18.0                                          	nginx is an HTTP and reverse proxy server, a mail proxy s...
+https://artifacthub.io/packages/helm/krateo/nginx           	0.1.0          	1.28                                            	A Helm chart for NGINX                                      
+https://artifacthub.io/packages/helm/opsved/nginx           	0.1.1          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/joelee2012/nginx       	0.1.0          	1.25                                            	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/kalpeva/nginx          	7.0.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/douban/nginx           	0.4.1          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/open-charts/nginx      	1.0.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/nginxchart/my_nginx    	0.1.2          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/quench-ingress-nginx...	0.0.10         	1.15.10                                         	Ingress NGINX Controller: the Kubernetes-maintained Ingre...
+https://artifacthub.io/packages/helm/nginx-ingress-chart/...	2.7.3          	5.6.3                                           	NGINX Ingress Controller                                    
+https://artifacthub.io/packages/helm/nginx/nginx-ingress    	2.7.3          	5.6.3                                           	NGINX Ingress Controller                                    
+https://artifacthub.io/packages/helm/ingress-nginx-intern...	4.1.0          	1.2.0                                           	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/ingress-nginx/ingres...	4.15.1         	1.15.1                                          	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/ralph-nginx/ralph-nginx	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/nginx-ingress-contro...	4.0.13         	1.1.0                                           	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/nginx-app/nginx-app    	0.1.2          	1.16.0                                          	A Helm chart for a sample nginx server deployment           
+https://artifacthub.io/packages/helm/cloudnativeapp/nginx...	1.6.11         	0.24.1                                          	An nginx Ingress controller that uses ConfigMap to store ...
+https://artifacthub.io/packages/helm/jenkins-x/nginx-ingress	0.21.1         	0.14.0                                          	An nginx Ingress controller that uses ConfigMap to store ...
+https://artifacthub.io/packages/helm/zrepo-test/nginx-ing...	0.9.5          	0.10.2                                          	An nginx Ingress controller that uses ConfigMap to store ...
+https://artifacthub.io/packages/helm/geek-cookbook/nginx-php	1.2.2          	2.4.0                                           	Nginx and PHP FPM for running PHP applications              
+https://artifacthub.io/packages/helm/drpsychick/nginx-phpfpm	0.1.1          	8-fpm-alpine                                    	A chart for an nginx pod with multiple phpfpm pods          
+https://artifacthub.io/packages/helm/opa-nginx/opa-nginx    	0.0.3          	0.0.3                                           	OPA Nginx Auth Request Integration                          
+https://artifacthub.io/packages/helm/static-nginx/anna-nginx	1.31.11        	v1.31.11                                        	Anna Nginx Helm chart                                       
+https://artifacthub.io/packages/helm/nrr-test-app/helm-nginx	0.2.0          	0.2.1                                           	My test Helm chart with nginx                               
+https://artifacthub.io/packages/helm/static-nginx/hesseli...	1.31.11        	v1.31.11                                        	Hesselink.me Nginx Helm chart                               
+https://artifacthub.io/packages/helm/wener/ingress-nginx    	4.15.1         	1.15.1                                          	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/wenerme/ingress-nginx  	4.15.1         	1.15.1                                          	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/antmedia/ingress-nginx 	4.4.0          	1.5.1                                           	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/ifmethod-helm-charts...	4.12.1         	1.12.1                                          	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/gpg-dev/ingress-nginx  	4.9.0          	1.9.5                                           	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/softonic/ingress-nginx 	4.15.1         	1.15.1                                          	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/kubeblocks/ingress-n...	4.12.1         	1.12.1                                          	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/mxytest/ingress-nginx  	4.15.1         	1.15.1                                          	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/jfrog/ingress-nginx    	4.5.2          	1.6.4                                           	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/gilangvperdana/ingre...	4.0.18         	1.1.2                                           	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/kubebb/ingress-nginx   	4.7.0          	1.8.0                                           	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/api/ingress-nginx      	3.29.1         	0.45.0                                          	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/na-helm-charts/my-nginx	1.0.0          	1.21.1                                          	A Helm chart for deploying an NGINX application             
+https://artifacthub.io/packages/helm/arielevs/nalkinsclou...	0.1.4          	0.1.0                                           	Nginx proxy for nalkinscloud project                        
+https://artifacthub.io/packages/helm/nginx-cloudacademy/n...	0.8.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/my-nginx-app/nginx-app 	0.1.3          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/simu-nginx/nginx-chart 	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pshs-nginx/nginx-chart 	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/nomadshk-nginx/nginx...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/kosunjo-nginx/nginx-...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/muer921-nginx/nginx-...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/jaeki-nginx/nginx-chart	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/kyb-nginx/nginx-chart  	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/my-nginx-chart/nginx...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/jinbok-nginx/nginx-c...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/jeongmin-nginx/nginx...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/hyun-nginx/nginx-chart 	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/hyomin-nginx/nginx-c...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/hyjin-nginx/nginx-chart	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/nginx-chart-dwija/ng...	0.1.2          	1.17.1                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/nginx-chart-test/ngi...	0.1.1          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/suin-nginx/nginx-chart 	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/taeseon-nginx/nginx-...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/nginx-web/nginx-chart  	0.1.0          	1.0.0                                           	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/xxoznge-nginx/nginx-...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/songduckbae-nginx/ng...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/sejin-nginx/nginx-chart	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/nginx-web-app/nginx-...	0.1.0          	1.0.0                                           	My First Helm Chart                                         
+https://artifacthub.io/packages/helm/jae-nginx/nginx-chart  	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/test-nginx-charts/ng...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/nginx-chart-dwija/ng...	0.1.3          	1.17.1                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/ngrok-ingress-helm/n...	0.3.0          	1.16.0                                          	Nginx example demonstrates usage of a helm chart that poi...
+https://artifacthub.io/packages/helm/openshift/nginx-imag...	0.0.1          	0.0.1                                           	This content is expermental, do not use it in production....
+https://artifacthub.io/packages/helm/ygqygq2/nginx-php      	2.0.0          	nginx-1.10.3_php-7.0_1242                       	Chart for the nginx php server                              
+https://artifacthub.io/packages/helm/nginx-sample/nginx-s...	0.5.0          	1.27.0                                          	                                                            
+https://artifacthub.io/packages/helm/ygqygq2/nginx-servic...	1.0.1          	0.10.0                                          	A Helm chart servicemonitor for nginx exporter              
+https://artifacthub.io/packages/helm/ygqygq2/nginx-sftp     	2.0.0          	1.14.2                                          	Chart for the nginx server                                  
+https://artifacthub.io/packages/helm/nginx-site/nginx-site  	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/openshift/nginx-temp...	0.0.1          	0.0.1                                           	An example Nginx HTTP server and a reverse proxy (nginx) ...
+https://artifacthub.io/packages/helm/bitnami-aks/nginx-test 	5.2.4          	1.17.10                                         	Chart for the nginx server                                  
+https://artifacthub.io/packages/helm/quench-nginx-gateway...	0.0.7          	2.7.2                                           	NGINX Gateway Fabric, the F5/NGINX Gateway API implementa...
+https://artifacthub.io/packages/helm/nginx-gateway-fabric...	2.7.2          	2.7.2                                           	NGINX Gateway Fabric                                        
+https://artifacthub.io/packages/helm/nginx-custom/nginx-c...	1.0.0          	1.25                                            	NGINX Helm Chart hardened, rootless e compativel com SELi...
+https://artifacthub.io/packages/helm/nginx/nginx-service-...	2.0.0          	                                                	NGINX Service Mesh                                          
+https://artifacthub.io/packages/helm/somaz94/nginx-gatewa...	0.5.0          	0.1.0                                           	Custom resources (Gateway, NginxProxy, ReferenceGrant, Cl...
+https://artifacthub.io/packages/helm/bitnami/nginx-ingres...	12.0.7         	1.13.1                                          	NGINX Ingress Controller is an Ingress controller that ma...
+https://artifacthub.io/packages/helm/bitnami-aks/nginx-in...	9.3.18         	1.4.0                                           	NGINX Ingress Controller is an Ingress controller that ma...
+https://artifacthub.io/packages/helm/glab6/app-nginx        	1.0.0          	1.0.0                                           	This is the chart for app-nginx                             
+https://artifacthub.io/packages/helm/scaleway-charts/ed-n...	0.2.0          	v1.1.0                                          	Kapsule nginx                                               
+https://artifacthub.io/packages/helm/saber/fastdfs-nginx    	2.0.2          	V6.06                                           	FastDFS-Nginx chart for Kubernetes                          
+https://artifacthub.io/packages/helm/ygqygq2/fastdfs-nginx  	2.1.0          	6.08                                            	FastDFS-Nginx chart for Kubernetes                          
+https://artifacthub.io/packages/helm/svtech/ingress-nginx   	1.1.1          	v1.0.0                                          	SVTECH ingress-nginx                                        
+https://artifacthub.io/packages/helm/komailo-helm-charts/...	1.0.0          	                                                	A Helm chart with ingress-nginx as subchart                 
+https://artifacthub.io/packages/helm/svtech-public-helm-c...	1.0.0          	v1.0.0                                          	SVTECH ingress-nginx                                        
+https://artifacthub.io/packages/helm/charts-repo/ingress-...	0.1.0          	0.44.0                                          	A Helm chart for Kubernetes Ingress NGINX Controller        
+https://artifacthub.io/packages/helm/h1bbjf/nginx-app       	1.0.1          	1.25.0                                          	A simple Nginx deployment chart                             
+https://artifacthub.io/packages/helm/rabsnginx/nginx-chart  	0.1.0          	1.27                                            	A simple Helm chart for Nginx                               
+https://artifacthub.io/packages/helm/eoc-charts/nginx-chart 	2.0.0          	1.21                                            	Helm chart for nginx deployment                             
+https://artifacthub.io/packages/helm/jiung/nginx-chart      	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/hj-test/nginx-chart    	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/somnath-chart/nginx-...	0.1.9          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/btrepo/nginx-chart     	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/daeho12/nginx-chart    	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/jongh0916/nginx-chart  	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/myk8scharts/nginx-chart	1.0.0          	1.21                                            	Helm chart for nginx deployment                             
+https://artifacthub.io/packages/helm/user1/nginx-chart      	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/chanhk1/nginx-chart    	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/jungho-zzang/nginx-c...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/cloudposse/nginx-ing...	0.1.8          	                                                	A Helm chart for Nginx Ingress                              
+https://artifacthub.io/packages/helm/onurs-repo/nginx-rev...	1.0.2          	1.16.0                                          	helm chart for nginx-revproxy                               
+https://artifacthub.io/packages/helm/olopost/nginx-s3       	0.2.1          	latest-20250217                                 	Nginx S3 gateway                                            
+https://artifacthub.io/packages/helm/midokura-community/n...	0.1.6          	1.23.0                                          	Deploy nginx with static pages                              
+https://artifacthub.io/packages/helm/newrelic/simple-nginx  	1.1.1          	1.1                                             	A Helm chart for installing a simple nginx                  
+https://artifacthub.io/packages/helm/go-ingress-nginx/go-...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/someblackmagic/ingre...	1.3.1          	                                                	Monitor nginx ingress controller                            
+https://artifacthub.io/packages/helm/repo-for-helm-nginx-...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/lab-nginx-app/my-ngi...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/sherif-nginx-app/my-...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/azza-nginx-app/my-ng...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/bassant-nginx-app/my...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/ibrahim-nginx-app/my...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/yasser-nginx-app/my-...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/cloudposse/nginx-def...	0.5.0          	                                                	A Helm chart for nginx-default-backend to be used by ngin...
+https://artifacthub.io/packages/helm/jupyter-jsc/nginx-ga...	2.4.1          	2.4.1                                           	NGINX Gateway Fabric                                        
+https://artifacthub.io/packages/helm/radar-base/nginx-gat...	2.6.6          	2.6.6                                           	NGINX Gateway Fabric                                        
+https://artifacthub.io/packages/helm/cloudnativeapp/nginx...	3.4.5          	0.24.1                                          	Chart for the nginx Ingress controller                      
+https://artifacthub.io/packages/helm/microfunctions/nginx...	7.5.0          	0.44.0                                          	Chart for the nginx Ingress controller                      
+https://artifacthub.io/packages/helm/ygqygq2/nginx-php-sftp 	2.0.0          	nginx-1.10.3_php-7.0_1242                       	Chart for the nginx server                                  
+https://artifacthub.io/packages/helm/nginx-sample-depende...	0.2.0          	1.27.0                                          	                                                            
+https://artifacthub.io/packages/helm/ymrs/nginx-vts-exporter	0.1.2          	0.10.7                                          	A Helm chart for scrapes Nginx vts stats and exports them...
+https://artifacthub.io/packages/helm/prometheus-community...	1.23.1         	1.5.3                                           	A Helm chart for NGINX Prometheus Exporter                  
+https://artifacthub.io/packages/helm/openshift/redhat-ngi...	0.0.4          	0.0.4                                           	This content is experimental, do not use it in production...
+https://artifacthub.io/packages/helm/openshift/redhat-ngi...	0.0.2          	0.0.2                                           	An example Nginx HTTP server and a reverse proxy (nginx) ...
+https://artifacthub.io/packages/helm/rke2-charts/rke2-ing...	4.15.111       	1.15.1                                          	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/nginx/nginx-appprote...	0.2.0          	1.2.0                                           	NGINX App Protect Dos Arbitrator                            
+https://artifacthub.io/packages/helm/ingress-nginx-valida...	1.13.99        	1.13.99                                         	Enables ingress-nginx to validate JWT tokens                
+https://artifacthub.io/packages/helm/emberstack/nginx-gat...	1.0.22         	1.0.0                                           	A Helm chart for NGINX Gateway Fabric extensions            
+https://artifacthub.io/packages/helm/basic-auth-s3-nginx/...	1.0.0          	1.0.0                                           	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/suminhong/ingress-ng...	1.0.0          	1.10.0                                          	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/heba-nginx-app/my-ng...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/bakry-nginx-app/my-n...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/alphani-helm-charts/...	0.1.2-0        	v20230215-helm-chart-4.5.2-3-g15ecd2531         	A Helm chart to create a custom backend for your Nginx in...
+https://artifacthub.io/packages/helm/cloudnativeapp/nginx...	0.1.2          	1.13.5                                          	nginx proxy with ldapauth                                   
+https://artifacthub.io/packages/helm/kokuwa/nginx-php-fpm   	0.1.4          	nginx-1.29.0-alpine3.22-php-8.5.2-fpm-alpine3.22	A Helm chart for Kubernetes deploying nginx with php fpm    
+https://artifacthub.io/packages/helm/camptocamp3/nginx-s3...	1.0.0          	                                                	Deploy nginx-s3-gateway to proxy data hosted on a bucket.   
+https://artifacthub.io/packages/helm/alexpresso/nginx-sni...	1.0.4          	latest                                          	Installs an NGinX SNI Proxy in kubernetes                   
+https://artifacthub.io/packages/helm/pardus-charts/pardus...	0.5.0          	25-nodeport                                     	Pardus 25 (yirmibes) tabanlı Nginx - NodePort Servisli He...
+https://artifacthub.io/packages/helm/vastio/php-nginx-ftp...	0.4.0          	0.4.0                                           	A Helm chart for deploying a static file / php stack (PHP...
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	20201029-1700-nginx-1                           	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/teochenglim/dummy-nginx	1.0.3          	1.0.0                                           	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/stksrshelm/helm-nginx  	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/jupyter-jsc/jupyter-...	0.1.3          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/helmtaiwo/my-nginx     	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/mystaticapp-helmchar...	0.1.0          	1.0                                             	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts/ngi...	0.1.2          	0.1.2                                           	A Simple Web service Chart                                  
+https://artifacthub.io/packages/helm/helm-chart-sample-ap...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/aws9-chart/nginx-chart 	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/anchungsol/nginx-chart 	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/doranonerfakerkeria/...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/mysql2s3bk/nginx-pla...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/sample-charts/sample...	0.1.3          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/temp-charts/stateles...	0.3.0          	v0.3.0                                          	Argonaut Resource Template - ART                            
+https://artifacthub.io/packages/helm/argonaut-charts/stat...	0.3.0          	v0.3.0                                          	Argonaut Resource Template - ART                            
+https://artifacthub.io/packages/helm/teochenglim/dummy-ng...	1.0.1          	1.0.0                                           	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/mustafa-nignx-app/my...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/janna-nginxapp/my-ng...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/sekarrepo/my-nginx-app1	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/exxk/nginx-file-browser	1.0.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/warjiang/nginx-file-...	0.1.2          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/choerodon/nginx-file...	0.1.0          	1.13.5-alpine                                   	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/camptocamp3/nginx-ld...	0.4.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/banzaicloud-stable/n...	2.5.0          	2.5.0                                           	A Demo application for the logging-operator                 
+https://artifacthub.io/packages/helm/seture/return-nginx-...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/banzaicloud-stable/n...	2.5.0          	2.5.0                                           	A Demo application for the logging-operator AWS CloudWatc...
+https://artifacthub.io/packages/helm/banzaicloud-stable/n...	2.5.0          	2.5.0                                           	A Demo application for the logging-operator                 
+https://artifacthub.io/packages/helm/banzaicloud-stable/n...	2.5.0          	2.5.0                                           	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/banzaicloud-stable/n...	2.5.0          	2.5.0                                           	A Demo application for the logging-operator                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.13.11-nginx-1                                 	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.14.10-nginx-7                                 	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.15.12-nginx-5                                 	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.16.15-nginx-9                                 	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.17.17-nginx-36                                	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.18.20-nginx-32                                	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.19.16-nginx-20                                	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.20.15-nginx-18                                	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.21.14-nginx-36                                	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.22.17-nginx-36                                	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.23.17-nginx-36                                	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/pnnl-miscscripts-lib...	2.0.0          	1.24.17-nginx-23                                	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/error-pages/error-pages	4.2.5          	4.2.5                                           	Tiny, zero-dep HTTP server that serves clean, themeable, ...
+https://artifacthub.io/packages/helm/nginx/f5-waf-policy-...	5.15.0         	5.15.0                                          	F5 WAF Policy Lifecycle Manager                             
+https://artifacthub.io/packages/helm/helm-nginx/mywebapp    	0.1.0          	1.0                                             	A Helm chart for deploying a custom Nginx web application   
+https://artifacthub.io/packages/helm/halkeye/vouch          	3.0.2          	0.32.0                                          	An SSO and OAuth login solution for nginx using the auth_...
+https://artifacthub.io/packages/helm/vouch/vouch            	3.2.0          	0.39                                            	An SSO and OAuth login solution for nginx using the auth_...
+https://artifacthub.io/packages/helm/java-nginx/app1.1      	1.1.0          	                                                	nginx或者java的Helm chart,1.1                               
+https://artifacthub.io/packages/helm/java-nginx/app1.2      	1.2.0          	                                                	nginx或者java的Helm chart,1.2                               
+https://artifacthub.io/packages/helm/java-nginx/app1.3      	1.3.0          	                                                	nginx或者java的Helm chart,1.3                               
+https://artifacthub.io/packages/helm/java-nginx/app1.4      	1.4.0          	                                                	nginx或者java的Helm chart,1.4                               
+https://artifacthub.io/packages/helm/aws-web-service-prox...	1.8.0          	1.16.0                                          	A Helm chart for Kubernetes to deploy a service proxified...
+https://artifacthub.io/packages/helm/helmforge/bentopdf     	1.0.0          	2.8.8                                           	Browser-local PDF tools with isolated NGINX, runtime tool...
+https://artifacthub.io/packages/helm/artur9010/cloudflared  	1.0.9          	2026.3.0                                        	A cloudflared with ingress-nginx stack                      
+https://artifacthub.io/packages/helm/nginx-cert-charts/cl...	0.3.0          	                                                	A Helm chart for cluster-issuers with cert-manager depend...
+https://artifacthub.io/packages/helm/romanow-helm-charts/...	1.7.1          	1.0                                             	Frontend application running in nginx, based on create-re...
+https://artifacthub.io/packages/helm/nginx-cert-charts/ho...	0.2.0          	                                                	Helm chart to expose host IP services and generate option...
+https://artifacthub.io/packages/helm/quench-ingress-stack...	0.0.4          	1.0.0                                           	Hardened ingress with TLS out of the box: ingress-nginx a...
+https://artifacthub.io/packages/helm/iris-webapp/iris-webapp	0.2.4          	2.4.26                                          	Production-ready Helm chart for deploying the IRIS Incide...
+https://artifacthub.io/packages/helm/k8stcpmap-controller...	0.1.2          	v0.0.1                                          	Automated tcp port mapping for the nginx ingress controller 
+https://artifacthub.io/packages/helm/kube-botblocker/kube...	0.2.2          	0.2.0                                           	Easily configure User-Agent blocks for selected ingresses...
+https://artifacthub.io/packages/helm/ygqygq2/mod-chart      	5.1.0          	1.0.0                                           	Chart for the nginx server                                  
+https://artifacthub.io/packages/helm/nginx-chart/my-app-c...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/quench-openresty/ope...	0.0.3          	1.31.1.1                                        	OpenResty: nginx with LuaJIT for scriptable proxies, API ...
+https://artifacthub.io/packages/helm/fluxguide-helm-testi...	0.1.0          	1.0.0                                           	A Helm chart for the Qantas API stack with Node.js, Nginx...
+https://artifacthub.io/packages/helm/qgis-server/qgis-server	0.1.10         	3.22.4                                          	A basic Helm Chart for QGIS Server packed with nginx serv...
+https://artifacthub.io/packages/helm/retrun-nginx-chart/t...	0.1.0          	1.16.0                                          	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/wallarm/wallarm-ingress	7.1.3          	7.1.3                                           	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/wallarm/wallarm-ingr...	4.8.4          	4.8.4                                           	Ingress controller for Kubernetes using NGINX as a revers...
+https://artifacthub.io/packages/helm/wallarm/wallarm-sidecar	6.13.2         	6.13.2                                          	Sidecar controller for Kubernetes. Injects sidecar proxy ...
+https://artifacthub.io/packages/helm/webserver-nginx/webs...	3.0.0          	3.0                                             	A Helm chart for Kubernetes                                 
+https://artifacthub.io/packages/helm/allure-service-chart...	0.1.0          	1.0                                             	A Helm chart for deploying Allure Docker Service with NGI...
+https://artifacthub.io/packages/helm/ieugen-charts/anothe...	0.3.0          	2.2.1                                           	A Helm chart using another-ldap-auth to enable AD or LDAP...
+https://artifacthub.io/packages/helm/kubesphere-carryon-t...	0.1.7          	1.15.0                                          	Apache APISIX is a dynamic, real-time, high-performance A...
+https://artifacthub.io/packages/helm/kubesphere-test/apisix 	0.1.7          	1.15.0                                          	Apache APISIX is a dynamic, real-time, high-performance A...
+https://artifacthub.io/packages/helm/kubesphere-carryon-m...	0.8.0          	1.3.0                                           	Apache APISIX Ingress Controller for Kubernetes             
+https://artifacthub.io/packages/helm/wener/apisix-ingress...	1.4.0          	2.2.0                                           	Apache APISIX Ingress Controller for Kubernetes             
+https://artifacthub.io/packages/helm/apisix/apisix-ingres...	1.4.0          	2.2.0                                           	Apache APISIX Ingress Controller for Kubernetes             
+https://artifacthub.io/packages/helm/wenerme/apisix-ingre...	1.4.0          	2.2.0                                           	Apache APISIX Ingress Controller for Kubernetes             
+https://artifacthub.io/packages/helm/kubesphere/apisix-in...	0.8.0          	1.3.0                                           	Apache APISIX Ingress Controller for Kubernetes             
+https://artifacthub.io/packages/helm/aptly/aptly            	0.2.2          	1.6.3-1                                         	aptly (Debian repository management tool) on Kubernetes —...
+https://artifacthub.io/packages/helm/k8s-charts/bentopdf    	2.0.0          	2.8.5                                           	A Helm chart for BentoPDF - a privacy-first, fully client...
+https://artifacthub.io/packages/helm/py-kube-downscaler/c...	0.0.5          	0.0.1                                           	CaaS Demoapp                                                
+https://artifacthub.io/packages/helm/quench-coolify/coolify 	0.0.34         	4.3.4                                           	Self-hostable platform-as-a-service and open alternative ...
+https://artifacthub.io/packages/helm/drpsychick/cronjobs    	0.4.1          	latest                                          	A generic helm cronjob chart for kubernetes                 
+https://artifacthub.io/packages/helm/crowdsec-firewall-bo...	0.1.0          	v0.0.34                                         	CrowdSec Firewall Bouncer — bans malicious IPs via iptabl...
+https://artifacthub.io/packages/helm/makaira/demoshop       	2.4.0          	1.0                                             	A Helm chart for deploying a demo shop with PHP-FPM, Ngin...
+https://artifacthub.io/packages/helm/ju4t/django            	0.1.0          	4.1.4                                           	Django是一个有期限的完美主义者网络框架！                    
+https://artifacthub.io/packages/helm/quench-drupal/drupal   	0.0.23         	11.4.8                                          	Hardened Drupal CMS (PHP-FPM + nginx) on a 0-CVE nonroot ...
+https://artifacthub.io/packages/helm/external-ingress-aut...	0.4.2          	0.4.2                                           	Installs an instance of the External Ingress Authenticati...
+https://artifacthub.io/packages/helm/cloudposse/fail-whale  	0.1.1          	                                                	A Helm chart that provides a maintenance backend to be us...
+https://artifacthub.io/packages/helm/flagger/flagger        	1.45.0         	1.45.0                                          	Flagger is a progressive delivery operator for Kubernetes   
+https://artifacthub.io/packages/helm/mesosphere/flagger     	0.21.0         	0.19.0                                          	Flagger is a Kubernetes operator that automates the promo...
+https://artifacthub.io/packages/helm/kubegems/gateway       	0.3.2          	0.3.2                                           	KubeGems 租户网关，基于 Nginx ingress                       
+https://artifacthub.io/packages/helm/radar-base/gateway-api 	0.1.0          	1.0                                             	A Helm chart for a shared Gateway API Gateway (and listen...
+https://artifacthub.io/packages/helm/quench-gateway-api-c...	0.0.1          	1.6.1                                           	Gateway API CustomResourceDefinitions from kubernetes-sig...
+https://artifacthub.io/packages/helm/geo-checker/geo-checker	5.0.0          	5.0.0                                           	Geo-checker is the IP address resolver to the country_nam...
+https://artifacthub.io/packages/helm/crowdsec/helloworld    	0.2.1          	1.16.0                                          	A helloWorld chart for Kubernetes using ingress nginx       
+https://artifacthub.io/packages/helm/ibm-helm/ibm-chart-dev 	0.4.3          	1.1                                             	IBM <product> provides ...  (Note: first 97 chars are dis...
+https://artifacthub.io/packages/helm/jetpath/jetpath        	1.0.0          	1.0.0                                           	High-performance eBPF/XDP load balancer and traffic routi...
+https://artifacthub.io/packages/helm/quench-joomla/joomla   	0.0.3          	6.1.4                                           	Hardened Joomla CMS (PHP-FPM + nginx) on a 0-CVE nonroot ...
+https://artifacthub.io/packages/helm/microfunctions/kong    	3.4.5          	2.3.3                                           	Kong is a scalable, open source API layer (aka API gatewa...
+https://artifacthub.io/packages/helm/kube-botblocker/kube...	0.2.2          	0.0.0                                           	CRDs for kube-botblocker-operator                           
+https://artifacthub.io/packages/helm/kubemind/kubemind      	0.4.1          	0.4.1                                           	KubeMind — web-based, AI-assisted Kubernetes dashboard. D...
+https://artifacthub.io/packages/helm/kubmeta/kubmeta-lib    	3.1.12         	3.1.12                                          	A KubMeta library Helm chart for Kubernetes                 
+https://artifacthub.io/packages/helm/kubmeta/laravel        	4.2.7          	8.0.0                                           	Helm chart for Laravel applications.                        
+https://artifacthub.io/packages/helm/podzone-charts/libre...	0.4.1          	4.0.0                                           	A Helm chart for libretime                                  
+https://artifacthub.io/packages/helm/ory/maester            	0.0.17         	v0.0.1                                          	A Helm chart for deployoing ORY Oathkeeper Rule Controlle...
+https://artifacthub.io/packages/helm/quench-matomo/matomo   	0.0.8          	5.12.0                                          	Matomo -- self-hosted, privacy-respecting web analytics; ...
+https://artifacthub.io/packages/helm/quench-mediawiki/med...	0.0.5          	1.46.2                                          	Hardened MediaWiki (PHP-FPM + nginx) on a 0-CVE nonroot i...
+https://artifacthub.io/packages/helm/meshery/meshery        	1.0.70         	v1.0.70                                         	Meshery chart for deploying Meshery and Meshery's adapters. 
+https://artifacthub.io/packages/helm/kubesphere-stable/me...	0.5.0          	                                                	Meshery chart for deploying Meshery and Meshery's adapters. 
+https://artifacthub.io/packages/helm/kubesphere-carryon-s...	0.5.0          	                                                	Meshery chart for deploying Meshery and Meshery's adapters. 
+https://artifacthub.io/packages/helm/wenerme/meshery        	1.0.70         	v1.0.70                                         	Meshery chart for deploying Meshery and Meshery's adapters. 
+https://artifacthub.io/packages/helm/wener/meshery          	1.0.70         	v1.0.70                                         	Meshery chart for deploying Meshery and Meshery's adapters. 
+https://artifacthub.io/packages/helm/drpsychick/mtr-exporter	0.0.5          	0.4.0                                           	A Helm chart for an mtr-exporter pod providing metrics.     
+https://artifacthub.io/packages/helm/my-helm-charts-2024/...	0.1.0          	                                                	A Helm chart for Kubernetes to deploy NGINX                 
+https://artifacthub.io/packages/helm/mynginxchart/mynginx...	0.1.0          	                                                	A Helm chart for NGINX                                      
+https://artifacthub.io/packages/helm/quench-nextcloud/nex...	0.0.20         	34.0.4                                          	Hardened Nextcloud (self-hosted content collaboration / f...
+https://artifacthub.io/packages/helm/sample-helm-charts/n...	0.4.0          	1.3                                             	A Helm chart for nginx                                      
+https://artifacthub.io/packages/helm/ory/oathkeeper         	0.64.0         	v26.2.0                                         	A Helm chart for deploying ORY Oathkeeper in Kubernetes     
+https://artifacthub.io/packages/helm/ory/oathkeeper-maester 	0.64.0         	v0.1.14                                         	A Helm chart for deploying ORY Oathkeeper Rule Controller...
+https://artifacthub.io/packages/helm/oidc-guard/oidc-guard  	3.8.50         	3.8.50                                          	OpenID Connect (OIDC) & OAuth 2 API Server used to secure...
+https://artifacthub.io/packages/helm/openresty-operator/o...	1.1.1-rc2      	v1.1.1-rc2                                      	Kubernetes Operator for managing OpenResty with custom CR...
+https://artifacthub.io/packages/helm/qonstrukt/php          	0.2.0          	8.4-v8-apache                                   	A Helm Chart for a generic PHP application                  
+https://artifacthub.io/packages/helm/quench-phpmyadmin/ph...	0.0.13         	5.2.3                                           	Hardened phpMyAdmin (PHP-FPM + nginx) on a 0-CVE nonroot ...
+https://artifacthub.io/packages/helm/kubernetes-homelab-h...	0.1.0          	v0.1.0                                          	Static Astro portfolio served by unprivileged NGINX         
+https://artifacthub.io/packages/helm/homelabcihelmchartst...	2.1.7          	1.3.5                                           	A minimalist, open source online pastebin running on an N...
+https://artifacthub.io/packages/helm/geek-cookbook/privat...	2.2.0          	1.3.5                                           	A minimalist, open source online pastebin running on an N...
+https://artifacthub.io/packages/helm/proxy-ipsec/proxy-ipsec	1.0.14         	6.0.7                                           	A Helm chart for deploying the proxy-ipsec VPN proxy on K...
+https://artifacthub.io/packages/helm/supporttools/reflow-...	11.0.0         	v11                                             	A Helm chart for ReflowIngressLogs to stream ingress logs...
+https://artifacthub.io/packages/helm/seasonfill/seasonfil...	0.6.5          	0.6.5                                           	Seasonfill — a multi-instance Sonarr backfill controller ...
+https://artifacthub.io/packages/helm/riotkit-org/sni-router 	1.0.6          	v1.0.6                                          	Simple TLS-SNI based router using Traefik and NGINX         
+https://artifacthub.io/packages/helm/ygqygq2/tengine-sftp   	2.0.0          	2.3.2                                           	Chart for the tengine server.                               
+https://artifacthub.io/packages/helm/vprofile/vprofile      	0.1.0          	1.0.0                                           	Helm chart for deploying the VProfile application on Kube...
+https://artifacthub.io/packages/helm/watermarker/watermarker	1.0.7          	1.0.7                                           	A Helm chart for Watermarker - Simple and powerful tool f...
+https://artifacthub.io/packages/helm/hazelops/web           	0.4.3          	1.3.1                                           	A simple web application using Istio and Ingress-nginx. M...
+https://artifacthub.io/packages/helm/schichtel/webdav       	0.1.0          	1.22.1-bookworm                                 	A Helm chart to deploy a simple nginx-based webdav server   
+https://artifacthub.io/packages/helm/quench-wordpress/wor...	0.0.24         	7.1.2                                           	Hardened WordPress CMS (PHP-FPM + nginx) on a 0-CVE nonro...
+https://artifacthub.io/packages/helm/wordpress-alpine/wor...	1.5.19         	7.1.2                                           	WordPress FPM + Nginx + Init + MariaDB (alpine)
+
+$ helm uninstall notes-dev -n devops-homework
+release "notes-dev" uninstalled
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get deployment,svc,configmap -l app.kubernetes.io/instance=notes-dev
+No resources found in devops-homework namespace.
+
+$ helm list -n devops-homework
+NAME	NAMESPACE	REVISION	UPDATED	STATUS	CHART	APP VERSION
+PASS: 12-helm completed

@@ -1,0 +1,698 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T07:49:39.867105+00:00 | 10-troubleshooting
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-fundamentals/namespace.yaml
+namespace/devops-homework unchanged
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/01-commands/demo-pod.yaml
+pod/triage-demo created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/triage-demo --timeout=180s
+pod/triage-demo condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods
+NAME          READY   STATUS    RESTARTS   AGE
+dns-client    1/1     Running   0          15m
+triage-demo   1/1     Running   0          1s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod triage-demo -o wide
+NAME          READY   STATUS    RESTARTS   AGE   IP            NODE                           NOMINATED NODE   READINESS GATES
+triage-demo   1/1     Running   0          1s    10.244.0.41   vibhuti-devops-control-plane   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod triage-demo --show-labels
+NAME          READY   STATUS    RESTARTS   AGE   LABELS
+triage-demo   1/1     Running   0          1s    app=triage-demo,lesson=troubleshooting
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe pod triage-demo
+Name:             triage-demo
+Namespace:        devops-homework
+Priority:         0
+Service Account:  default
+Node:             vibhuti-devops-control-plane/172.20.0.2
+Start Time:       Wed, 07 Oct 2026 13:19:40 +0530
+Labels:           app=triage-demo
+                  lesson=troubleshooting
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.41
+IPs:
+  IP:  10.244.0.41
+Containers:
+  web:
+    Container ID:   containerd://d3c854d41f7a90b22721ea324ded62e72c6177d55d18a69710eb10688d7f3817
+    Image:          nginx:1.27-alpine
+    Image ID:       docker.io/library/nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+    Port:           80/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Wed, 07 Oct 2026 13:19:40 +0530
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     200m
+      memory:  128Mi
+    Requests:
+      cpu:        25m
+      memory:     32Mi
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-ld9hm (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-ld9hm:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  0s    default-scheduler  Successfully assigned devops-homework/triage-demo to vibhuti-devops-control-plane
+  Normal  Pulled     0s    kubelet            spec.containers{web}: Container image "nginx:1.27-alpine" already present on machine and can be accessed by the pod
+  Normal  Created    0s    kubelet            spec.containers{web}: Container created
+  Normal  Started    0s    kubelet            spec.containers{web}: Container started
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework logs triage-demo --tail=5
+2026/10/07 07:49:40 [notice] 1#1: start worker process 44
+2026/10/07 07:49:40 [notice] 1#1: start worker process 45
+2026/10/07 07:49:40 [notice] 1#1: start worker process 46
+2026/10/07 07:49:40 [notice] 1#1: start worker process 47
+2026/10/07 07:49:40 [notice] 1#1: start worker process 48
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec triage-demo -- sh -c 'wget -qO- http://127.0.0.1 | head -4'
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework events --for pod/triage-demo
+LAST SEEN   TYPE     REASON      OBJECT            MESSAGE
+11m         Normal   Scheduled   Pod/triage-demo   Successfully assigned devops-homework/triage-demo to vibhuti-devops-control-plane
+11m         Normal   Pulled      Pod/triage-demo   Container image "nginx:1.27-alpine" already present on machine and can be accessed by the pod
+11m         Normal   Created     Pod/triage-demo   Container created
+11m         Normal   Started     Pod/triage-demo   Container started
+3m52s       Normal   Killing     Pod/triage-demo   Stopping container web
+2m20s       Normal   Scheduled   Pod/triage-demo   Successfully assigned devops-homework/triage-demo to vibhuti-devops-control-plane
+2m19s       Normal   Pulled      Pod/triage-demo   Container image "nginx:1.27-alpine" already present on machine and can be accessed by the pod
+2m19s       Normal   Created     Pod/triage-demo   Container created
+2m19s       Normal   Started     Pod/triage-demo   Container started
+2m          Normal   Killing     Pod/triage-demo   Stopping container web
+1s          Normal   Scheduled   Pod/triage-demo   Successfully assigned devops-homework/triage-demo to vibhuti-devops-control-plane
+1s          Normal   Pulled      Pod/triage-demo   Container image "nginx:1.27-alpine" already present on machine and can be accessed by the pod
+1s          Normal   Created     Pod/triage-demo   Container created
+1s          Normal   Started     Pod/triage-demo   Container started
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework explain pod.spec.containers.resources
+KIND:       Pod
+VERSION:    v1
+
+FIELD: resources <ResourceRequirements>
+
+
+DESCRIPTION:
+    Compute Resources required by this container. Cannot be updated. More info:
+    https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+    ResourceRequirements describes the compute resource requirements.
+    
+FIELDS:
+  claims	<[]ResourceClaim>
+    Claims lists the names of resources, defined in spec.resourceClaims, that
+    are used by this container.
+    
+    This field depends on the DynamicResourceAllocation feature gate.
+    
+    This field is immutable. It can only be set for containers.
+
+  limits	<map[string]Quantity>
+    Limits describes the maximum amount of compute resources allowed. More info:
+    https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+
+  requests	<map[string]Quantity>
+    Requests describes the minimum amount of compute resources required. If
+    Requests is omitted for a container, it defaults to Limits if that is
+    explicitly specified, otherwise to an implementation-defined value. Requests
+    cannot exceed Limits. More info:
+    https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework top pod triage-demo
+Error from server (NotFound): podmetrics.metrics.k8s.io "devops-homework/triage-demo" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework top pod triage-demo
+Error from server (NotFound): podmetrics.metrics.k8s.io "devops-homework/triage-demo" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework top pod triage-demo
+Error from server (NotFound): podmetrics.metrics.k8s.io "devops-homework/triage-demo" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework top pod triage-demo
+Error from server (NotFound): podmetrics.metrics.k8s.io "devops-homework/triage-demo" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework top pod triage-demo
+Error from server (NotFound): podmetrics.metrics.k8s.io "devops-homework/triage-demo" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework top pod triage-demo
+Error from server (NotFound): podmetrics.metrics.k8s.io "devops-homework/triage-demo" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework top pod triage-demo
+Error from server (NotFound): podmetrics.metrics.k8s.io "devops-homework/triage-demo" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework top pod triage-demo
+NAME          CPU(cores)   MEMORY(bytes)   
+triage-demo   4m           11Mi
+PASS: kubectl top reports this Pod
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod triage-demo --wait=true
+pod "triage-demo" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/02-crashloopbackoff/broken-pod.yaml
+pod/crashloop-broken created
+PASS: observed CrashLoopBackOff
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod crashloop-broken
+NAME               READY   STATUS              RESTARTS   AGE
+crashloop-broken   0/1     ContainerCreating   0          0s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe pod crashloop-broken
+Name:             crashloop-broken
+Namespace:        devops-homework
+Priority:         0
+Service Account:  default
+Node:             vibhuti-devops-control-plane/172.20.0.2
+Start Time:       Wed, 07 Oct 2026 13:19:56 +0530
+Labels:           app=crashloop-demo
+Annotations:      <none>
+Status:           Pending
+IP:               
+IPs:              <none>
+Containers:
+  app:
+    Container ID:  
+    Image:         busybox:1.36
+    Image ID:      
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      /bin/sh
+      -c
+      echo "starting app"; cat /etc/app/config.ini || exit 1; echo "started"
+    State:          Waiting
+      Reason:       ContainerCreating
+    Ready:          False
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-mt89r (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   False 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-mt89r:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  0s    default-scheduler  Successfully assigned devops-homework/crashloop-broken to vibhuti-devops-control-plane
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework logs crashloop-broken
+Error from server (BadRequest): container "app" in pod "crashloop-broken" is waiting to start: ContainerCreating
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework logs crashloop-broken --previous
+Error from server (BadRequest): previous terminated container "app" in pod "crashloop-broken" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework logs crashloop-broken
+starting app
+cat: can't open '/etc/app/config.ini': No such file or directory
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework logs crashloop-broken --previous
+unable to retrieve container logs for containerd://cdeec5140ba9f1bc68a9b06424aa1584998222cda63ae55c32c76cfa55a683f4
+PASS: logs show why the container exited
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/02-crashloopbackoff/fixed-pod.yaml
+configmap/crashloop-config created
+pod/crashloop-fixed created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/crashloop-fixed --timeout=180s
+pod/crashloop-fixed condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework logs crashloop-fixed
+starting app
+[app]
+name = troubleshooting-demo
+owner = 24BCS10288
+started
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods -l app=crashloop-demo
+NAME               READY   STATUS    RESTARTS     AGE
+crashloop-broken   0/1     Error     1 (3s ago)   3s
+crashloop-fixed    1/1     Running   0            1s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod crashloop-broken crashloop-fixed --wait=true
+pod "crashloop-broken" deleted from devops-homework namespace
+pod "crashloop-fixed" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete configmap crashloop-config
+configmap "crashloop-config" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/03-imagepullbackoff/broken-pod.yaml
+pod/imagepull-broken created
+PASS: observed ErrImagePull
+PASS: observed ImagePullBackOff
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod imagepull-broken
+NAME               READY   STATUS         RESTARTS   AGE
+imagepull-broken   0/1     ErrImagePull   0          5s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe pod imagepull-broken
+Name:             imagepull-broken
+Namespace:        devops-homework
+Priority:         0
+Service Account:  default
+Node:             vibhuti-devops-control-plane/172.20.0.2
+Start Time:       Wed, 07 Oct 2026 13:20:31 +0530
+Labels:           app=imagepull-demo
+Annotations:      <none>
+Status:           Pending
+IP:               10.244.0.44
+IPs:
+  IP:  10.244.0.44
+Containers:
+  web:
+    Container ID:   
+    Image:          nginx:1.27-alpine-this-tag-does-not-exist
+    Image ID:       
+    Port:           <none>
+    Host Port:      <none>
+    State:          Waiting
+      Reason:       ErrImagePull
+    Ready:          False
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9p9zx (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-9p9zx:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age   From               Message
+  ----     ------     ----  ----               -------
+  Normal   Scheduled  5s    default-scheduler  Successfully assigned devops-homework/imagepull-broken to vibhuti-devops-control-plane
+  Normal   Pulling    4s    kubelet            spec.containers{web}: Pulling image "nginx:1.27-alpine-this-tag-does-not-exist"
+  Warning  Failed     3s    kubelet            spec.containers{web}: Failed to pull image "nginx:1.27-alpine-this-tag-does-not-exist": rpc error: code = NotFound desc = failed to pull and unpack image "docker.io/library/nginx:1.27-alpine-this-tag-does-not-exist": failed to resolve reference "docker.io/library/nginx:1.27-alpine-this-tag-does-not-exist": docker.io/library/nginx:1.27-alpine-this-tag-does-not-exist: not found
+  Warning  Failed     3s    kubelet            spec.containers{web}: Error: ErrImagePull
+  Normal   BackOff    2s    kubelet            spec.containers{web}: Back-off pulling image "nginx:1.27-alpine-this-tag-does-not-exist"
+  Warning  Failed     2s    kubelet            spec.containers{web}: Error: ImagePullBackOff
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/03-imagepullbackoff/fixed-pod.yaml
+pod/imagepull-fixed created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/imagepull-fixed --timeout=180s
+pod/imagepull-fixed condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods -l app=imagepull-demo
+NAME               READY   STATUS         RESTARTS   AGE
+imagepull-broken   0/1     ErrImagePull   0          5s
+imagepull-fixed    1/1     Running        0          0s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod imagepull-broken imagepull-fixed --wait=true
+pod "imagepull-broken" deleted from devops-homework namespace
+pod "imagepull-fixed" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/04-pending/broken-pod.yaml
+pod/pending-broken created
+PASS: observed Pending with an Unschedulable condition
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod pending-broken -o wide
+NAME             READY   STATUS    RESTARTS   AGE   IP       NODE     NOMINATED NODE   READINESS GATES
+pending-broken   0/1     Pending   0          0s    <none>   <none>   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe pod pending-broken
+Name:             pending-broken
+Namespace:        devops-homework
+Priority:         0
+Service Account:  default
+Node:             <none>
+Labels:           app=pending-demo
+Annotations:      <none>
+Status:           Pending
+IP:               
+IPs:              <none>
+Containers:
+  web:
+    Image:      nginx:1.27-alpine
+    Port:       <none>
+    Host Port:  <none>
+    Requests:
+      cpu:        64
+      memory:     256Mi
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9dmbr (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False 
+Volumes:
+  kube-api-access-9dmbr:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age   From               Message
+  ----     ------            ----  ----               -------
+  Warning  FailedScheduling  1s    default-scheduler  0/1 nodes are available: 1 Insufficient cpu. no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get nodes -o custom-columns=NODE:.metadata.name,CPU:.status.allocatable.cpu,MEM:.status.allocatable.memory
+NODE                           CPU   MEM
+vibhuti-devops-control-plane   15    8123872Ki
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/04-pending/fixed-pod.yaml
+pod/pending-fixed created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/pending-fixed --timeout=180s
+pod/pending-fixed condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods -l app=pending-demo -o wide
+NAME             READY   STATUS    RESTARTS   AGE   IP            NODE                           NOMINATED NODE   READINESS GATES
+pending-broken   0/1     Pending   0          1s    <none>        <none>                         <none>           <none>
+pending-fixed    1/1     Running   0          0s    10.244.0.46   vibhuti-devops-control-plane   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod pending-broken pending-fixed --wait=true
+pod "pending-broken" deleted from devops-homework namespace
+pod "pending-fixed" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/06-oomkilled/broken-pod.yaml
+pod/oom-broken created
+PASS: observed OOMKilled
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod oom-broken
+NAME         READY   STATUS      RESTARTS   AGE
+oom-broken   0/1     OOMKilled   0          3s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe pod oom-broken
+Name:             oom-broken
+Namespace:        devops-homework
+Priority:         0
+Service Account:  default
+Node:             vibhuti-devops-control-plane/172.20.0.2
+Start Time:       Wed, 07 Oct 2026 13:20:41 +0530
+Labels:           app=oom-demo
+Annotations:      <none>
+Status:           Failed
+IP:               10.244.0.47
+IPs:
+  IP:  10.244.0.47
+Containers:
+  hungry:
+    Container ID:  containerd://b1573be7ee51763862c5a3c17274abdd18659da464af734cc3c3dfb160175c71
+    Image:         busybox:1.36
+    Image ID:      docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      /bin/sh
+      -c
+      dd if=/dev/zero of=/dev/shm/fill bs=1M count=80; sleep 3600
+    State:          Terminated
+      Reason:       OOMKilled
+      Exit Code:    137
+      Started:      Wed, 07 Oct 2026 13:20:42 +0530
+      Finished:     Wed, 07 Oct 2026 13:20:42 +0530
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      memory:  32Mi
+    Requests:
+      memory:     16Mi
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-c7ldz (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   False 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-c7ldz:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  3s    default-scheduler  Successfully assigned devops-homework/oom-broken to vibhuti-devops-control-plane
+  Normal  Pulled     2s    kubelet            spec.containers{hungry}: Container image "busybox:1.36" already present on machine and can be accessed by the pod
+  Normal  Created    2s    kubelet            spec.containers{hungry}: Container created
+  Normal  Started    2s    kubelet            spec.containers{hungry}: Container started
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/06-oomkilled/fixed-pod.yaml
+pod/oom-fixed created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/oom-fixed --timeout=180s
+pod/oom-fixed condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework logs oom-fixed
+dd: error writing '/dev/shm/fill': No space left on device
+65+0 records in
+64+0 records out
+67108864 bytes (64.0MB) copied, 0.028047 seconds, 2.2GB/s
+allocation finished
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod oom-broken oom-fixed --wait=true
+pod "oom-broken" deleted from devops-homework namespace
+pod "oom-fixed" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/07-config-error/broken-pod.yaml
+pod/config-broken created
+PASS: observed CreateContainerConfigError
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod config-broken
+NAME            READY   STATUS                       RESTARTS   AGE
+config-broken   0/1     CreateContainerConfigError   0          2s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe pod config-broken
+Name:             config-broken
+Namespace:        devops-homework
+Priority:         0
+Service Account:  default
+Node:             vibhuti-devops-control-plane/172.20.0.2
+Start Time:       Wed, 07 Oct 2026 13:21:17 +0530
+Labels:           app=config-demo
+Annotations:      <none>
+Status:           Pending
+IP:               10.244.0.49
+IPs:
+  IP:  10.244.0.49
+Containers:
+  web:
+    Container ID:   
+    Image:          nginx:1.27-alpine
+    Image ID:       
+    Port:           <none>
+    Host Port:      <none>
+    State:          Waiting
+      Reason:       CreateContainerConfigError
+    Ready:          False
+    Restart Count:  0
+    Environment:
+      APP_MODE:  <set to the key 'APP_MODE' of config map 'missing-config'>  Optional: false
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-sgbfm (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-sgbfm:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age              From               Message
+  ----     ------     ----             ----               -------
+  Normal   Scheduled  2s               default-scheduler  Successfully assigned devops-homework/config-broken to vibhuti-devops-control-plane
+  Normal   Pulled     2s (x2 over 2s)  kubelet            spec.containers{web}: Container image "nginx:1.27-alpine" already present on machine and can be accessed by the pod
+  Warning  Failed     2s (x2 over 2s)  kubelet            spec.containers{web}: Error: configmap "missing-config" not found
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/07-config-error/fixed.yaml
+configmap/missing-config created
+pod/config-fixed created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/config-fixed --timeout=180s
+pod/config-fixed condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec config-fixed -- printenv APP_MODE
+coursework
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod config-broken config-fixed --wait=true
+pod "config-broken" deleted from devops-homework namespace
+pod "config-fixed" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete configmap missing-config
+configmap "missing-config" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/05-service-dns/deployment.yaml -f kubernetes-troubleshooting/05-service-dns/broken-service.yaml -f kubernetes-troubleshooting/05-service-dns/dns-test-pod.yaml
+deployment.apps/dns-demo created
+service/dns-demo created
+pod/dns-probe created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/dns-demo --timeout=180s
+Waiting for deployment "dns-demo" rollout to finish: 0 of 2 updated replicas are available...
+Waiting for deployment "dns-demo" rollout to finish: 1 of 2 updated replicas are available...
+deployment "dns-demo" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/dns-probe --timeout=180s
+pod/dns-probe condition met
+PASS: Service with the wrong selector has no endpoints
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get endpointslices -l kubernetes.io/service-name=dns-demo
+NAME             ADDRESSTYPE   PORTS     ENDPOINTS   AGE
+dns-demo-dnlhn   IPv4          <unset>   <unset>     1s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe service dns-demo
+Name:                     dns-demo
+Namespace:                devops-homework
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 app=wrong-app
+Type:                     ClusterIP
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.96.184.68
+IPs:                      10.96.184.68
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+Endpoints:                
+Session Affinity:         None
+Internal Traffic Policy:  Cluster
+Events:                   <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods -l app=dns-demo --show-labels
+NAME                        READY   STATUS    RESTARTS   AGE   LABELS
+dns-demo-6c779c457c-chzxv   1/1     Running   0          1s    app=dns-demo,pod-template-hash=6c779c457c
+dns-demo-6c779c457c-tqw5g   1/1     Running   0          1s    app=dns-demo,pod-template-hash=6c779c457c
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-probe -- nslookup dns-demo.devops-homework.svc.cluster.local
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+
+Name:	dns-demo.devops-homework.svc.cluster.local
+Address: 10.96.184.68
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-probe -- sh -c 'wget -T 3 -qO- http://dns-demo || echo '"'"'request failed: Service has no backend'"'"''
+wget: can't connect to remote host (10.96.184.68): Connection refused
+request failed: Service has no backend
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/05-service-dns/service.yaml
+service/dns-demo configured
+PASS: corrected selector produced ready endpoints
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get endpointslices -l kubernetes.io/service-name=dns-demo
+NAME             ADDRESSTYPE   PORTS   ENDPOINTS                 AGE
+dns-demo-dnlhn   IPv4          80      10.244.0.51,10.244.0.53   2s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-probe -- wget -T 5 -qO- http://dns-demo
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+PASS: Service answers after the selector was corrected
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-probe -- sh -c 'nslookup no-such-service.devops-homework.svc.cluster.local || echo '"'"'NXDOMAIN: the Service name is wrong'"'"''
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+** server can't find no-such-service.devops-homework.svc.cluster.local: NXDOMAIN
+
+** server can't find no-such-service.devops-homework.svc.cluster.local: NXDOMAIN
+
+NXDOMAIN: the Service name is wrong
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n kube-system get pods -l k8s-app=kube-dns -o wide
+NAME                       READY   STATUS    RESTARTS   AGE   IP           NODE                           NOMINATED NODE   READINESS GATES
+coredns-7d764666f9-prsts   1/1     Running   0          30m   10.244.0.3   vibhuti-devops-control-plane   <none>           <none>
+coredns-7d764666f9-rdxh9   1/1     Running   0          30m   10.244.0.4   vibhuti-devops-control-plane   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete -f kubernetes-troubleshooting/05-service-dns/service.yaml -f kubernetes-troubleshooting/05-service-dns/deployment.yaml -f kubernetes-troubleshooting/05-service-dns/dns-test-pod.yaml
+service "dns-demo" deleted from devops-homework namespace
+deployment.apps "dns-demo" deleted from devops-homework namespace
+pod "dns-probe" deleted from devops-homework namespace
+PASS: 10-troubleshooting completed

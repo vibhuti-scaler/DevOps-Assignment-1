@@ -1,0 +1,5 @@
+# act runs this repository's real GitHub Actions workflow files locally, in a
+# container that mirrors a GitHub-hosted ubuntu-latest runner. The image is
+# pulled for the host architecture, so nothing is emulated.
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+--artifact-server-path /tmp/act-artifacts

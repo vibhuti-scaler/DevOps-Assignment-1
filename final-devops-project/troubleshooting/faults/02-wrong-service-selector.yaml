@@ -1,0 +1,16 @@
+# Fault 2: the Service selector no longer matches the Pod labels.
+# Expected symptom: the Service exists, DNS resolves, the EndpointSlice is
+# empty and every request is refused.
+apiVersion: v1
+kind: Service
+metadata:
+  name: notes
+  namespace: notes
+spec:
+  type: ClusterIP
+  selector:
+    app: notes-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

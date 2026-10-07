@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: notes
+  namespace: notes
+  labels:
+    app: notes
+spec:
+  type: ClusterIP
+  selector:
+    app: notes
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

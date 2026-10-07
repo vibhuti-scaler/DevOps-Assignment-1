@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pending-broken
+  labels:
+    app: pending-demo
+spec:
+  containers:
+    - name: web
+      image: nginx:1.27-alpine
+      resources:
+        requests:
+          # No node in this cluster has 64 CPUs, so the scheduler can never
+          # place the Pod and it stays Pending with an Unschedulable event.
+          cpu: "64"
+          memory: 256Mi

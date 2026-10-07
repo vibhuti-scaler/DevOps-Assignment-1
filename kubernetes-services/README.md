@@ -95,6 +95,16 @@ kubectl --context=kind-vibhuti-devops -n devops-homework exec dns-client -- wget
 Check labels, readiness, Service ports, EndpointSlices, DNS, then relevant NetworkPolicies.
 An empty ready-endpoint list does not by itself prove a DNS failure.
 
+## Task 2-4: written answers
+
+The three documentation tasks in this session have their own folders:
+
+| Task | Document |
+| --- | --- |
+| Task 2 - object comparison | [comparisons/README.md](comparisons/README.md) - Deployment vs ReplicaSet, Deployment vs DaemonSet vs StatefulSet, ReplicaSet vs Service. |
+| Task 3 - FQDN | [fqdn/README.md](fqdn/README.md) - the DNS naming convention, the `search` list, `ndots`, and how a request actually reaches a Pod. |
+| Task 4 - CoreDNS | [coredns/README.md](coredns/README.md) - what CoreDNS is, the Corefile line by line, and a DNS troubleshooting order. |
+
 ## Execution evidence and cleanup
 
 [Raw logs](../evidence/kubernetes/README.md) record DNS answers, ClusterIP and NodePort

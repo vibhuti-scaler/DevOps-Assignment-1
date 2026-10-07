@@ -1,0 +1,7 @@
+# Bandit is the Python SAST scanner used in the pipeline.
+# Tests are excluded: assert statements there are intentional (B101) and
+# flagging them hides the findings that matter in application code.
+exclude_dirs:
+  - /tests
+  - /.venv
+  - /build

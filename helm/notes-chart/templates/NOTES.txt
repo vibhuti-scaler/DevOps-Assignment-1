@@ -1,0 +1,14 @@
+{{ .Values.app.name }} release "{{ .Release.Name }}" is at revision {{ .Release.Revision }}
+in namespace {{ .Release.Namespace }} ({{ .Values.app.environment }}).
+
+Replicas: {{ .Values.replicaCount }}
+Image:    {{ .Values.image.repository }}:{{ .Values.image.tag }}
+
+Reach it with:
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "notes-chart.fullname" . }} 8088:{{ .Values.service.port }}
+  curl http://127.0.0.1:8088
+
+Useful follow-ups:
+  helm status {{ .Release.Name }}
+  helm history {{ .Release.Name }}
+  helm rollback {{ .Release.Name }} <revision>

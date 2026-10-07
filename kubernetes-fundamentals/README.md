@@ -112,5 +112,4 @@ unset KUBECONFIG
 Only the dedicated assignment cluster is removed. Existing Docker applications are separate.
 
 References: [Kubernetes components](https://kubernetes.io/docs/concepts/overview/components/),
-[kind setup](https://kind.sigs.k8s.io/docs/user/quick-start/),
-[reference commits and adaptations](../REFERENCES.md).
+[kind setup](https://kind.sigs.k8s.io/docs/user/quick-start/).

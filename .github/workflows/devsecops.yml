@@ -1,0 +1,199 @@
+# Session 17 - CI/CD with security stages in the delivery path.
+# Order matters: the cheap, fast checks run first so a broken build never
+# spends minutes in a vulnerability scanner, and the image is only pushed
+# after the gate has looked at every report.
+#
+#   build -> unit test -> SAST -> SCA -> secret scan
+#         -> docker build -> image scan -> gate -> push -> deploy
+name: DevSecOps
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+env:
+  APP_DIR: cicd-github-actions
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/task-api
+
+jobs:
+  build-and-test:
+    name: Build and unit test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        working-directory: ${{ env.APP_DIR }}
+        run: pip install -r requirements-dev.txt
+      - name: Unit tests with coverage
+        working-directory: ${{ env.APP_DIR }}
+        run: pytest --cov=app --cov-report=xml --cov-fail-under=85
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: ${{ env.APP_DIR }}/coverage.xml
+
+  sast:
+    name: SAST
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Bandit
+        run: pip install bandit[sarif]==1.8.0
+      - name: Bandit (fails on medium severity and above)
+        run: |
+          bandit -c devsecops/config/bandit.yaml -r "$APP_DIR/app" \
+                 -f sarif -o bandit.sarif --severity-level medium --confidence-level medium
+      - name: Semgrep with the repository rules
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/python
+            p/flask
+            p/secrets
+            devsecops/config/semgrep-rules.yaml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sast-report
+          path: bandit.sarif
+
+  sca:
+    name: SCA
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pip-audit
+        run: pip install pip-audit==2.7.3
+      - name: Audit the declared dependencies
+        working-directory: ${{ env.APP_DIR }}
+        run: pip-audit -r requirements.txt --strict --format json --output ../pip-audit.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sca-report
+          path: pip-audit.json
+
+  secret-scan:
+    name: Secret scanning
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Gitleaks reads history, so a secret that was committed and later
+          # removed is still found.
+          fetch-depth: 0
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_CONFIG: devsecops/config/.gitleaks.toml
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: true
+
+  image-scan:
+    name: Container image scan
+    runs-on: ubuntu-latest
+    needs: [sast, sca, secret-scan]
+    outputs:
+      gate: ${{ steps.gate.outputs.result }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        working-directory: ${{ env.APP_DIR }}
+        run: docker build -t task-api:scan .
+      - name: Trivy filesystem scan (misconfiguration and dependencies)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: ${{ env.APP_DIR }}
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          trivyignores: devsecops/config/trivyignore.txt
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: task-api:scan
+          format: sarif
+          output: trivy-image.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          trivyignores: devsecops/config/trivyignore.txt
+      - name: Security gate
+        id: gate
+        run: |
+          high=$(jq '[.runs[].results[]] | length' trivy-image.sarif)
+          echo "HIGH/CRITICAL findings with a fix available: $high"
+          if [ "$high" -gt 0 ]; then
+            echo "result=blocked" >> "$GITHUB_OUTPUT"
+            echo "::error::Security gate blocked the release: $high fixable HIGH/CRITICAL findings"
+            exit 1
+          fi
+          echo "result=passed" >> "$GITHUB_OUTPUT"
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-image.sarif
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: image-scan-report
+          path: trivy-image.sarif
+
+  publish:
+    name: Push to the registry
+    runs-on: ubuntu-latest
+    needs: image-scan
+    # Nothing is published from a pull request; a fork must not be able to put
+    # an image into the organisation's registry.
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login "$REGISTRY" -u "${{ github.actor }}" --password-stdin
+      - name: Build and push
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          docker build -t "$REGISTRY/$IMAGE_NAME:${{ github.sha }}" .
+          docker push "$REGISTRY/$IMAGE_NAME:${{ github.sha }}"
+
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: publish
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write the cluster credentials
+        run: |
+          install -m 700 -d "$RUNNER_TEMP/.kube"
+          printf '%s' "${{ secrets.KUBE_CONFIG }}" | base64 -d > "$RUNNER_TEMP/.kube/config"
+          chmod 600 "$RUNNER_TEMP/.kube/config"
+          echo "KUBECONFIG=$RUNNER_TEMP/.kube/config" >> "$GITHUB_ENV"
+      - name: Apply the hardened manifests
+        run: |
+          kubectl apply -f devsecops/kubernetes/
+          kubectl -n task-api set image deployment/task-api \
+            api="$REGISTRY/$IMAGE_NAME:${{ github.sha }}"
+          kubectl -n task-api rollout status deployment/task-api --timeout=180s

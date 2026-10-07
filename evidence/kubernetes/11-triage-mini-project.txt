@@ -1,0 +1,267 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T07:51:55.036192+00:00 | 11-triage-mini-project
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-fundamentals/namespace.yaml
+namespace/devops-homework unchanged
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/mini-project/deployment.yaml -f kubernetes-troubleshooting/mini-project/service.yaml
+deployment.apps/troubleshooting-app created
+service/troubleshooting-service created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework rollout status deployment/troubleshooting-app --timeout=180s
+Waiting for deployment "troubleshooting-app" rollout to finish: 0 of 2 updated replicas are available...
+Waiting for deployment "troubleshooting-app" rollout to finish: 1 of 2 updated replicas are available...
+deployment "troubleshooting-app" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods -o wide
+NAME                                   READY   STATUS    RESTARTS   AGE   IP            NODE                           NOMINATED NODE   READINESS GATES
+dns-client                             1/1     Running   0          17m   10.244.0.30   vibhuti-devops-control-plane   <none>           <none>
+troubleshooting-app-7b69b857c8-499kx   1/1     Running   0          1s    10.244.0.55   vibhuti-devops-control-plane   <none>           <none>
+troubleshooting-app-7b69b857c8-4jvg2   1/1     Running   0          1s    10.244.0.54   vibhuti-devops-control-plane   <none>           <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get service troubleshooting-service
+NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+troubleshooting-service   ClusterIP   10.96.88.106   <none>        80/TCP    1s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe pod troubleshooting-app-7b69b857c8-499kx
+Name:             troubleshooting-app-7b69b857c8-499kx
+Namespace:        devops-homework
+Priority:         0
+Service Account:  default
+Node:             vibhuti-devops-control-plane/172.20.0.2
+Start Time:       Wed, 07 Oct 2026 13:21:55 +0530
+Labels:           app=troubleshooting-app
+                  pod-template-hash=7b69b857c8
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.55
+IPs:
+  IP:           10.244.0.55
+Controlled By:  ReplicaSet/troubleshooting-app-7b69b857c8
+Containers:
+  nginx:
+    Container ID:   containerd://60136472c501a0303420e9b52ce699a88396ce34b083c79c18182cfe96d289c4
+    Image:          nginx:1.27-alpine
+    Image ID:       docker.io/library/nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+    Port:           80/TCP (http)
+    Host Port:      0/TCP (http)
+    State:          Running
+      Started:      Wed, 07 Oct 2026 13:21:55 +0530
+    Ready:          True
+    Restart Count:  0
+    Requests:
+      cpu:        25m
+      memory:     32Mi
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-gdpkx (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-gdpkx:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  1s    default-scheduler  Successfully assigned devops-homework/troubleshooting-app-7b69b857c8-499kx to vibhuti-devops-control-plane
+  Normal  Pulled     1s    kubelet            spec.containers{nginx}: Container image "nginx:1.27-alpine" already present on machine and can be accessed by the pod
+  Normal  Created    1s    kubelet            spec.containers{nginx}: Container created
+  Normal  Started    1s    kubelet            spec.containers{nginx}: Container started
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework logs troubleshooting-app-7b69b857c8-499kx --tail=5
+2026/10/07 07:51:55 [notice] 1#1: start worker process 44
+2026/10/07 07:51:55 [notice] 1#1: start worker process 45
+2026/10/07 07:51:55 [notice] 1#1: start worker process 46
+2026/10/07 07:51:55 [notice] 1#1: start worker process 47
+2026/10/07 07:51:55 [notice] 1#1: start worker process 48
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec troubleshooting-app-7b69b857c8-499kx -- sh -c 'wget -qO- http://127.0.0.1 | head -4'
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+PASS: Service has both Pod addresses as endpoints
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get endpointslices -l kubernetes.io/service-name=troubleshooting-service
+NAME                            ADDRESSTYPE   PORTS   ENDPOINTS                 AGE
+troubleshooting-service-fbjhw   IPv4          80      10.244.0.54,10.244.0.55   1s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/mini-project/broken-pod.yaml
+pod/project-broken-pod created
+PASS: broken Pod reached an image-pull failure
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pod project-broken-pod
+NAME                 READY   STATUS         RESTARTS   AGE
+project-broken-pod   0/1     ErrImagePull   0          4s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe pod project-broken-pod
+Name:             project-broken-pod
+Namespace:        devops-homework
+Priority:         0
+Service Account:  default
+Node:             vibhuti-devops-control-plane/172.20.0.2
+Start Time:       Wed, 07 Oct 2026 13:21:56 +0530
+Labels:           app=troubleshooting-app
+Annotations:      <none>
+Status:           Pending
+IP:               10.244.0.56
+IPs:
+  IP:  10.244.0.56
+Containers:
+  nginx:
+    Container ID:   
+    Image:          nginxx:latest
+    Image ID:       
+    Port:           <none>
+    Host Port:      <none>
+    State:          Waiting
+      Reason:       ErrImagePull
+    Ready:          False
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-fhngg (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-fhngg:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age   From               Message
+  ----     ------     ----  ----               -------
+  Normal   Scheduled  4s    default-scheduler  Successfully assigned devops-homework/project-broken-pod to vibhuti-devops-control-plane
+  Normal   Pulling    4s    kubelet            spec.containers{nginx}: Pulling image "nginxx:latest"
+  Warning  Failed     2s    kubelet            spec.containers{nginx}: Failed to pull image "nginxx:latest": failed to pull and unpack image "docker.io/library/nginxx:latest": failed to resolve reference "docker.io/library/nginxx:latest": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed
+  Warning  Failed     2s    kubelet            spec.containers{nginx}: Error: ErrImagePull
+  Normal   BackOff    1s    kubelet            spec.containers{nginx}: Back-off pulling image "nginxx:latest"
+  Warning  Failed     1s    kubelet            spec.containers{nginx}: Error: ImagePullBackOff
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework events --for pod/project-broken-pod
+LAST SEEN   TYPE      REASON      OBJECT                   MESSAGE
+4s          Normal    Scheduled   Pod/project-broken-pod   Successfully assigned devops-homework/project-broken-pod to vibhuti-devops-control-plane
+4s          Normal    Pulling     Pod/project-broken-pod   Pulling image "nginxx:latest"
+2s          Warning   Failed      Pod/project-broken-pod   Failed to pull image "nginxx:latest": failed to pull and unpack image "docker.io/library/nginxx:latest": failed to resolve reference "docker.io/library/nginxx:latest": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed
+2s          Warning   Failed      Pod/project-broken-pod   Error: ErrImagePull
+1s          Normal    BackOff     Pod/project-broken-pod   Back-off pulling image "nginxx:latest"
+1s          Warning   Failed      Pod/project-broken-pod   Error: ImagePullBackOff
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod project-broken-pod --wait=true
+pod "project-broken-pod" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/mini-project/broken-service.yaml
+service/troubleshooting-service configured
+PASS: broken selector emptied the endpoints
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get endpointslices -l kubernetes.io/service-name=troubleshooting-service
+NAME                            ADDRESSTYPE   PORTS     ENDPOINTS   AGE
+troubleshooting-service-fbjhw   IPv4          <unset>   <unset>     6s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pods --show-labels
+NAME                                   READY   STATUS    RESTARTS   AGE   LABELS
+dns-client                             1/1     Running   0          17m   app=dns-client
+troubleshooting-app-7b69b857c8-499kx   1/1     Running   0          6s    app=troubleshooting-app,pod-template-hash=7b69b857c8
+troubleshooting-app-7b69b857c8-4jvg2   1/1     Running   0          6s    app=troubleshooting-app,pod-template-hash=7b69b857c8
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe service troubleshooting-service
+Name:                     troubleshooting-service
+Namespace:                devops-homework
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 app=wrong-app
+Type:                     ClusterIP
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.96.88.106
+IPs:                      10.96.88.106
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+Endpoints:                
+Session Affinity:         None
+Internal Traffic Policy:  Cluster
+Events:                   <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-troubleshooting/mini-project/service.yaml
+service/troubleshooting-service configured
+PASS: endpoints returned after the selector was corrected
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get endpointslices -l kubernetes.io/service-name=troubleshooting-service
+NAME                            ADDRESSTYPE   PORTS   ENDPOINTS                 AGE
+troubleshooting-service-fbjhw   IPv4          80      10.244.0.54,10.244.0.55   6s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-services/client.yaml
+pod/dns-client unchanged
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/dns-client --timeout=180s
+pod/dns-client condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://troubleshooting-service
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+PASS: Service answers again end to end
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get all
+NAME                                       READY   STATUS    RESTARTS   AGE
+pod/dns-client                             1/1     Running   0          17m
+pod/troubleshooting-app-7b69b857c8-499kx   1/1     Running   0          6s
+pod/troubleshooting-app-7b69b857c8-4jvg2   1/1     Running   0          6s
+
+NAME                              TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/troubleshooting-service   ClusterIP   10.96.88.106   <none>        80/TCP    6s
+
+NAME                                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/troubleshooting-app   2/2     2            2           6s
+
+NAME                                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/troubleshooting-app-7b69b857c8   2         2         2       6s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete -f kubernetes-troubleshooting/mini-project/service.yaml -f kubernetes-troubleshooting/mini-project/deployment.yaml
+service "troubleshooting-service" deleted from devops-homework namespace
+deployment.apps "troubleshooting-app" deleted from devops-homework namespace
+PASS: 11-triage-mini-project completed

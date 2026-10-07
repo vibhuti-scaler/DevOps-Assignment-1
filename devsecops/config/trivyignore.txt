@@ -1,0 +1,7 @@
+# Vulnerabilities accepted with a reason and a review date.
+# An empty file is the correct state: nothing is currently waived. Every entry
+# added here must carry the CVE, the justification and when it expires, so an
+# exception cannot quietly become permanent.
+#
+# Example of the required form:
+# CVE-0000-00000  # base-image only, no reachable call path; review 2026-12-01

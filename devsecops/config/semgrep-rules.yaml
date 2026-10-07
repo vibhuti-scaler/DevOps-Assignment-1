@@ -1,0 +1,36 @@
+# Repository-specific SAST rules, run alongside Semgrep's registry rule sets.
+# These encode the three mistakes most likely to appear in a small Flask
+# service like this one.
+rules:
+  - id: flask-debug-enabled
+    message: >-
+      Flask debug mode exposes the Werkzeug console, which allows remote code
+      execution. It must never be enabled in a deployed build.
+    severity: ERROR
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: $APP.run(..., debug=True, ...)
+          - pattern: $APP.run(..., debug=$X, ...)
+      - pattern-not: $APP.run(..., debug=False, ...)
+
+  - id: hardcoded-flask-secret-key
+    message: >-
+      A literal SECRET_KEY ends up in version control and signs every session
+      cookie. Read it from the environment or a mounted Secret instead.
+    severity: ERROR
+    languages: [python]
+    pattern-either:
+      - pattern: $APP.secret_key = "..."
+      - pattern: $APP.config["SECRET_KEY"] = "..."
+
+  - id: subprocess-shell-true
+    message: >-
+      subprocess with shell=True turns any untrusted argument into a command
+      injection. Pass an argument list instead.
+    severity: ERROR
+    languages: [python]
+    pattern-either:
+      - pattern: subprocess.run(..., shell=True, ...)
+      - pattern: subprocess.Popen(..., shell=True, ...)
+      - pattern: subprocess.call(..., shell=True, ...)

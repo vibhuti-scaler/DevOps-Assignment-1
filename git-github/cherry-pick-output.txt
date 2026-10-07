@@ -252,5 +252,3 @@ compose note
 journalctl note
 
 git cherry-pick --abort would have thrown the whole thing away instead.
-
-Lab directory: /private/tmp/claude-501/-Users-vibhutibhatnagar-Desktop-SST-STUDY-DEVOPS-ASSIGNMENT-1/908def88-2507-4952-b830-05fef6298a6e/scratchpad/git-lab

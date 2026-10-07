@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: emptydir-demo
+  labels:
+    app: emptydir-demo
+spec:
+  # Two containers share one emptyDir. The writer appends, the reader serves the
+  # same bytes over HTTP, which proves the volume is shared and not two copies.
+  volumes:
+    - name: shared
+      emptyDir: {}
+  containers:
+    - name: writer
+      image: busybox:1.36
+      command:
+        - /bin/sh
+        - -c
+        - |
+          i=0
+          while true; do
+            i=$((i + 1))
+            echo "line $i written by $HOSTNAME at $(date -u +%H:%M:%S)" >> /shared/notes.txt
+            sleep 2
+          done
+      volumeMounts:
+        - name: shared
+          mountPath: /shared
+    - name: reader
+      image: busybox:1.36
+      command: ["/bin/sh", "-c", "sleep 3600"]
+      volumeMounts:
+        - name: shared
+          mountPath: /shared
+          readOnly: true

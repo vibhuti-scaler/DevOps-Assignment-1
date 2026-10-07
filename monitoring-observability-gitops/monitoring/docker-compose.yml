@@ -1,0 +1,111 @@
+# Monitoring stack for Session 20.
+# Prometheus scrapes, Alertmanager routes what fires, Grafana draws it, and
+# node-exporter and cAdvisor are the two exporters that supply host and
+# container metrics.
+name: devops-monitoring
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    container_name: devops-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=2h
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.0
+    container_name: devops-alertmanager
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "127.0.0.1:9093:9093"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.5.1
+    container_name: devops-grafana
+    environment:
+      # Anonymous viewer access keeps a demo password out of the repository.
+      # Sign-up and the admin password prompt are both disabled.
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: devops-node-exporter
+    command:
+      - --path.rootfs=/host
+    pid: host
+    volumes:
+      # Docker Desktop's VM does not support rslave propagation on /, so the
+      # bind mount is plain read-only. The metrics are the Linux VM's, not
+      # macOS's, which is the same host the other containers run on.
+      - /:/host:ro
+    ports:
+      - "127.0.0.1:9100:9100"
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: devops-cadvisor
+    privileged: true
+    command:
+      - --housekeeping_interval=10s
+      - --store_container_labels=false
+    volumes:
+      # On Docker Desktop cAdvisor cannot read the overlay layer database, so
+      # it never resolves container names and every series is identified by its
+      # cgroup id instead. The dashboards and rules filter on id for that
+      # reason. On a Linux host the name label is populated normally.
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "127.0.0.1:8085:8080"
+    restart: unless-stopped
+
+  # The application from the final project. It exports its own metrics on
+  # /metrics, so the dashboards show application signals and not only
+  # infrastructure ones.
+  demo-app:
+    build:
+      context: ../../final-devops-project/application
+      dockerfile: ../docker/Dockerfile
+    image: notes-app:local
+    container_name: devops-demo-app
+    environment:
+      APP_ENVIRONMENT: monitoring-demo
+    volumes:
+      - notes-data:/data
+    ports:
+      - "127.0.0.1:8086:8000"
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:
+  notes-data:

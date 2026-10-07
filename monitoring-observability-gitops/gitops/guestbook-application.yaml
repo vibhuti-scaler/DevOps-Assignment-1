@@ -1,0 +1,38 @@
+# The GitOps contract. Everything Argo CD needs is here: which repository,
+# which revision, which path inside it, and where the result belongs.
+# Nothing in the guestbook namespace is ever applied by hand after this.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook
+  namespace: argocd
+  finalizers:
+    # Deleting the Application also deletes what it created, rather than
+    # leaving orphaned resources behind.
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    # A public, stable repository, so the reconciliation demo does not depend
+    # on anything in this homework repository being pushed first.
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: guestbook
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: guestbook
+  syncPolicy:
+    automated:
+      # prune removes resources deleted from Git; selfHeal undoes changes made
+      # directly against the cluster. Together they are "continuous
+      # reconciliation": the cluster is pulled back to Git, continuously.
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m

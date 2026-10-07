@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crashloop-config
+data:
+  config.ini: |
+    [app]
+    name = troubleshooting-demo
+    owner = 24BCS10288
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: crashloop-fixed
+  labels:
+    app: crashloop-demo
+spec:
+  volumes:
+    - name: config
+      configMap:
+        name: crashloop-config
+  containers:
+    - name: app
+      image: busybox:1.36
+      command:
+        - /bin/sh
+        - -c
+        - 'echo "starting app"; cat /etc/app/config.ini; echo "started"; sleep 3600'
+      volumeMounts:
+        - name: config
+          mountPath: /etc/app

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Task API</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 40rem; }
+      .meta { color: #555; }
+      li { margin: .25rem 0; }
+    </style>
+  </head>
+  <body>
+    <h1>Task API</h1>
+    <p class="meta">version {{ version }} &middot; {{ environment }}</p>
+    <h2>Tasks</h2>
+    <ul>
+      {% for task in tasks %}
+        <li>#{{ task.id }} {{ task.title }} &mdash; {{ task.state }}</li>
+      {% else %}
+        <li>no tasks yet</li>
+      {% endfor %}
+    </ul>
+    <p class="meta">
+      todo {{ summary.todo }} &middot; doing {{ summary.doing }} &middot; done {{ summary.done }}
+    </p>
+  </body>
+</html>

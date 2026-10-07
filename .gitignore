@@ -12,9 +12,6 @@ npm-debug.log*
 # OS noise
 .DS_Store
 
-# Playwright MCP scratch output
-.playwright-mcp/
-
 # Kubernetes local credentials and generated files
 .env.*
 !.env.example
@@ -23,3 +20,21 @@ __pycache__/
 *.pyc
 /kubernetes-ingress-configmaps-secrets/tls.key
 /kubernetes-ingress-configmaps-secrets/tls.crt
+
+# Terraform: provider plugins and state. The .terraform.lock.hcl files are
+# committed on purpose - they pin provider checksums.
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+*.tfplan
+crash.log
+
+# Python test and coverage output
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+test-results.xml
+
+# act local artifact server output
+/act-artifacts/

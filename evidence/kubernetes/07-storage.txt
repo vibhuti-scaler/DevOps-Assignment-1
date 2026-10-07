@@ -1,0 +1,135 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T07:24:03.947632+00:00 | 07-storage
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-fundamentals/namespace.yaml
+namespace/devops-homework created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-storage-hpa-probes/01-volumes/emptydir-pod.yaml
+pod/emptydir-demo created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/emptydir-demo --timeout=180s
+pod/emptydir-demo condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec emptydir-demo -c reader -- cat /shared/notes.txt
+line 1 written by emptydir-demo at 07:24:10
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec emptydir-demo -c reader -- cat /shared/notes.txt
+line 1 written by emptydir-demo at 07:24:10
+line 2 written by emptydir-demo at 07:24:12
+PASS: reader container sees the writer's lines in the shared emptyDir
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod emptydir-demo --wait=true
+pod "emptydir-demo" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-storage-hpa-probes/01-volumes/hostpath-pod.yaml
+pod/hostpath-demo created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/hostpath-demo --timeout=180s
+pod/hostpath-demo condition met
+
+$ docker exec vibhuti-devops-control-plane cat /var/lib/devops-homework/hostpath-demo/marker.txt
+written by hostpath-demo
+PASS: hostPath file is readable on the node itself
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod hostpath-demo --wait=true
+pod "hostpath-demo" deleted from devops-homework namespace
+
+$ docker exec vibhuti-devops-control-plane cat /var/lib/devops-homework/hostpath-demo/marker.txt
+written by hostpath-demo
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-storage-hpa-probes/02-persistent-storage/pv.yaml -f kubernetes-storage-hpa-probes/02-persistent-storage/pvc.yaml
+persistentvolume/static-pv created
+persistentvolumeclaim/static-pvc created
+PASS: static PVC bound to the hand-written PV
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pv static-pv
+NAME        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+static-pv   256Mi      RWO            Retain           Bound    devops-homework/static-pvc                  <unset>                          4s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pvc static-pvc
+NAME         STATUS   VOLUME      CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+static-pvc   Bound    static-pv   256Mi      RWO                           <unset>                 4s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-storage-hpa-probes/02-persistent-storage/pod.yaml
+pod/static-pv-writer created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/static-pv-writer --timeout=180s
+pod/static-pv-writer condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec static-pv-writer -- cat /data/student.txt
+Vibhuti Bhatnagar 24BCS10288
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod static-pv-writer --wait=true
+pod "static-pv-writer" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-storage-hpa-probes/02-persistent-storage/pod.yaml
+pod/static-pv-writer created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/static-pv-writer --timeout=180s
+pod/static-pv-writer condition met
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec static-pv-writer -- cat /data/student.txt
+Vibhuti Bhatnagar 24BCS10288
+PASS: file written by the deleted Pod survived on the PersistentVolume
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get storageclass
+NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  4m39s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-storage-hpa-probes/03-storageclass/dynamic-pvc.yaml
+persistentvolumeclaim/dynamic-pvc created
+PASS: dynamic PVC waits for a consumer before a volume is provisioned
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework describe pvc dynamic-pvc
+Name:          dynamic-pvc
+Namespace:     devops-homework
+StorageClass:  standard
+Status:        Pending
+Volume:        
+Labels:        <none>
+Annotations:   <none>
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      
+Access Modes:  
+VolumeMode:    Filesystem
+Used By:       <none>
+Events:
+  Type    Reason                Age   From                         Message
+  ----    ------                ----  ----                         -------
+  Normal  WaitForFirstConsumer  0s    persistentvolume-controller  waiting for first consumer to be created before binding
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework apply -f kubernetes-storage-hpa-probes/03-storageclass/dynamic-pod.yaml
+pod/dynamic-pv-writer created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework wait --for=condition=Ready pod/dynamic-pv-writer --timeout=180s
+pod/dynamic-pv-writer condition met
+PASS: StorageClass provisioned a PersistentVolume on first use
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pv pvc-e820ba7e-e95c-4e5f-8c59-a99ab60373c7 -o wide
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                         STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE   VOLUMEMODE
+pvc-e820ba7e-e95c-4e5f-8c59-a99ab60373c7   256Mi      RWO            Delete           Bound    devops-homework/dynamic-pvc   standard       <unset>                          2s    Filesystem
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dynamic-pv-writer -- cat /data/proof.txt
+provisioned dynamically
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework get pv,pvc
+NAME                                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                         STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+persistentvolume/pvc-e820ba7e-e95c-4e5f-8c59-a99ab60373c7   256Mi      RWO            Delete           Bound    devops-homework/dynamic-pvc   standard       <unset>                          2s
+persistentvolume/static-pv                                  256Mi      RWO            Retain           Bound    devops-homework/static-pvc                   <unset>                          43s
+
+NAME                                STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/dynamic-pvc   Bound    pvc-e820ba7e-e95c-4e5f-8c59-a99ab60373c7   256Mi      RWO            standard       <unset>                 5s
+persistentvolumeclaim/static-pvc    Bound    static-pv                                  256Mi      RWO                           <unset>                 43s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pod static-pv-writer dynamic-pv-writer --wait=true
+pod "static-pv-writer" deleted from devops-homework namespace
+pod "dynamic-pv-writer" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pvc static-pvc dynamic-pvc
+persistentvolumeclaim "static-pvc" deleted from devops-homework namespace
+persistentvolumeclaim "dynamic-pvc" deleted from devops-homework namespace
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework delete pv static-pv --ignore-not-found
+Warning: deleting cluster-scoped resources, not scoped to the provided namespace
+persistentvolume "static-pv" deleted
+PASS: 07-storage completed

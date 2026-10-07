@@ -1,0 +1,77 @@
+# Session 16 - continuous delivery.
+# CD only starts when CI has already succeeded on main, so an image is never
+# published from a commit whose tests failed. Publishing and deploying need
+# credentials, so both steps read from secrets rather than the repository.
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Tag to publish and deploy
+        required: false
+        default: manual
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/task-api
+
+jobs:
+  publish:
+    name: Build and publish the image
+    runs-on: ubuntu-latest
+    # A completed workflow_run can also mean "completed with failure".
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Work out the image reference
+        id: meta
+        run: |
+          tag="${{ github.event.inputs.image_tag || github.sha }}"
+          echo "image=$REGISTRY/$IMAGE_NAME:$tag" >> "$GITHUB_OUTPUT"
+      - name: Log in to the container registry
+        # GITHUB_TOKEN is minted per run; no long-lived registry password exists
+        # in this repository.
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login "$REGISTRY" -u "${{ github.actor }}" --password-stdin
+      - name: Build the image
+        working-directory: cicd-github-actions
+        run: |
+          docker build -t "${{ steps.meta.outputs.image }}" \
+                       -t "$REGISTRY/$IMAGE_NAME:latest" .
+      - name: Push the image
+        run: |
+          docker push "${{ steps.meta.outputs.image }}"
+          docker push "$REGISTRY/$IMAGE_NAME:latest"
+
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: publish
+    # The environment is where a reviewer approval or a protection rule would
+    # be attached before anything reaches the cluster.
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write the cluster credentials
+        run: |
+          install -m 700 -d "$RUNNER_TEMP/.kube"
+          printf '%s' "${{ secrets.KUBE_CONFIG }}" | base64 -d > "$RUNNER_TEMP/.kube/config"
+          chmod 600 "$RUNNER_TEMP/.kube/config"
+          echo "KUBECONFIG=$RUNNER_TEMP/.kube/config" >> "$GITHUB_ENV"
+      - name: Roll the Deployment onto the new image
+        run: |
+          kubectl -n task-api set image deployment/task-api \
+            api="${{ needs.publish.outputs.image }}" --record=false
+          kubectl -n task-api rollout status deployment/task-api --timeout=180s
+      - name: Report what is running
+        run: kubectl -n task-api get deployment,pods,svc

@@ -1,0 +1,992 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T08:51:24Z | 21-final-project-infrastructure
+Target: LocalStack at http://localhost:4566 (no real AWS account is involved)
+
+$ terraform init -upgrade
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding hashicorp/aws versions matching "~> 5.80"...
+- Finding hashicorp/random versions matching "~> 3.6"...
+- Using previously-installed hashicorp/aws v5.100.0
+- Using previously-installed hashicorp/random v3.9.1
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+PASS: terraform init
+
+$ terraform fmt -check -recursive
+
+PASS: terraform fmt -check
+
+$ terraform validate
+Success! The configuration is valid.
+
+
+PASS: terraform validate
+
+The container registry is valid Terraform and appears in the plan below.
+It is left out of the applied run because ECR is not implemented in the
+community edition of the emulator; see the project README.
+
+$ terraform plan -var create_ecr_repository=true -target=aws_ecr_repository.notes
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_ecr_repository.notes[0] will be created
+  + resource "aws_ecr_repository" "notes" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "IMMUTABLE"
+      + name                 = "notes-prod/notes"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags                 = {
+          + "Name" = "notes-prod-notes"
+        }
+      + tags_all             = {
+          + "Environment" = "prod"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "notes-prod-notes"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "notes"
+          + "Session"     = "21-final-devops-project"
+        }
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + ecr_repository_url = (known after apply)
+
+Warning: Resource targeting is in effect
+
+You are creating a plan with the -target option, which means that the result
+of this plan may not represent all of the changes requested by the current
+configuration.
+
+The -target option is not for routine use, and is provided only for
+exceptional situations such as recovering from errors or mistakes, or when
+Terraform specifically suggests to use it as part of an error message.
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
+
+$ terraform plan -out=tfplan
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_internet_gateway.cluster will be created
+  + resource "aws_internet_gateway" "cluster" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + owner_id = (known after apply)
+      + tags     = {
+          + "Name" = "notes-prod-igw"
+        }
+      + tags_all = {
+          + "Environment" = "prod"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "notes-prod-igw"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "notes"
+          + "Session"     = "21-final-devops-project"
+        }
+      + vpc_id   = (known after apply)
+    }
+
+  # aws_route_table.nodes will be created
+  + resource "aws_route_table" "nodes" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = [
+          + {
+              + cidr_block                 = "0.0.0.0/0"
+              + gateway_id                 = (known after apply)
+                # (11 unchanged attributes hidden)
+            },
+        ]
+      + tags             = {
+          + "Name" = "notes-prod-nodes-rt"
+        }
+      + tags_all         = {
+          + "Environment" = "prod"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "notes-prod-nodes-rt"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "notes"
+          + "Session"     = "21-final-devops-project"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # aws_route_table_association.nodes["ap-south-1a"] will be created
+  + resource "aws_route_table_association" "nodes" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_route_table_association.nodes["ap-south-1b"] will be created
+  + resource "aws_route_table_association" "nodes" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_s3_bucket.artifacts will be created
+  + resource "aws_s3_bucket" "artifacts" {
+      + acceleration_status         = (known after apply)
+      + acl                         = (known after apply)
+      + arn                         = (known after apply)
+      + bucket                      = (known after apply)
+      + bucket_domain_name          = (known after apply)
+      + bucket_prefix               = (known after apply)
+      + bucket_regional_domain_name = (known after apply)
+      + force_destroy               = false
+      + hosted_zone_id              = (known after apply)
+      + id                          = (known after apply)
+      + object_lock_enabled         = (known after apply)
+      + policy                      = (known after apply)
+      + region                      = (known after apply)
+      + request_payer               = (known after apply)
+      + tags                        = {
+          + "Name" = "notes-prod-artifacts"
+        }
+      + tags_all                    = {
+          + "Environment" = "prod"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "notes-prod-artifacts"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "notes"
+          + "Session"     = "21-final-devops-project"
+        }
+      + website_domain              = (known after apply)
+      + website_endpoint            = (known after apply)
+
+      + cors_rule (known after apply)
+
+      + grant (known after apply)
+
+      + lifecycle_rule (known after apply)
+
+      + logging (known after apply)
+
+      + object_lock_configuration (known after apply)
+
+      + replication_configuration (known after apply)
+
+      + server_side_encryption_configuration (known after apply)
+
+      + versioning (known after apply)
+
+      + website (known after apply)
+    }
+
+  # aws_s3_bucket_public_access_block.artifacts will be created
+  + resource "aws_s3_bucket_public_access_block" "artifacts" {
+      + block_public_acls       = true
+      + block_public_policy     = true
+      + bucket                  = (known after apply)
+      + id                      = (known after apply)
+      + ignore_public_acls      = true
+      + restrict_public_buckets = true
+    }
+
+  # aws_s3_bucket_server_side_encryption_configuration.artifacts will be created
+  + resource "aws_s3_bucket_server_side_encryption_configuration" "artifacts" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+
+      + rule {
+          + apply_server_side_encryption_by_default {
+              + sse_algorithm     = "AES256"
+                # (1 unchanged attribute hidden)
+            }
+        }
+    }
+
+  # aws_s3_bucket_versioning.artifacts will be created
+  + resource "aws_s3_bucket_versioning" "artifacts" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+
+      + versioning_configuration {
+          + mfa_delete = (known after apply)
+          + status     = "Enabled"
+        }
+    }
+
+  # aws_security_group.ingress will be created
+  + resource "aws_security_group" "ingress" {
+      + arn                    = (known after apply)
+      + description            = "Public HTTP and HTTPS into the ingress controller"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = "HTTP"
+              + from_port        = 80
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 80
+            },
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = "HTTPS"
+              + from_port        = 443
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 443
+            },
+        ]
+      + name                   = "notes-prod-ingress"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "notes-prod-ingress-sg"
+        }
+      + tags_all               = {
+          + "Environment" = "prod"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "notes-prod-ingress-sg"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "notes"
+          + "Session"     = "21-final-devops-project"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # aws_subnet.nodes["ap-south-1a"] will be created
+  + resource "aws_subnet" "nodes" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-south-1a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.30.0.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name"                   = "notes-prod-nodes-ap-south-1a"
+          + "kubernetes.io/role/elb" = "1"
+        }
+      + tags_all                                       = {
+          + "Environment"            = "prod"
+          + "ManagedBy"              = "terraform"
+          + "Name"                   = "notes-prod-nodes-ap-south-1a"
+          + "Owner"                  = "vibhuti-24bcs10288"
+          + "Project"                = "notes"
+          + "Session"                = "21-final-devops-project"
+          + "kubernetes.io/role/elb" = "1"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_subnet.nodes["ap-south-1b"] will be created
+  + resource "aws_subnet" "nodes" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-south-1b"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.30.1.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name"                   = "notes-prod-nodes-ap-south-1b"
+          + "kubernetes.io/role/elb" = "1"
+        }
+      + tags_all                                       = {
+          + "Environment"            = "prod"
+          + "ManagedBy"              = "terraform"
+          + "Name"                   = "notes-prod-nodes-ap-south-1b"
+          + "Owner"                  = "vibhuti-24bcs10288"
+          + "Project"                = "notes"
+          + "Session"                = "21-final-devops-project"
+          + "kubernetes.io/role/elb" = "1"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_vpc.cluster will be created
+  + resource "aws_vpc" "cluster" {
+      + arn                                  = (known after apply)
+      + cidr_block                           = "10.30.0.0/16"
+      + default_network_acl_id               = (known after apply)
+      + default_route_table_id               = (known after apply)
+      + default_security_group_id            = (known after apply)
+      + dhcp_options_id                      = (known after apply)
+      + enable_dns_hostnames                 = true
+      + enable_dns_support                   = true
+      + enable_network_address_usage_metrics = (known after apply)
+      + id                                   = (known after apply)
+      + instance_tenancy                     = "default"
+      + ipv6_association_id                  = (known after apply)
+      + ipv6_cidr_block                      = (known after apply)
+      + ipv6_cidr_block_network_border_group = (known after apply)
+      + main_route_table_id                  = (known after apply)
+      + owner_id                             = (known after apply)
+      + tags                                 = {
+          + "Name" = "notes-prod-vpc"
+        }
+      + tags_all                             = {
+          + "Environment" = "prod"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "notes-prod-vpc"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "notes"
+          + "Session"     = "21-final-devops-project"
+        }
+    }
+
+  # random_id.artifacts will be created
+  + resource "random_id" "artifacts" {
+      + b64_std     = (known after apply)
+      + b64_url     = (known after apply)
+      + byte_length = 4
+      + dec         = (known after apply)
+      + hex         = (known after apply)
+      + id          = (known after apply)
+    }
+
+Plan: 13 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + artifacts_bucket          = (known after apply)
+  + ecr_repository_url        = "not created in this run"
+  + ingress_security_group_id = (known after apply)
+  + node_subnet_ids           = {
+      + ap-south-1a = (known after apply)
+      + ap-south-1b = (known after apply)
+    }
+  + vpc_id                    = (known after apply)
+
+─────────────────────────────────────────────────────────────────────────────
+
+Saved the plan to: tfplan
+
+To perform exactly these actions, run the following command to apply:
+    terraform apply "tfplan"
+
+PASS: terraform plan
+
+$ terraform apply -auto-approve tfplan
+random_id.artifacts: Creating...
+random_id.artifacts: Creation complete after 0s [id=vapMyg]
+aws_vpc.cluster: Creating...
+aws_s3_bucket.artifacts: Creating...
+aws_s3_bucket.artifacts: Creation complete after 1s [id=notes-prod-artifacts-bdaa4cca]
+aws_s3_bucket_public_access_block.artifacts: Creating...
+aws_s3_bucket_versioning.artifacts: Creating...
+aws_s3_bucket_server_side_encryption_configuration.artifacts: Creating...
+aws_s3_bucket_public_access_block.artifacts: Creation complete after 0s [id=notes-prod-artifacts-bdaa4cca]
+aws_s3_bucket_server_side_encryption_configuration.artifacts: Creation complete after 0s [id=notes-prod-artifacts-bdaa4cca]
+aws_s3_bucket_versioning.artifacts: Creation complete after 1s [id=notes-prod-artifacts-bdaa4cca]
+aws_vpc.cluster: Still creating... [00m10s elapsed]
+aws_vpc.cluster: Creation complete after 11s [id=vpc-c1a0e8ac]
+aws_internet_gateway.cluster: Creating...
+aws_subnet.nodes["ap-south-1a"]: Creating...
+aws_subnet.nodes["ap-south-1b"]: Creating...
+aws_security_group.ingress: Creating...
+aws_internet_gateway.cluster: Creation complete after 0s [id=igw-e41f7600]
+aws_route_table.nodes: Creating...
+aws_security_group.ingress: Creation complete after 0s [id=sg-f9476a6e85716bdff]
+aws_route_table.nodes: Creation complete after 0s [id=rtb-9ed92c0a]
+aws_subnet.nodes["ap-south-1a"]: Still creating... [00m10s elapsed]
+aws_subnet.nodes["ap-south-1b"]: Still creating... [00m10s elapsed]
+aws_subnet.nodes["ap-south-1a"]: Creation complete after 10s [id=subnet-b8333de8]
+aws_subnet.nodes["ap-south-1b"]: Creation complete after 10s [id=subnet-c92319e5]
+aws_route_table_association.nodes["ap-south-1b"]: Creating...
+aws_route_table_association.nodes["ap-south-1a"]: Creating...
+aws_route_table_association.nodes["ap-south-1a"]: Creation complete after 0s [id=rtbassoc-d163e87b]
+aws_route_table_association.nodes["ap-south-1b"]: Creation complete after 0s [id=rtbassoc-960edfae]
+
+Apply complete! Resources: 13 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+artifacts_bucket = "notes-prod-artifacts-bdaa4cca"
+ecr_repository_url = "not created in this run"
+ingress_security_group_id = "sg-f9476a6e85716bdff"
+node_subnet_ids = {
+  "ap-south-1a" = "subnet-b8333de8"
+  "ap-south-1b" = "subnet-c92319e5"
+}
+vpc_id = "vpc-c1a0e8ac"
+
+PASS: terraform apply
+
+$ terraform output
+artifacts_bucket = "notes-prod-artifacts-bdaa4cca"
+ecr_repository_url = "not created in this run"
+ingress_security_group_id = "sg-f9476a6e85716bdff"
+node_subnet_ids = {
+  "ap-south-1a" = "subnet-b8333de8"
+  "ap-south-1b" = "subnet-c92319e5"
+}
+vpc_id = "vpc-c1a0e8ac"
+
+PASS: terraform output
+
+$ terraform state list
+aws_internet_gateway.cluster
+aws_route_table.nodes
+aws_route_table_association.nodes["ap-south-1a"]
+aws_route_table_association.nodes["ap-south-1b"]
+aws_s3_bucket.artifacts
+aws_s3_bucket_public_access_block.artifacts
+aws_s3_bucket_server_side_encryption_configuration.artifacts
+aws_s3_bucket_versioning.artifacts
+aws_security_group.ingress
+aws_subnet.nodes["ap-south-1a"]
+aws_subnet.nodes["ap-south-1b"]
+aws_vpc.cluster
+random_id.artifacts
+
+PASS: terraform state list
+
+Reading the created resources back through the AWS API:
+
+$ awslocal ec2 describe-vpcs --vpc-ids vpc-c1a0e8ac --query Vpcs[0].{Id:VpcId,Cidr:CidrBlock}
+{
+    "Id": "vpc-c1a0e8ac",
+    "Cidr": "10.30.0.0/16"
+}
+
+$ awslocal ec2 describe-subnets --filters Name=vpc-id,Values=vpc-c1a0e8ac --query Subnets[].{Id:SubnetId,Cidr:CidrBlock,Az:AvailabilityZone,Tags:Tags[?Key==`kubernetes.io/role/elb`]}
+[
+    {
+        "Id": "subnet-b8333de8",
+        "Cidr": "10.30.0.0/24",
+        "Az": "ap-south-1a",
+        "Tags": [
+            {
+                "Key": "kubernetes.io/role/elb",
+                "Value": "1"
+            }
+        ]
+    },
+    {
+        "Id": "subnet-c92319e5",
+        "Cidr": "10.30.1.0/24",
+        "Az": "ap-south-1b",
+        "Tags": [
+            {
+                "Key": "kubernetes.io/role/elb",
+                "Value": "1"
+            }
+        ]
+    }
+]
+
+$ awslocal ec2 describe-security-groups --filters Name=vpc-id,Values=vpc-c1a0e8ac --query SecurityGroups[?GroupName!=`default`].{Name:GroupName,Ingress:IpPermissions[].{From:FromPort,To:ToPort}}
+[
+    {
+        "Name": "notes-prod-ingress",
+        "Ingress": [
+            {
+                "From": 80,
+                "To": 80
+            },
+            {
+                "From": 443,
+                "To": 443
+            }
+        ]
+    }
+]
+
+$ awslocal s3api get-bucket-versioning --bucket notes-prod-artifacts-bdaa4cca
+{
+    "Status": "Enabled"
+}
+
+$ awslocal s3api get-bucket-encryption --bucket notes-prod-artifacts-bdaa4cca
+{
+    "ServerSideEncryptionConfiguration": {
+        "Rules": [
+            {
+                "ApplyServerSideEncryptionByDefault": {
+                    "SSEAlgorithm": "AES256"
+                },
+                "BucketKeyEnabled": false
+            }
+        ]
+    }
+}
+
+A second plan with no source change must report no differences:
+
+$ terraform plan -detailed-exitcode
+random_id.artifacts: Refreshing state... [id=vapMyg]
+aws_vpc.cluster: Refreshing state... [id=vpc-c1a0e8ac]
+aws_s3_bucket.artifacts: Refreshing state... [id=notes-prod-artifacts-bdaa4cca]
+aws_subnet.nodes["ap-south-1b"]: Refreshing state... [id=subnet-c92319e5]
+aws_internet_gateway.cluster: Refreshing state... [id=igw-e41f7600]
+aws_subnet.nodes["ap-south-1a"]: Refreshing state... [id=subnet-b8333de8]
+aws_security_group.ingress: Refreshing state... [id=sg-f9476a6e85716bdff]
+aws_route_table.nodes: Refreshing state... [id=rtb-9ed92c0a]
+aws_route_table_association.nodes["ap-south-1b"]: Refreshing state... [id=rtbassoc-960edfae]
+aws_route_table_association.nodes["ap-south-1a"]: Refreshing state... [id=rtbassoc-d163e87b]
+aws_s3_bucket_server_side_encryption_configuration.artifacts: Refreshing state... [id=notes-prod-artifacts-bdaa4cca]
+aws_s3_bucket_versioning.artifacts: Refreshing state... [id=notes-prod-artifacts-bdaa4cca]
+aws_s3_bucket_public_access_block.artifacts: Refreshing state... [id=notes-prod-artifacts-bdaa4cca]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+
+PASS: the configuration is idempotent (exit 0, no changes)
+
+$ terraform destroy -auto-approve
+random_id.artifacts: Refreshing state... [id=vapMyg]
+aws_vpc.cluster: Refreshing state... [id=vpc-c1a0e8ac]
+aws_s3_bucket.artifacts: Refreshing state... [id=notes-prod-artifacts-bdaa4cca]
+aws_subnet.nodes["ap-south-1b"]: Refreshing state... [id=subnet-c92319e5]
+aws_subnet.nodes["ap-south-1a"]: Refreshing state... [id=subnet-b8333de8]
+aws_internet_gateway.cluster: Refreshing state... [id=igw-e41f7600]
+aws_security_group.ingress: Refreshing state... [id=sg-f9476a6e85716bdff]
+aws_route_table.nodes: Refreshing state... [id=rtb-9ed92c0a]
+aws_route_table_association.nodes["ap-south-1b"]: Refreshing state... [id=rtbassoc-960edfae]
+aws_route_table_association.nodes["ap-south-1a"]: Refreshing state... [id=rtbassoc-d163e87b]
+aws_s3_bucket_versioning.artifacts: Refreshing state... [id=notes-prod-artifacts-bdaa4cca]
+aws_s3_bucket_public_access_block.artifacts: Refreshing state... [id=notes-prod-artifacts-bdaa4cca]
+aws_s3_bucket_server_side_encryption_configuration.artifacts: Refreshing state... [id=notes-prod-artifacts-bdaa4cca]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # aws_internet_gateway.cluster will be destroyed
+  - resource "aws_internet_gateway" "cluster" {
+      - arn      = "arn:aws:ec2:ap-south-1:000000000000:internet-gateway/igw-e41f7600" -> null
+      - id       = "igw-e41f7600" -> null
+      - owner_id = "000000000000" -> null
+      - tags     = {
+          - "Name" = "notes-prod-igw"
+        } -> null
+      - tags_all = {
+          - "Environment" = "prod"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "notes-prod-igw"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "notes"
+          - "Session"     = "21-final-devops-project"
+        } -> null
+      - vpc_id   = "vpc-c1a0e8ac" -> null
+    }
+
+  # aws_route_table.nodes will be destroyed
+  - resource "aws_route_table" "nodes" {
+      - arn              = "arn:aws:ec2:ap-south-1:000000000000:route-table/rtb-9ed92c0a" -> null
+      - id               = "rtb-9ed92c0a" -> null
+      - owner_id         = "000000000000" -> null
+      - propagating_vgws = [] -> null
+      - route            = [
+          - {
+              - cidr_block                 = "0.0.0.0/0"
+              - gateway_id                 = "igw-e41f7600"
+                # (11 unchanged attributes hidden)
+            },
+        ] -> null
+      - tags             = {
+          - "Name" = "notes-prod-nodes-rt"
+        } -> null
+      - tags_all         = {
+          - "Environment" = "prod"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "notes-prod-nodes-rt"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "notes"
+          - "Session"     = "21-final-devops-project"
+        } -> null
+      - vpc_id           = "vpc-c1a0e8ac" -> null
+    }
+
+  # aws_route_table_association.nodes["ap-south-1a"] will be destroyed
+  - resource "aws_route_table_association" "nodes" {
+      - id             = "rtbassoc-d163e87b" -> null
+      - route_table_id = "rtb-9ed92c0a" -> null
+      - subnet_id      = "subnet-b8333de8" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_route_table_association.nodes["ap-south-1b"] will be destroyed
+  - resource "aws_route_table_association" "nodes" {
+      - id             = "rtbassoc-960edfae" -> null
+      - route_table_id = "rtb-9ed92c0a" -> null
+      - subnet_id      = "subnet-c92319e5" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_s3_bucket.artifacts will be destroyed
+  - resource "aws_s3_bucket" "artifacts" {
+      - arn                         = "arn:aws:s3:::notes-prod-artifacts-bdaa4cca" -> null
+      - bucket                      = "notes-prod-artifacts-bdaa4cca" -> null
+      - bucket_domain_name          = "notes-prod-artifacts-bdaa4cca.s3.amazonaws.com" -> null
+      - bucket_regional_domain_name = "notes-prod-artifacts-bdaa4cca.s3.ap-south-1.amazonaws.com" -> null
+      - force_destroy               = false -> null
+      - hosted_zone_id              = "Z11RGJOFQNVJUP" -> null
+      - id                          = "notes-prod-artifacts-bdaa4cca" -> null
+      - object_lock_enabled         = false -> null
+      - region                      = "ap-south-1" -> null
+      - request_payer               = "BucketOwner" -> null
+      - tags                        = {
+          - "Name" = "notes-prod-artifacts"
+        } -> null
+      - tags_all                    = {
+          - "Environment" = "prod"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "notes-prod-artifacts"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "notes"
+          - "Session"     = "21-final-devops-project"
+        } -> null
+        # (3 unchanged attributes hidden)
+
+      - grant {
+          - id          = "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a" -> null
+          - permissions = [
+              - "FULL_CONTROL",
+            ] -> null
+          - type        = "CanonicalUser" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - server_side_encryption_configuration {
+          - rule {
+              - bucket_key_enabled = false -> null
+
+              - apply_server_side_encryption_by_default {
+                  - sse_algorithm     = "AES256" -> null
+                    # (1 unchanged attribute hidden)
+                }
+            }
+        }
+
+      - versioning {
+          - enabled    = true -> null
+          - mfa_delete = false -> null
+        }
+    }
+
+  # aws_s3_bucket_public_access_block.artifacts will be destroyed
+  - resource "aws_s3_bucket_public_access_block" "artifacts" {
+      - block_public_acls       = true -> null
+      - block_public_policy     = true -> null
+      - bucket                  = "notes-prod-artifacts-bdaa4cca" -> null
+      - id                      = "notes-prod-artifacts-bdaa4cca" -> null
+      - ignore_public_acls      = true -> null
+      - restrict_public_buckets = true -> null
+    }
+
+  # aws_s3_bucket_server_side_encryption_configuration.artifacts will be destroyed
+  - resource "aws_s3_bucket_server_side_encryption_configuration" "artifacts" {
+      - bucket                = "notes-prod-artifacts-bdaa4cca" -> null
+      - id                    = "notes-prod-artifacts-bdaa4cca" -> null
+        # (1 unchanged attribute hidden)
+
+      - rule {
+          - bucket_key_enabled = false -> null
+
+          - apply_server_side_encryption_by_default {
+              - sse_algorithm     = "AES256" -> null
+                # (1 unchanged attribute hidden)
+            }
+        }
+    }
+
+  # aws_s3_bucket_versioning.artifacts will be destroyed
+  - resource "aws_s3_bucket_versioning" "artifacts" {
+      - bucket                = "notes-prod-artifacts-bdaa4cca" -> null
+      - id                    = "notes-prod-artifacts-bdaa4cca" -> null
+        # (1 unchanged attribute hidden)
+
+      - versioning_configuration {
+          - status     = "Enabled" -> null
+            # (1 unchanged attribute hidden)
+        }
+    }
+
+  # aws_security_group.ingress will be destroyed
+  - resource "aws_security_group" "ingress" {
+      - arn                    = "arn:aws:ec2:ap-south-1:000000000000:security-group/sg-f9476a6e85716bdff" -> null
+      - description            = "Public HTTP and HTTPS into the ingress controller" -> null
+      - egress                 = [
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - from_port        = 0
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "-1"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ] -> null
+      - id                     = "sg-f9476a6e85716bdff" -> null
+      - ingress                = [
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - description      = "HTTP"
+              - from_port        = 80
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 80
+            },
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - description      = "HTTPS"
+              - from_port        = 443
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 443
+            },
+        ] -> null
+      - name                   = "notes-prod-ingress" -> null
+      - owner_id               = "000000000000" -> null
+      - revoke_rules_on_delete = false -> null
+      - tags                   = {
+          - "Name" = "notes-prod-ingress-sg"
+        } -> null
+      - tags_all               = {
+          - "Environment" = "prod"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "notes-prod-ingress-sg"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "notes"
+          - "Session"     = "21-final-devops-project"
+        } -> null
+      - vpc_id                 = "vpc-c1a0e8ac" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_subnet.nodes["ap-south-1a"] will be destroyed
+  - resource "aws_subnet" "nodes" {
+      - arn                                            = "arn:aws:ec2:ap-south-1:000000000000:subnet/subnet-b8333de8" -> null
+      - assign_ipv6_address_on_creation                = false -> null
+      - availability_zone                              = "ap-south-1a" -> null
+      - availability_zone_id                           = "aps1-az1" -> null
+      - cidr_block                                     = "10.30.0.0/24" -> null
+      - enable_dns64                                   = false -> null
+      - enable_lni_at_device_index                     = 0 -> null
+      - enable_resource_name_dns_a_record_on_launch    = false -> null
+      - enable_resource_name_dns_aaaa_record_on_launch = false -> null
+      - id                                             = "subnet-b8333de8" -> null
+      - ipv6_native                                    = false -> null
+      - map_customer_owned_ip_on_launch                = false -> null
+      - map_public_ip_on_launch                        = true -> null
+      - owner_id                                       = "000000000000" -> null
+      - private_dns_hostname_type_on_launch            = "ip-name" -> null
+      - tags                                           = {
+          - "Name"                   = "notes-prod-nodes-ap-south-1a"
+          - "kubernetes.io/role/elb" = "1"
+        } -> null
+      - tags_all                                       = {
+          - "Environment"            = "prod"
+          - "ManagedBy"              = "terraform"
+          - "Name"                   = "notes-prod-nodes-ap-south-1a"
+          - "Owner"                  = "vibhuti-24bcs10288"
+          - "Project"                = "notes"
+          - "Session"                = "21-final-devops-project"
+          - "kubernetes.io/role/elb" = "1"
+        } -> null
+      - vpc_id                                         = "vpc-c1a0e8ac" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_subnet.nodes["ap-south-1b"] will be destroyed
+  - resource "aws_subnet" "nodes" {
+      - arn                                            = "arn:aws:ec2:ap-south-1:000000000000:subnet/subnet-c92319e5" -> null
+      - assign_ipv6_address_on_creation                = false -> null
+      - availability_zone                              = "ap-south-1b" -> null
+      - availability_zone_id                           = "aps1-az3" -> null
+      - cidr_block                                     = "10.30.1.0/24" -> null
+      - enable_dns64                                   = false -> null
+      - enable_lni_at_device_index                     = 0 -> null
+      - enable_resource_name_dns_a_record_on_launch    = false -> null
+      - enable_resource_name_dns_aaaa_record_on_launch = false -> null
+      - id                                             = "subnet-c92319e5" -> null
+      - ipv6_native                                    = false -> null
+      - map_customer_owned_ip_on_launch                = false -> null
+      - map_public_ip_on_launch                        = true -> null
+      - owner_id                                       = "000000000000" -> null
+      - private_dns_hostname_type_on_launch            = "ip-name" -> null
+      - tags                                           = {
+          - "Name"                   = "notes-prod-nodes-ap-south-1b"
+          - "kubernetes.io/role/elb" = "1"
+        } -> null
+      - tags_all                                       = {
+          - "Environment"            = "prod"
+          - "ManagedBy"              = "terraform"
+          - "Name"                   = "notes-prod-nodes-ap-south-1b"
+          - "Owner"                  = "vibhuti-24bcs10288"
+          - "Project"                = "notes"
+          - "Session"                = "21-final-devops-project"
+          - "kubernetes.io/role/elb" = "1"
+        } -> null
+      - vpc_id                                         = "vpc-c1a0e8ac" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_vpc.cluster will be destroyed
+  - resource "aws_vpc" "cluster" {
+      - arn                                  = "arn:aws:ec2:ap-south-1:000000000000:vpc/vpc-c1a0e8ac" -> null
+      - assign_generated_ipv6_cidr_block     = false -> null
+      - cidr_block                           = "10.30.0.0/16" -> null
+      - default_network_acl_id               = "acl-d7432afc" -> null
+      - default_route_table_id               = "rtb-9532ee67" -> null
+      - default_security_group_id            = "sg-1a3e5fd28cee91621" -> null
+      - dhcp_options_id                      = "default" -> null
+      - enable_dns_hostnames                 = true -> null
+      - enable_dns_support                   = true -> null
+      - enable_network_address_usage_metrics = false -> null
+      - id                                   = "vpc-c1a0e8ac" -> null
+      - instance_tenancy                     = "default" -> null
+      - ipv6_netmask_length                  = 0 -> null
+      - main_route_table_id                  = "rtb-9532ee67" -> null
+      - owner_id                             = "000000000000" -> null
+      - tags                                 = {
+          - "Name" = "notes-prod-vpc"
+        } -> null
+      - tags_all                             = {
+          - "Environment" = "prod"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "notes-prod-vpc"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "notes"
+          - "Session"     = "21-final-devops-project"
+        } -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # random_id.artifacts will be destroyed
+  - resource "random_id" "artifacts" {
+      - b64_std     = "vapMyg==" -> null
+      - b64_url     = "vapMyg" -> null
+      - byte_length = 4 -> null
+      - dec         = "3182054602" -> null
+      - hex         = "bdaa4cca" -> null
+      - id          = "vapMyg" -> null
+    }
+
+Plan: 0 to add, 0 to change, 13 to destroy.
+
+Changes to Outputs:
+  - artifacts_bucket          = "notes-prod-artifacts-bdaa4cca" -> null
+  - ecr_repository_url        = "not created in this run" -> null
+  - ingress_security_group_id = "sg-f9476a6e85716bdff" -> null
+  - node_subnet_ids           = {
+      - ap-south-1a = "subnet-b8333de8"
+      - ap-south-1b = "subnet-c92319e5"
+    } -> null
+  - vpc_id                    = "vpc-c1a0e8ac" -> null
+aws_route_table_association.nodes["ap-south-1b"]: Destroying... [id=rtbassoc-960edfae]
+aws_s3_bucket_versioning.artifacts: Destroying... [id=notes-prod-artifacts-bdaa4cca]
+aws_route_table_association.nodes["ap-south-1a"]: Destroying... [id=rtbassoc-d163e87b]
+aws_s3_bucket_server_side_encryption_configuration.artifacts: Destroying... [id=notes-prod-artifacts-bdaa4cca]
+aws_s3_bucket_public_access_block.artifacts: Destroying... [id=notes-prod-artifacts-bdaa4cca]
+aws_security_group.ingress: Destroying... [id=sg-f9476a6e85716bdff]
+aws_s3_bucket_versioning.artifacts: Destruction complete after 0s
+aws_s3_bucket_server_side_encryption_configuration.artifacts: Destruction complete after 0s
+aws_s3_bucket_public_access_block.artifacts: Destruction complete after 0s
+aws_route_table_association.nodes["ap-south-1a"]: Destruction complete after 0s
+aws_route_table_association.nodes["ap-south-1b"]: Destruction complete after 0s
+aws_security_group.ingress: Destruction complete after 0s
+aws_s3_bucket.artifacts: Destroying... [id=notes-prod-artifacts-bdaa4cca]
+aws_s3_bucket.artifacts: Destruction complete after 0s
+aws_subnet.nodes["ap-south-1a"]: Destroying... [id=subnet-b8333de8]
+aws_route_table.nodes: Destroying... [id=rtb-9ed92c0a]
+aws_subnet.nodes["ap-south-1b"]: Destroying... [id=subnet-c92319e5]
+random_id.artifacts: Destroying... [id=vapMyg]
+random_id.artifacts: Destruction complete after 0s
+aws_subnet.nodes["ap-south-1a"]: Destruction complete after 0s
+aws_subnet.nodes["ap-south-1b"]: Destruction complete after 0s
+aws_route_table.nodes: Destruction complete after 0s
+aws_internet_gateway.cluster: Destroying... [id=igw-e41f7600]
+aws_internet_gateway.cluster: Destruction complete after 0s
+aws_vpc.cluster: Destroying... [id=vpc-c1a0e8ac]
+aws_vpc.cluster: Destruction complete after 0s
+
+Destroy complete! Resources: 13 destroyed.
+
+PASS: terraform destroy

@@ -1,0 +1,1779 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T08:50:25Z | 19-cloud-infrastructure
+Target: LocalStack at http://localhost:4566 (no real AWS account is involved)
+
+$ terraform init -upgrade
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding hashicorp/aws versions matching "~> 5.80"...
+- Finding hashicorp/random versions matching "~> 3.6"...
+- Using previously-installed hashicorp/aws v5.100.0
+- Using previously-installed hashicorp/random v3.9.1
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+PASS: terraform init
+
+$ terraform fmt -check -recursive
+
+PASS: terraform fmt -check
+
+$ terraform validate
+Success! The configuration is valid.
+
+
+PASS: terraform validate
+
+$ terraform plan -out=tfplan
+data.aws_ami.amazon_linux: Reading...
+data.aws_ami.amazon_linux: Read complete after 2s [id=ami-0e53db6fd757e38c7]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_instance.web will be created
+  + resource "aws_instance" "web" {
+      + ami                                  = "ami-0e53db6fd757e38c7"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + cpu_core_count                       = (known after apply)
+      + cpu_threads_per_core                 = (known after apply)
+      + disable_api_stop                     = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + enable_primary_ipv6                  = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + host_resource_group_arn              = (known after apply)
+      + iam_instance_profile                 = (known after apply)
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_lifecycle                   = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "t3.micro"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = (known after apply)
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + spot_instance_request_id             = (known after apply)
+      + subnet_id                            = (known after apply)
+      + tags                                 = {
+          + "Name" = "devops-homework-dev-web"
+        }
+      + tags_all                             = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-web"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+        }
+      + tenancy                              = (known after apply)
+      + user_data                            = "e086e812f7b8560e414fc6d2872c4e3d533184a0"
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = (known after apply)
+
+      + capacity_reservation_specification (known after apply)
+
+      + cpu_options (known after apply)
+
+      + ebs_block_device (known after apply)
+
+      + enclave_options (known after apply)
+
+      + ephemeral_block_device (known after apply)
+
+      + instance_market_options (known after apply)
+
+      + maintenance_options (known after apply)
+
+      + metadata_options (known after apply)
+
+      + network_interface (known after apply)
+
+      + private_dns_name_options (known after apply)
+
+      + root_block_device {
+          + delete_on_termination = true
+          + device_name           = (known after apply)
+          + encrypted             = true
+          + iops                  = (known after apply)
+          + kms_key_id            = (known after apply)
+          + tags_all              = (known after apply)
+          + throughput            = (known after apply)
+          + volume_id             = (known after apply)
+          + volume_size           = 8
+          + volume_type           = "gp3"
+        }
+    }
+
+  # aws_internet_gateway.main will be created
+  + resource "aws_internet_gateway" "main" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + owner_id = (known after apply)
+      + tags     = {
+          + "Name" = "devops-homework-dev-igw"
+        }
+      + tags_all = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-igw"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+        }
+      + vpc_id   = (known after apply)
+    }
+
+  # aws_route_table.private will be created
+  + resource "aws_route_table" "private" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = (known after apply)
+      + tags             = {
+          + "Name" = "devops-homework-dev-private-rt"
+        }
+      + tags_all         = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-private-rt"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # aws_route_table.public will be created
+  + resource "aws_route_table" "public" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = [
+          + {
+              + cidr_block                 = "0.0.0.0/0"
+              + gateway_id                 = (known after apply)
+                # (11 unchanged attributes hidden)
+            },
+        ]
+      + tags             = {
+          + "Name" = "devops-homework-dev-public-rt"
+        }
+      + tags_all         = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-public-rt"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # aws_route_table_association.private["ap-south-1a"] will be created
+  + resource "aws_route_table_association" "private" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_route_table_association.private["ap-south-1b"] will be created
+  + resource "aws_route_table_association" "private" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_route_table_association.public["ap-south-1a"] will be created
+  + resource "aws_route_table_association" "public" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_route_table_association.public["ap-south-1b"] will be created
+  + resource "aws_route_table_association" "public" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_s3_bucket.assets will be created
+  + resource "aws_s3_bucket" "assets" {
+      + acceleration_status         = (known after apply)
+      + acl                         = (known after apply)
+      + arn                         = (known after apply)
+      + bucket                      = (known after apply)
+      + bucket_domain_name          = (known after apply)
+      + bucket_prefix               = (known after apply)
+      + bucket_regional_domain_name = (known after apply)
+      + force_destroy               = false
+      + hosted_zone_id              = (known after apply)
+      + id                          = (known after apply)
+      + object_lock_enabled         = (known after apply)
+      + policy                      = (known after apply)
+      + region                      = (known after apply)
+      + request_payer               = (known after apply)
+      + tags                        = {
+          + "Name" = "devops-homework-dev-assets"
+        }
+      + tags_all                    = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-assets"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+        }
+      + website_domain              = (known after apply)
+      + website_endpoint            = (known after apply)
+
+      + cors_rule (known after apply)
+
+      + grant (known after apply)
+
+      + lifecycle_rule (known after apply)
+
+      + logging (known after apply)
+
+      + object_lock_configuration (known after apply)
+
+      + replication_configuration (known after apply)
+
+      + server_side_encryption_configuration (known after apply)
+
+      + versioning (known after apply)
+
+      + website (known after apply)
+    }
+
+  # aws_s3_bucket_public_access_block.assets will be created
+  + resource "aws_s3_bucket_public_access_block" "assets" {
+      + block_public_acls       = true
+      + block_public_policy     = true
+      + bucket                  = (known after apply)
+      + id                      = (known after apply)
+      + ignore_public_acls      = true
+      + restrict_public_buckets = true
+    }
+
+  # aws_s3_bucket_server_side_encryption_configuration.assets will be created
+  + resource "aws_s3_bucket_server_side_encryption_configuration" "assets" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+
+      + rule {
+          + apply_server_side_encryption_by_default {
+              + sse_algorithm     = "AES256"
+                # (1 unchanged attribute hidden)
+            }
+        }
+    }
+
+  # aws_s3_bucket_versioning.assets will be created
+  + resource "aws_s3_bucket_versioning" "assets" {
+      + bucket = (known after apply)
+      + id     = (known after apply)
+
+      + versioning_configuration {
+          + mfa_delete = (known after apply)
+          + status     = "Enabled"
+        }
+    }
+
+  # aws_s3_object.index will be created
+  + resource "aws_s3_object" "index" {
+      + acl                    = (known after apply)
+      + arn                    = (known after apply)
+      + bucket                 = (known after apply)
+      + bucket_key_enabled     = (known after apply)
+      + checksum_crc32         = (known after apply)
+      + checksum_crc32c        = (known after apply)
+      + checksum_crc64nvme     = (known after apply)
+      + checksum_sha1          = (known after apply)
+      + checksum_sha256        = (known after apply)
+      + content                = <<-EOT
+            <h1>devops-homework-dev</h1>
+        EOT
+      + content_type           = "text/html"
+      + etag                   = (known after apply)
+      + force_destroy          = false
+      + id                     = (known after apply)
+      + key                    = "index.html"
+      + kms_key_id             = (known after apply)
+      + server_side_encryption = (known after apply)
+      + storage_class          = (known after apply)
+      + tags_all               = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+        }
+      + version_id             = (known after apply)
+    }
+
+  # aws_security_group.app will be created
+  + resource "aws_security_group" "app" {
+      + arn                    = (known after apply)
+      + description            = "Reachable only from the web tier"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = []
+              + description      = "Application port from the web security group"
+              + from_port        = 8000
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = (known after apply)
+              + self             = false
+              + to_port          = 8000
+            },
+        ]
+      + name                   = "devops-homework-dev-app"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "devops-homework-dev-app-sg"
+        }
+      + tags_all               = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-app-sg"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # aws_security_group.web will be created
+  + resource "aws_security_group" "web" {
+      + arn                    = (known after apply)
+      + description            = "HTTP from anywhere, SSH from the trusted range only"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = "All outbound"
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = "HTTP"
+              + from_port        = 80
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 80
+            },
+          + {
+              + cidr_blocks      = [
+                  + "10.20.0.0/16",
+                ]
+              + description      = "SSH from the trusted range"
+              + from_port        = 22
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 22
+            },
+        ]
+      + name                   = "devops-homework-dev-web"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "devops-homework-dev-web-sg"
+        }
+      + tags_all               = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-web-sg"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # aws_subnet.private["ap-south-1a"] will be created
+  + resource "aws_subnet" "private" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-south-1a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.20.10.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name" = "devops-homework-dev-private-ap-south-1a"
+          + "Tier" = "private"
+        }
+      + tags_all                                       = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-private-ap-south-1a"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+          + "Tier"        = "private"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_subnet.private["ap-south-1b"] will be created
+  + resource "aws_subnet" "private" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-south-1b"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.20.11.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name" = "devops-homework-dev-private-ap-south-1b"
+          + "Tier" = "private"
+        }
+      + tags_all                                       = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-private-ap-south-1b"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+          + "Tier"        = "private"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_subnet.public["ap-south-1a"] will be created
+  + resource "aws_subnet" "public" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-south-1a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.20.0.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name" = "devops-homework-dev-public-ap-south-1a"
+          + "Tier" = "public"
+        }
+      + tags_all                                       = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-public-ap-south-1a"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+          + "Tier"        = "public"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_subnet.public["ap-south-1b"] will be created
+  + resource "aws_subnet" "public" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-south-1b"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.20.1.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name" = "devops-homework-dev-public-ap-south-1b"
+          + "Tier" = "public"
+        }
+      + tags_all                                       = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-public-ap-south-1b"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+          + "Tier"        = "public"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_vpc.main will be created
+  + resource "aws_vpc" "main" {
+      + arn                                  = (known after apply)
+      + cidr_block                           = "10.20.0.0/16"
+      + default_network_acl_id               = (known after apply)
+      + default_route_table_id               = (known after apply)
+      + default_security_group_id            = (known after apply)
+      + dhcp_options_id                      = (known after apply)
+      + enable_dns_hostnames                 = true
+      + enable_dns_support                   = true
+      + enable_network_address_usage_metrics = (known after apply)
+      + id                                   = (known after apply)
+      + instance_tenancy                     = "default"
+      + ipv6_association_id                  = (known after apply)
+      + ipv6_cidr_block                      = (known after apply)
+      + ipv6_cidr_block_network_border_group = (known after apply)
+      + main_route_table_id                  = (known after apply)
+      + owner_id                             = (known after apply)
+      + tags                                 = {
+          + "Name" = "devops-homework-dev-vpc"
+        }
+      + tags_all                             = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "devops-homework-dev-vpc"
+          + "Owner"       = "vibhuti-24bcs10288"
+          + "Project"     = "devops-homework"
+          + "Session"     = "19-cloud-terraform"
+        }
+    }
+
+  # random_id.bucket will be created
+  + resource "random_id" "bucket" {
+      + b64_std     = (known after apply)
+      + b64_url     = (known after apply)
+      + byte_length = 4
+      + dec         = (known after apply)
+      + hex         = (known after apply)
+      + id          = (known after apply)
+    }
+
+Plan: 21 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + assets_bucket         = (known after apply)
+  + internet_gateway_id   = (known after apply)
+  + private_subnet_ids    = {
+      + ap-south-1a = (known after apply)
+      + ap-south-1b = (known after apply)
+    }
+  + public_subnet_ids     = {
+      + ap-south-1a = (known after apply)
+      + ap-south-1b = (known after apply)
+    }
+  + vpc_cidr              = "10.20.0.0/16"
+  + vpc_id                = (known after apply)
+  + web_instance_id       = (known after apply)
+  + web_private_ip        = (known after apply)
+  + web_security_group_id = (known after apply)
+
+─────────────────────────────────────────────────────────────────────────────
+
+Saved the plan to: tfplan
+
+To perform exactly these actions, run the following command to apply:
+    terraform apply "tfplan"
+
+PASS: terraform plan
+
+$ terraform apply -auto-approve tfplan
+random_id.bucket: Creating...
+random_id.bucket: Creation complete after 0s [id=PN8jbQ]
+aws_vpc.main: Creating...
+aws_s3_bucket.assets: Creating...
+aws_s3_bucket.assets: Creation complete after 0s [id=devops-homework-dev-assets-3cdf236d]
+aws_s3_bucket_public_access_block.assets: Creating...
+aws_s3_bucket_versioning.assets: Creating...
+aws_s3_bucket_server_side_encryption_configuration.assets: Creating...
+aws_s3_object.index: Creating...
+aws_s3_bucket_public_access_block.assets: Creation complete after 0s [id=devops-homework-dev-assets-3cdf236d]
+aws_s3_bucket_server_side_encryption_configuration.assets: Creation complete after 0s [id=devops-homework-dev-assets-3cdf236d]
+aws_s3_object.index: Creation complete after 0s [id=index.html]
+aws_s3_bucket_versioning.assets: Creation complete after 1s [id=devops-homework-dev-assets-3cdf236d]
+aws_vpc.main: Still creating... [00m10s elapsed]
+aws_vpc.main: Creation complete after 10s [id=vpc-fdcbe3f2]
+aws_route_table.private: Creating...
+aws_internet_gateway.main: Creating...
+aws_subnet.public["ap-south-1b"]: Creating...
+aws_subnet.private["ap-south-1a"]: Creating...
+aws_subnet.public["ap-south-1a"]: Creating...
+aws_subnet.private["ap-south-1b"]: Creating...
+aws_security_group.web: Creating...
+aws_subnet.private["ap-south-1b"]: Creation complete after 0s [id=subnet-588aa14a]
+aws_subnet.private["ap-south-1a"]: Creation complete after 0s [id=subnet-10c665fd]
+aws_internet_gateway.main: Creation complete after 0s [id=igw-d674fc7b]
+aws_route_table.public: Creating...
+aws_route_table.private: Creation complete after 0s [id=rtb-7bf2318f]
+aws_route_table_association.private["ap-south-1a"]: Creating...
+aws_route_table_association.private["ap-south-1b"]: Creating...
+aws_route_table_association.private["ap-south-1b"]: Creation complete after 0s [id=rtbassoc-939a20c1]
+aws_route_table_association.private["ap-south-1a"]: Creation complete after 0s [id=rtbassoc-08d04c80]
+aws_security_group.web: Creation complete after 0s [id=sg-126ea0f78a51f8df7]
+aws_route_table.public: Creation complete after 0s [id=rtb-29bea165]
+aws_security_group.app: Creating...
+aws_security_group.app: Creation complete after 0s [id=sg-8a222fac70948b22c]
+aws_subnet.public["ap-south-1b"]: Still creating... [00m10s elapsed]
+aws_subnet.public["ap-south-1a"]: Still creating... [00m10s elapsed]
+aws_subnet.public["ap-south-1a"]: Creation complete after 10s [id=subnet-e2fef188]
+aws_subnet.public["ap-south-1b"]: Creation complete after 10s [id=subnet-85aec8ae]
+aws_route_table_association.public["ap-south-1a"]: Creating...
+aws_route_table_association.public["ap-south-1b"]: Creating...
+aws_instance.web: Creating...
+aws_route_table_association.public["ap-south-1a"]: Creation complete after 0s [id=rtbassoc-cbcba0d1]
+aws_route_table_association.public["ap-south-1b"]: Creation complete after 0s [id=rtbassoc-cbbaf90d]
+aws_instance.web: Still creating... [00m10s elapsed]
+aws_instance.web: Creation complete after 10s [id=i-09aac86db9f06c965]
+
+Apply complete! Resources: 21 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+assets_bucket = "devops-homework-dev-assets-3cdf236d"
+internet_gateway_id = "igw-d674fc7b"
+private_subnet_ids = {
+  "ap-south-1a" = "subnet-10c665fd"
+  "ap-south-1b" = "subnet-588aa14a"
+}
+public_subnet_ids = {
+  "ap-south-1a" = "subnet-e2fef188"
+  "ap-south-1b" = "subnet-85aec8ae"
+}
+vpc_cidr = "10.20.0.0/16"
+vpc_id = "vpc-fdcbe3f2"
+web_instance_id = "i-09aac86db9f06c965"
+web_private_ip = "10.20.0.4"
+web_security_group_id = "sg-126ea0f78a51f8df7"
+
+PASS: terraform apply
+
+$ terraform output
+assets_bucket = "devops-homework-dev-assets-3cdf236d"
+internet_gateway_id = "igw-d674fc7b"
+private_subnet_ids = {
+  "ap-south-1a" = "subnet-10c665fd"
+  "ap-south-1b" = "subnet-588aa14a"
+}
+public_subnet_ids = {
+  "ap-south-1a" = "subnet-e2fef188"
+  "ap-south-1b" = "subnet-85aec8ae"
+}
+vpc_cidr = "10.20.0.0/16"
+vpc_id = "vpc-fdcbe3f2"
+web_instance_id = "i-09aac86db9f06c965"
+web_private_ip = "10.20.0.4"
+web_security_group_id = "sg-126ea0f78a51f8df7"
+
+PASS: terraform output
+
+$ terraform state list
+data.aws_ami.amazon_linux
+aws_instance.web
+aws_internet_gateway.main
+aws_route_table.private
+aws_route_table.public
+aws_route_table_association.private["ap-south-1a"]
+aws_route_table_association.private["ap-south-1b"]
+aws_route_table_association.public["ap-south-1a"]
+aws_route_table_association.public["ap-south-1b"]
+aws_s3_bucket.assets
+aws_s3_bucket_public_access_block.assets
+aws_s3_bucket_server_side_encryption_configuration.assets
+aws_s3_bucket_versioning.assets
+aws_s3_object.index
+aws_security_group.app
+aws_security_group.web
+aws_subnet.private["ap-south-1a"]
+aws_subnet.private["ap-south-1b"]
+aws_subnet.public["ap-south-1a"]
+aws_subnet.public["ap-south-1b"]
+aws_vpc.main
+random_id.bucket
+
+PASS: terraform state list
+
+Dependency graph recorded by Terraform for the EC2 instance:
+
+$ terraform state show aws_instance.web
+# aws_instance.web:
+resource "aws_instance" "web" {
+    ami                                  = "ami-0e53db6fd757e38c7"
+    arn                                  = "arn:aws:ec2:ap-south-1::instance/i-09aac86db9f06c965"
+    associate_public_ip_address          = true
+    availability_zone                    = "ap-south-1a"
+    disable_api_stop                     = false
+    disable_api_termination              = false
+    ebs_optimized                        = false
+    get_password_data                    = false
+    hibernation                          = false
+    host_id                              = null
+    iam_instance_profile                 = null
+    id                                   = "i-09aac86db9f06c965"
+    instance_initiated_shutdown_behavior = "stop"
+    instance_lifecycle                   = null
+    instance_state                       = "running"
+    instance_type                        = "t3.micro"
+    ipv6_address_count                   = 0
+    ipv6_addresses                       = []
+    key_name                             = null
+    monitoring                           = false
+    outpost_arn                          = null
+    password_data                        = null
+    placement_group                      = null
+    placement_partition_number           = 0
+    primary_network_interface_id         = "eni-3502bd59"
+    private_dns                          = "ip-10-20-0-4.ap-south-1.compute.internal"
+    private_ip                           = "10.20.0.4"
+    public_dns                           = "ec2-54-214-68-213.ap-south-1.compute.amazonaws.com"
+    public_ip                            = "54.214.68.213"
+    secondary_private_ips                = []
+    security_groups                      = []
+    source_dest_check                    = true
+    spot_instance_request_id             = null
+    subnet_id                            = "subnet-e2fef188"
+    tags                                 = {
+        "Name" = "devops-homework-dev-web"
+    }
+    tags_all                             = {
+        "Environment" = "dev"
+        "ManagedBy"   = "terraform"
+        "Name"        = "devops-homework-dev-web"
+        "Owner"       = "vibhuti-24bcs10288"
+        "Project"     = "devops-homework"
+        "Session"     = "19-cloud-terraform"
+    }
+    tenancy                              = "default"
+    user_data                            = "e086e812f7b8560e414fc6d2872c4e3d533184a0"
+    user_data_replace_on_change          = false
+    vpc_security_group_ids               = [
+        "sg-126ea0f78a51f8df7",
+    ]
+
+    ebs_block_device {
+        delete_on_termination = true
+        device_name           = "/dev/xvda"
+        encrypted             = true
+        iops                  = 3000
+        kms_key_id            = "arn:aws:kms:ap-south-1:000000000000:key/79378ea7-9522-4d0c-a3cc-5fe9829b6388"
+        snapshot_id           = null
+        tags                  = {
+            "Environment" = "dev"
+            "ManagedBy"   = "terraform"
+            "Owner"       = "vibhuti-24bcs10288"
+            "Project"     = "devops-homework"
+            "Session"     = "19-cloud-terraform"
+        }
+        tags_all              = {
+            "Environment" = "dev"
+            "ManagedBy"   = "terraform"
+            "Owner"       = "vibhuti-24bcs10288"
+            "Project"     = "devops-homework"
+            "Session"     = "19-cloud-terraform"
+        }
+        throughput            = 0
+        volume_id             = "vol-3de4b5d0"
+        volume_size           = 8
+        volume_type           = "gp3"
+    }
+
+    root_block_device {
+        delete_on_termination = true
+        device_name           = null
+        encrypted             = true
+        iops                  = 0
+        kms_key_id            = null
+        tags_all              = {}
+        throughput            = 0
+        volume_id             = null
+        volume_size           = 8
+        volume_type           = "gp3"
+    }
+}
+
+Reading the created resources back through the AWS API:
+
+$ awslocal ec2 describe-vpcs --vpc-ids vpc-fdcbe3f2 --query Vpcs[0].{Id:VpcId,Cidr:CidrBlock,Tags:Tags}
+{
+    "Id": "vpc-fdcbe3f2",
+    "Cidr": "10.20.0.0/16",
+    "Tags": [
+        {
+            "Key": "ManagedBy",
+            "Value": "terraform"
+        },
+        {
+            "Key": "Owner",
+            "Value": "vibhuti-24bcs10288"
+        },
+        {
+            "Key": "Name",
+            "Value": "devops-homework-dev-vpc"
+        },
+        {
+            "Key": "Project",
+            "Value": "devops-homework"
+        },
+        {
+            "Key": "Session",
+            "Value": "19-cloud-terraform"
+        },
+        {
+            "Key": "Environment",
+            "Value": "dev"
+        }
+    ]
+}
+
+$ awslocal ec2 describe-subnets --filters Name=vpc-id,Values=vpc-fdcbe3f2 --query Subnets[].{Id:SubnetId,Cidr:CidrBlock,Az:AvailabilityZone,Public:MapPublicIpOnLaunch}
+[
+    {
+        "Id": "subnet-e2fef188",
+        "Cidr": "10.20.0.0/24",
+        "Az": "ap-south-1a",
+        "Public": true
+    },
+    {
+        "Id": "subnet-10c665fd",
+        "Cidr": "10.20.10.0/24",
+        "Az": "ap-south-1a",
+        "Public": false
+    },
+    {
+        "Id": "subnet-588aa14a",
+        "Cidr": "10.20.11.0/24",
+        "Az": "ap-south-1b",
+        "Public": false
+    },
+    {
+        "Id": "subnet-85aec8ae",
+        "Cidr": "10.20.1.0/24",
+        "Az": "ap-south-1b",
+        "Public": true
+    }
+]
+
+$ awslocal ec2 describe-route-tables --filters Name=vpc-id,Values=vpc-fdcbe3f2 --query RouteTables[].{Id:RouteTableId,Routes:Routes[].{Dest:DestinationCidrBlock,Gw:GatewayId}}
+[
+    {
+        "Id": "rtb-4164767b",
+        "Routes": [
+            {
+                "Dest": "10.20.0.0/16",
+                "Gw": "local"
+            }
+        ]
+    },
+    {
+        "Id": "rtb-7bf2318f",
+        "Routes": [
+            {
+                "Dest": "10.20.0.0/16",
+                "Gw": "local"
+            }
+        ]
+    },
+    {
+        "Id": "rtb-29bea165",
+        "Routes": [
+            {
+                "Dest": "10.20.0.0/16",
+                "Gw": "local"
+            },
+            {
+                "Dest": "0.0.0.0/0",
+                "Gw": "igw-d674fc7b"
+            }
+        ]
+    }
+]
+
+$ awslocal ec2 describe-internet-gateways --filters Name=attachment.vpc-id,Values=vpc-fdcbe3f2 --query InternetGateways[].{Id:InternetGatewayId,State:Attachments[0].State}
+[
+    {
+        "Id": "igw-d674fc7b",
+        "State": "available"
+    }
+]
+
+$ awslocal ec2 describe-security-groups --filters Name=vpc-id,Values=vpc-fdcbe3f2 --query SecurityGroups[].{Name:GroupName,Ingress:IpPermissions}
+[
+    {
+        "Name": "default",
+        "Ingress": []
+    },
+    {
+        "Name": "devops-homework-dev-web",
+        "Ingress": [
+            {
+                "IpProtocol": "tcp",
+                "FromPort": 22,
+                "ToPort": 22,
+                "UserIdGroupPairs": [],
+                "IpRanges": [
+                    {
+                        "Description": "SSH from the trusted range",
+                        "CidrIp": "10.20.0.0/16"
+                    }
+                ],
+                "Ipv6Ranges": [],
+                "PrefixListIds": []
+            },
+            {
+                "IpProtocol": "tcp",
+                "FromPort": 80,
+                "ToPort": 80,
+                "UserIdGroupPairs": [],
+                "IpRanges": [
+                    {
+                        "Description": "HTTP",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "Ipv6Ranges": [],
+                "PrefixListIds": []
+            }
+        ]
+    },
+    {
+        "Name": "devops-homework-dev-app",
+        "Ingress": [
+            {
+                "IpProtocol": "tcp",
+                "FromPort": 8000,
+                "ToPort": 8000,
+                "UserIdGroupPairs": [
+                    {
+                        "Description": "Application port from the web security group",
+                        "UserId": "000000000000",
+                        "GroupId": "sg-126ea0f78a51f8df7"
+                    }
+                ],
+                "IpRanges": [],
+                "Ipv6Ranges": [],
+                "PrefixListIds": []
+            }
+        ]
+    }
+]
+
+$ awslocal ec2 describe-instances --filters Name=vpc-id,Values=vpc-fdcbe3f2 --query Reservations[].Instances[].{Id:InstanceId,Type:InstanceType,State:State.Name,Subnet:SubnetId,PrivateIp:PrivateIpAddress}
+[
+    {
+        "Id": "i-09aac86db9f06c965",
+        "Type": "t3.micro",
+        "State": "running",
+        "Subnet": "subnet-e2fef188",
+        "PrivateIp": "10.20.0.4"
+    }
+]
+
+$ awslocal s3 ls s3://devops-homework-dev-assets-3cdf236d
+2026-10-07 14:20:33         29 index.html
+
+Inspecting Terraform state directly:
+
+$ /Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/bin/terraform -chdir=/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/cloud-terraform/infrastructure state list
+data.aws_ami.amazon_linux
+aws_instance.web
+aws_internet_gateway.main
+aws_route_table.private
+aws_route_table.public
+aws_route_table_association.private["ap-south-1a"]
+aws_route_table_association.private["ap-south-1b"]
+aws_route_table_association.public["ap-south-1a"]
+aws_route_table_association.public["ap-south-1b"]
+aws_s3_bucket.assets
+aws_s3_bucket_public_access_block.assets
+aws_s3_bucket_server_side_encryption_configuration.assets
+aws_s3_bucket_versioning.assets
+aws_s3_object.index
+aws_security_group.app
+aws_security_group.web
+aws_subnet.private["ap-south-1a"]
+aws_subnet.private["ap-south-1b"]
+aws_subnet.public["ap-south-1a"]
+aws_subnet.public["ap-south-1b"]
+aws_vpc.main
+random_id.bucket
+
+Resource count recorded in state: 22
+
+$ terraform destroy -auto-approve
+random_id.bucket: Refreshing state... [id=PN8jbQ]
+data.aws_ami.amazon_linux: Reading...
+aws_vpc.main: Refreshing state... [id=vpc-fdcbe3f2]
+aws_s3_bucket.assets: Refreshing state... [id=devops-homework-dev-assets-3cdf236d]
+data.aws_ami.amazon_linux: Read complete after 0s [id=ami-0e53db6fd757e38c7]
+aws_route_table.private: Refreshing state... [id=rtb-7bf2318f]
+aws_subnet.private["ap-south-1b"]: Refreshing state... [id=subnet-588aa14a]
+aws_internet_gateway.main: Refreshing state... [id=igw-d674fc7b]
+aws_subnet.private["ap-south-1a"]: Refreshing state... [id=subnet-10c665fd]
+aws_subnet.public["ap-south-1a"]: Refreshing state... [id=subnet-e2fef188]
+aws_subnet.public["ap-south-1b"]: Refreshing state... [id=subnet-85aec8ae]
+aws_security_group.web: Refreshing state... [id=sg-126ea0f78a51f8df7]
+aws_route_table.public: Refreshing state... [id=rtb-29bea165]
+aws_route_table_association.private["ap-south-1a"]: Refreshing state... [id=rtbassoc-08d04c80]
+aws_route_table_association.private["ap-south-1b"]: Refreshing state... [id=rtbassoc-939a20c1]
+aws_route_table_association.public["ap-south-1b"]: Refreshing state... [id=rtbassoc-cbbaf90d]
+aws_route_table_association.public["ap-south-1a"]: Refreshing state... [id=rtbassoc-cbcba0d1]
+aws_security_group.app: Refreshing state... [id=sg-8a222fac70948b22c]
+aws_instance.web: Refreshing state... [id=i-09aac86db9f06c965]
+aws_s3_bucket_public_access_block.assets: Refreshing state... [id=devops-homework-dev-assets-3cdf236d]
+aws_s3_bucket_versioning.assets: Refreshing state... [id=devops-homework-dev-assets-3cdf236d]
+aws_s3_bucket_server_side_encryption_configuration.assets: Refreshing state... [id=devops-homework-dev-assets-3cdf236d]
+aws_s3_object.index: Refreshing state... [id=index.html]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # aws_instance.web will be destroyed
+  - resource "aws_instance" "web" {
+      - ami                                  = "ami-0e53db6fd757e38c7" -> null
+      - arn                                  = "arn:aws:ec2:ap-south-1::instance/i-09aac86db9f06c965" -> null
+      - associate_public_ip_address          = true -> null
+      - availability_zone                    = "ap-south-1a" -> null
+      - disable_api_stop                     = false -> null
+      - disable_api_termination              = false -> null
+      - ebs_optimized                        = false -> null
+      - get_password_data                    = false -> null
+      - hibernation                          = false -> null
+      - id                                   = "i-09aac86db9f06c965" -> null
+      - instance_initiated_shutdown_behavior = "stop" -> null
+      - instance_state                       = "running" -> null
+      - instance_type                        = "t3.micro" -> null
+      - ipv6_address_count                   = 0 -> null
+      - ipv6_addresses                       = [] -> null
+      - monitoring                           = false -> null
+      - placement_partition_number           = 0 -> null
+      - primary_network_interface_id         = "eni-3502bd59" -> null
+      - private_dns                          = "ip-10-20-0-4.ap-south-1.compute.internal" -> null
+      - private_ip                           = "10.20.0.4" -> null
+      - public_dns                           = "ec2-54-214-68-213.ap-south-1.compute.amazonaws.com" -> null
+      - public_ip                            = "54.214.68.213" -> null
+      - secondary_private_ips                = [] -> null
+      - security_groups                      = [] -> null
+      - source_dest_check                    = true -> null
+      - subnet_id                            = "subnet-e2fef188" -> null
+      - tags                                 = {
+          - "Name" = "devops-homework-dev-web"
+        } -> null
+      - tags_all                             = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-web"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+        } -> null
+      - tenancy                              = "default" -> null
+      - user_data                            = "e086e812f7b8560e414fc6d2872c4e3d533184a0" -> null
+      - user_data_replace_on_change          = false -> null
+      - vpc_security_group_ids               = [
+          - "sg-126ea0f78a51f8df7",
+        ] -> null
+        # (8 unchanged attributes hidden)
+
+      - ebs_block_device {
+          - delete_on_termination = true -> null
+          - device_name           = "/dev/xvda" -> null
+          - encrypted             = true -> null
+          - iops                  = 3000 -> null
+          - kms_key_id            = "arn:aws:kms:ap-south-1:000000000000:key/79378ea7-9522-4d0c-a3cc-5fe9829b6388" -> null
+          - tags                  = {
+              - "Environment" = "dev"
+              - "ManagedBy"   = "terraform"
+              - "Owner"       = "vibhuti-24bcs10288"
+              - "Project"     = "devops-homework"
+              - "Session"     = "19-cloud-terraform"
+            } -> null
+          - tags_all              = {
+              - "Environment" = "dev"
+              - "ManagedBy"   = "terraform"
+              - "Owner"       = "vibhuti-24bcs10288"
+              - "Project"     = "devops-homework"
+              - "Session"     = "19-cloud-terraform"
+            } -> null
+          - throughput            = 0 -> null
+          - volume_id             = "vol-3de4b5d0" -> null
+          - volume_size           = 8 -> null
+          - volume_type           = "gp3" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - root_block_device {
+          - delete_on_termination = true -> null
+          - encrypted             = true -> null
+          - iops                  = 0 -> null
+          - tags                  = {} -> null
+          - tags_all              = {} -> null
+          - throughput            = 0 -> null
+          - volume_size           = 8 -> null
+          - volume_type           = "gp3" -> null
+            # (3 unchanged attributes hidden)
+        }
+    }
+
+  # aws_internet_gateway.main will be destroyed
+  - resource "aws_internet_gateway" "main" {
+      - arn      = "arn:aws:ec2:ap-south-1:000000000000:internet-gateway/igw-d674fc7b" -> null
+      - id       = "igw-d674fc7b" -> null
+      - owner_id = "000000000000" -> null
+      - tags     = {
+          - "Name" = "devops-homework-dev-igw"
+        } -> null
+      - tags_all = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-igw"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+        } -> null
+      - vpc_id   = "vpc-fdcbe3f2" -> null
+    }
+
+  # aws_route_table.private will be destroyed
+  - resource "aws_route_table" "private" {
+      - arn              = "arn:aws:ec2:ap-south-1:000000000000:route-table/rtb-7bf2318f" -> null
+      - id               = "rtb-7bf2318f" -> null
+      - owner_id         = "000000000000" -> null
+      - propagating_vgws = [] -> null
+      - route            = [] -> null
+      - tags             = {
+          - "Name" = "devops-homework-dev-private-rt"
+        } -> null
+      - tags_all         = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-private-rt"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+        } -> null
+      - vpc_id           = "vpc-fdcbe3f2" -> null
+    }
+
+  # aws_route_table.public will be destroyed
+  - resource "aws_route_table" "public" {
+      - arn              = "arn:aws:ec2:ap-south-1:000000000000:route-table/rtb-29bea165" -> null
+      - id               = "rtb-29bea165" -> null
+      - owner_id         = "000000000000" -> null
+      - propagating_vgws = [] -> null
+      - route            = [
+          - {
+              - cidr_block                 = "0.0.0.0/0"
+              - gateway_id                 = "igw-d674fc7b"
+                # (11 unchanged attributes hidden)
+            },
+        ] -> null
+      - tags             = {
+          - "Name" = "devops-homework-dev-public-rt"
+        } -> null
+      - tags_all         = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-public-rt"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+        } -> null
+      - vpc_id           = "vpc-fdcbe3f2" -> null
+    }
+
+  # aws_route_table_association.private["ap-south-1a"] will be destroyed
+  - resource "aws_route_table_association" "private" {
+      - id             = "rtbassoc-08d04c80" -> null
+      - route_table_id = "rtb-7bf2318f" -> null
+      - subnet_id      = "subnet-10c665fd" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_route_table_association.private["ap-south-1b"] will be destroyed
+  - resource "aws_route_table_association" "private" {
+      - id             = "rtbassoc-939a20c1" -> null
+      - route_table_id = "rtb-7bf2318f" -> null
+      - subnet_id      = "subnet-588aa14a" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_route_table_association.public["ap-south-1a"] will be destroyed
+  - resource "aws_route_table_association" "public" {
+      - id             = "rtbassoc-cbcba0d1" -> null
+      - route_table_id = "rtb-29bea165" -> null
+      - subnet_id      = "subnet-e2fef188" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_route_table_association.public["ap-south-1b"] will be destroyed
+  - resource "aws_route_table_association" "public" {
+      - id             = "rtbassoc-cbbaf90d" -> null
+      - route_table_id = "rtb-29bea165" -> null
+      - subnet_id      = "subnet-85aec8ae" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_s3_bucket.assets will be destroyed
+  - resource "aws_s3_bucket" "assets" {
+      - arn                         = "arn:aws:s3:::devops-homework-dev-assets-3cdf236d" -> null
+      - bucket                      = "devops-homework-dev-assets-3cdf236d" -> null
+      - bucket_domain_name          = "devops-homework-dev-assets-3cdf236d.s3.amazonaws.com" -> null
+      - bucket_regional_domain_name = "devops-homework-dev-assets-3cdf236d.s3.ap-south-1.amazonaws.com" -> null
+      - force_destroy               = false -> null
+      - hosted_zone_id              = "Z11RGJOFQNVJUP" -> null
+      - id                          = "devops-homework-dev-assets-3cdf236d" -> null
+      - object_lock_enabled         = false -> null
+      - region                      = "ap-south-1" -> null
+      - request_payer               = "BucketOwner" -> null
+      - tags                        = {
+          - "Name" = "devops-homework-dev-assets"
+        } -> null
+      - tags_all                    = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-assets"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+        } -> null
+        # (3 unchanged attributes hidden)
+
+      - grant {
+          - id          = "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a" -> null
+          - permissions = [
+              - "FULL_CONTROL",
+            ] -> null
+          - type        = "CanonicalUser" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - server_side_encryption_configuration {
+          - rule {
+              - bucket_key_enabled = false -> null
+
+              - apply_server_side_encryption_by_default {
+                  - sse_algorithm     = "AES256" -> null
+                    # (1 unchanged attribute hidden)
+                }
+            }
+        }
+
+      - versioning {
+          - enabled    = true -> null
+          - mfa_delete = false -> null
+        }
+    }
+
+  # aws_s3_bucket_public_access_block.assets will be destroyed
+  - resource "aws_s3_bucket_public_access_block" "assets" {
+      - block_public_acls       = true -> null
+      - block_public_policy     = true -> null
+      - bucket                  = "devops-homework-dev-assets-3cdf236d" -> null
+      - id                      = "devops-homework-dev-assets-3cdf236d" -> null
+      - ignore_public_acls      = true -> null
+      - restrict_public_buckets = true -> null
+    }
+
+  # aws_s3_bucket_server_side_encryption_configuration.assets will be destroyed
+  - resource "aws_s3_bucket_server_side_encryption_configuration" "assets" {
+      - bucket                = "devops-homework-dev-assets-3cdf236d" -> null
+      - id                    = "devops-homework-dev-assets-3cdf236d" -> null
+        # (1 unchanged attribute hidden)
+
+      - rule {
+          - bucket_key_enabled = false -> null
+
+          - apply_server_side_encryption_by_default {
+              - sse_algorithm     = "AES256" -> null
+                # (1 unchanged attribute hidden)
+            }
+        }
+    }
+
+  # aws_s3_bucket_versioning.assets will be destroyed
+  - resource "aws_s3_bucket_versioning" "assets" {
+      - bucket                = "devops-homework-dev-assets-3cdf236d" -> null
+      - id                    = "devops-homework-dev-assets-3cdf236d" -> null
+        # (1 unchanged attribute hidden)
+
+      - versioning_configuration {
+          - status     = "Enabled" -> null
+            # (1 unchanged attribute hidden)
+        }
+    }
+
+  # aws_s3_object.index will be destroyed
+  - resource "aws_s3_object" "index" {
+      - arn                           = "arn:aws:s3:::devops-homework-dev-assets-3cdf236d/index.html" -> null
+      - bucket                        = "devops-homework-dev-assets-3cdf236d" -> null
+      - bucket_key_enabled            = false -> null
+      - content                       = <<-EOT
+            <h1>devops-homework-dev</h1>
+        EOT -> null
+      - content_type                  = "text/html" -> null
+      - etag                          = "9c724b8f2702e1c2cba9ca08d783f544" -> null
+      - force_destroy                 = false -> null
+      - id                            = "index.html" -> null
+      - key                           = "index.html" -> null
+      - metadata                      = {} -> null
+      - server_side_encryption        = "AES256" -> null
+      - storage_class                 = "STANDARD" -> null
+      - tags                          = {} -> null
+      - tags_all                      = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+        } -> null
+      - version_id                    = "xdhgW9H2p3hVNzfxof3phRq19qwh8Bp_" -> null
+        # (13 unchanged attributes hidden)
+    }
+
+  # aws_security_group.app will be destroyed
+  - resource "aws_security_group" "app" {
+      - arn                    = "arn:aws:ec2:ap-south-1:000000000000:security-group/sg-8a222fac70948b22c" -> null
+      - description            = "Reachable only from the web tier" -> null
+      - egress                 = [
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - from_port        = 0
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "-1"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ] -> null
+      - id                     = "sg-8a222fac70948b22c" -> null
+      - ingress                = [
+          - {
+              - cidr_blocks      = []
+              - description      = "Application port from the web security group"
+              - from_port        = 8000
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = [
+                  - "sg-126ea0f78a51f8df7",
+                ]
+              - self             = false
+              - to_port          = 8000
+            },
+        ] -> null
+      - name                   = "devops-homework-dev-app" -> null
+      - owner_id               = "000000000000" -> null
+      - revoke_rules_on_delete = false -> null
+      - tags                   = {
+          - "Name" = "devops-homework-dev-app-sg"
+        } -> null
+      - tags_all               = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-app-sg"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+        } -> null
+      - vpc_id                 = "vpc-fdcbe3f2" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_security_group.web will be destroyed
+  - resource "aws_security_group" "web" {
+      - arn                    = "arn:aws:ec2:ap-south-1:000000000000:security-group/sg-126ea0f78a51f8df7" -> null
+      - description            = "HTTP from anywhere, SSH from the trusted range only" -> null
+      - egress                 = [
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - description      = "All outbound"
+              - from_port        = 0
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "-1"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 0
+            },
+        ] -> null
+      - id                     = "sg-126ea0f78a51f8df7" -> null
+      - ingress                = [
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - description      = "HTTP"
+              - from_port        = 80
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 80
+            },
+          - {
+              - cidr_blocks      = [
+                  - "10.20.0.0/16",
+                ]
+              - description      = "SSH from the trusted range"
+              - from_port        = 22
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 22
+            },
+        ] -> null
+      - name                   = "devops-homework-dev-web" -> null
+      - owner_id               = "000000000000" -> null
+      - revoke_rules_on_delete = false -> null
+      - tags                   = {
+          - "Name" = "devops-homework-dev-web-sg"
+        } -> null
+      - tags_all               = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-web-sg"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+        } -> null
+      - vpc_id                 = "vpc-fdcbe3f2" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_subnet.private["ap-south-1a"] will be destroyed
+  - resource "aws_subnet" "private" {
+      - arn                                            = "arn:aws:ec2:ap-south-1:000000000000:subnet/subnet-10c665fd" -> null
+      - assign_ipv6_address_on_creation                = false -> null
+      - availability_zone                              = "ap-south-1a" -> null
+      - availability_zone_id                           = "aps1-az1" -> null
+      - cidr_block                                     = "10.20.10.0/24" -> null
+      - enable_dns64                                   = false -> null
+      - enable_lni_at_device_index                     = 0 -> null
+      - enable_resource_name_dns_a_record_on_launch    = false -> null
+      - enable_resource_name_dns_aaaa_record_on_launch = false -> null
+      - id                                             = "subnet-10c665fd" -> null
+      - ipv6_native                                    = false -> null
+      - map_customer_owned_ip_on_launch                = false -> null
+      - map_public_ip_on_launch                        = false -> null
+      - owner_id                                       = "000000000000" -> null
+      - private_dns_hostname_type_on_launch            = "ip-name" -> null
+      - tags                                           = {
+          - "Name" = "devops-homework-dev-private-ap-south-1a"
+          - "Tier" = "private"
+        } -> null
+      - tags_all                                       = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-private-ap-south-1a"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+          - "Tier"        = "private"
+        } -> null
+      - vpc_id                                         = "vpc-fdcbe3f2" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_subnet.private["ap-south-1b"] will be destroyed
+  - resource "aws_subnet" "private" {
+      - arn                                            = "arn:aws:ec2:ap-south-1:000000000000:subnet/subnet-588aa14a" -> null
+      - assign_ipv6_address_on_creation                = false -> null
+      - availability_zone                              = "ap-south-1b" -> null
+      - availability_zone_id                           = "aps1-az3" -> null
+      - cidr_block                                     = "10.20.11.0/24" -> null
+      - enable_dns64                                   = false -> null
+      - enable_lni_at_device_index                     = 0 -> null
+      - enable_resource_name_dns_a_record_on_launch    = false -> null
+      - enable_resource_name_dns_aaaa_record_on_launch = false -> null
+      - id                                             = "subnet-588aa14a" -> null
+      - ipv6_native                                    = false -> null
+      - map_customer_owned_ip_on_launch                = false -> null
+      - map_public_ip_on_launch                        = false -> null
+      - owner_id                                       = "000000000000" -> null
+      - private_dns_hostname_type_on_launch            = "ip-name" -> null
+      - tags                                           = {
+          - "Name" = "devops-homework-dev-private-ap-south-1b"
+          - "Tier" = "private"
+        } -> null
+      - tags_all                                       = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-private-ap-south-1b"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+          - "Tier"        = "private"
+        } -> null
+      - vpc_id                                         = "vpc-fdcbe3f2" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_subnet.public["ap-south-1a"] will be destroyed
+  - resource "aws_subnet" "public" {
+      - arn                                            = "arn:aws:ec2:ap-south-1:000000000000:subnet/subnet-e2fef188" -> null
+      - assign_ipv6_address_on_creation                = false -> null
+      - availability_zone                              = "ap-south-1a" -> null
+      - availability_zone_id                           = "aps1-az1" -> null
+      - cidr_block                                     = "10.20.0.0/24" -> null
+      - enable_dns64                                   = false -> null
+      - enable_lni_at_device_index                     = 0 -> null
+      - enable_resource_name_dns_a_record_on_launch    = false -> null
+      - enable_resource_name_dns_aaaa_record_on_launch = false -> null
+      - id                                             = "subnet-e2fef188" -> null
+      - ipv6_native                                    = false -> null
+      - map_customer_owned_ip_on_launch                = false -> null
+      - map_public_ip_on_launch                        = true -> null
+      - owner_id                                       = "000000000000" -> null
+      - private_dns_hostname_type_on_launch            = "ip-name" -> null
+      - tags                                           = {
+          - "Name" = "devops-homework-dev-public-ap-south-1a"
+          - "Tier" = "public"
+        } -> null
+      - tags_all                                       = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-public-ap-south-1a"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+          - "Tier"        = "public"
+        } -> null
+      - vpc_id                                         = "vpc-fdcbe3f2" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_subnet.public["ap-south-1b"] will be destroyed
+  - resource "aws_subnet" "public" {
+      - arn                                            = "arn:aws:ec2:ap-south-1:000000000000:subnet/subnet-85aec8ae" -> null
+      - assign_ipv6_address_on_creation                = false -> null
+      - availability_zone                              = "ap-south-1b" -> null
+      - availability_zone_id                           = "aps1-az3" -> null
+      - cidr_block                                     = "10.20.1.0/24" -> null
+      - enable_dns64                                   = false -> null
+      - enable_lni_at_device_index                     = 0 -> null
+      - enable_resource_name_dns_a_record_on_launch    = false -> null
+      - enable_resource_name_dns_aaaa_record_on_launch = false -> null
+      - id                                             = "subnet-85aec8ae" -> null
+      - ipv6_native                                    = false -> null
+      - map_customer_owned_ip_on_launch                = false -> null
+      - map_public_ip_on_launch                        = true -> null
+      - owner_id                                       = "000000000000" -> null
+      - private_dns_hostname_type_on_launch            = "ip-name" -> null
+      - tags                                           = {
+          - "Name" = "devops-homework-dev-public-ap-south-1b"
+          - "Tier" = "public"
+        } -> null
+      - tags_all                                       = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-public-ap-south-1b"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+          - "Tier"        = "public"
+        } -> null
+      - vpc_id                                         = "vpc-fdcbe3f2" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_vpc.main will be destroyed
+  - resource "aws_vpc" "main" {
+      - arn                                  = "arn:aws:ec2:ap-south-1:000000000000:vpc/vpc-fdcbe3f2" -> null
+      - assign_generated_ipv6_cidr_block     = false -> null
+      - cidr_block                           = "10.20.0.0/16" -> null
+      - default_network_acl_id               = "acl-5cc8157a" -> null
+      - default_route_table_id               = "rtb-4164767b" -> null
+      - default_security_group_id            = "sg-22f04d789bd671da6" -> null
+      - dhcp_options_id                      = "default" -> null
+      - enable_dns_hostnames                 = true -> null
+      - enable_dns_support                   = true -> null
+      - enable_network_address_usage_metrics = false -> null
+      - id                                   = "vpc-fdcbe3f2" -> null
+      - instance_tenancy                     = "default" -> null
+      - ipv6_netmask_length                  = 0 -> null
+      - main_route_table_id                  = "rtb-4164767b" -> null
+      - owner_id                             = "000000000000" -> null
+      - tags                                 = {
+          - "Name" = "devops-homework-dev-vpc"
+        } -> null
+      - tags_all                             = {
+          - "Environment" = "dev"
+          - "ManagedBy"   = "terraform"
+          - "Name"        = "devops-homework-dev-vpc"
+          - "Owner"       = "vibhuti-24bcs10288"
+          - "Project"     = "devops-homework"
+          - "Session"     = "19-cloud-terraform"
+        } -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # random_id.bucket will be destroyed
+  - resource "random_id" "bucket" {
+      - b64_std     = "PN8jbQ==" -> null
+      - b64_url     = "PN8jbQ" -> null
+      - byte_length = 4 -> null
+      - dec         = "1021256557" -> null
+      - hex         = "3cdf236d" -> null
+      - id          = "PN8jbQ" -> null
+    }
+
+Plan: 0 to add, 0 to change, 21 to destroy.
+
+Changes to Outputs:
+  - assets_bucket         = "devops-homework-dev-assets-3cdf236d" -> null
+  - internet_gateway_id   = "igw-d674fc7b" -> null
+  - private_subnet_ids    = {
+      - ap-south-1a = "subnet-10c665fd"
+      - ap-south-1b = "subnet-588aa14a"
+    } -> null
+  - public_subnet_ids     = {
+      - ap-south-1a = "subnet-e2fef188"
+      - ap-south-1b = "subnet-85aec8ae"
+    } -> null
+  - vpc_cidr              = "10.20.0.0/16" -> null
+  - vpc_id                = "vpc-fdcbe3f2" -> null
+  - web_instance_id       = "i-09aac86db9f06c965" -> null
+  - web_private_ip        = "10.20.0.4" -> null
+  - web_security_group_id = "sg-126ea0f78a51f8df7" -> null
+aws_route_table_association.public["ap-south-1b"]: Destroying... [id=rtbassoc-cbbaf90d]
+aws_s3_bucket_versioning.assets: Destroying... [id=devops-homework-dev-assets-3cdf236d]
+aws_s3_bucket_public_access_block.assets: Destroying... [id=devops-homework-dev-assets-3cdf236d]
+aws_s3_object.index: Destroying... [id=index.html]
+aws_route_table_association.private["ap-south-1b"]: Destroying... [id=rtbassoc-939a20c1]
+aws_route_table_association.public["ap-south-1a"]: Destroying... [id=rtbassoc-cbcba0d1]
+aws_route_table_association.private["ap-south-1a"]: Destroying... [id=rtbassoc-08d04c80]
+aws_s3_bucket_server_side_encryption_configuration.assets: Destroying... [id=devops-homework-dev-assets-3cdf236d]
+aws_security_group.app: Destroying... [id=sg-8a222fac70948b22c]
+aws_instance.web: Destroying... [id=i-09aac86db9f06c965]
+aws_s3_bucket_server_side_encryption_configuration.assets: Destruction complete after 0s
+aws_s3_bucket_versioning.assets: Destruction complete after 0s
+aws_s3_bucket_public_access_block.assets: Destruction complete after 0s
+aws_route_table_association.private["ap-south-1b"]: Destruction complete after 0s
+aws_security_group.app: Destruction complete after 0s
+aws_route_table_association.public["ap-south-1a"]: Destruction complete after 0s
+aws_route_table_association.private["ap-south-1a"]: Destruction complete after 0s
+aws_route_table_association.public["ap-south-1b"]: Destruction complete after 0s
+aws_s3_object.index: Destruction complete after 0s
+aws_route_table.private: Destroying... [id=rtb-7bf2318f]
+aws_subnet.private["ap-south-1a"]: Destroying... [id=subnet-10c665fd]
+aws_subnet.private["ap-south-1b"]: Destroying... [id=subnet-588aa14a]
+aws_route_table.public: Destroying... [id=rtb-29bea165]
+aws_s3_bucket.assets: Destroying... [id=devops-homework-dev-assets-3cdf236d]
+aws_s3_bucket.assets: Destruction complete after 0s
+random_id.bucket: Destroying... [id=PN8jbQ]
+random_id.bucket: Destruction complete after 0s
+aws_subnet.private["ap-south-1b"]: Destruction complete after 0s
+aws_subnet.private["ap-south-1a"]: Destruction complete after 0s
+aws_route_table.private: Destruction complete after 0s
+aws_route_table.public: Destruction complete after 0s
+aws_internet_gateway.main: Destroying... [id=igw-d674fc7b]
+aws_internet_gateway.main: Destruction complete after 0s
+aws_instance.web: Still destroying... [id=i-09aac86db9f06c965, 00m10s elapsed]
+aws_instance.web: Destruction complete after 10s
+aws_subnet.public["ap-south-1b"]: Destroying... [id=subnet-85aec8ae]
+aws_subnet.public["ap-south-1a"]: Destroying... [id=subnet-e2fef188]
+aws_security_group.web: Destroying... [id=sg-126ea0f78a51f8df7]
+aws_subnet.public["ap-south-1b"]: Destruction complete after 0s
+aws_subnet.public["ap-south-1a"]: Destruction complete after 0s
+aws_security_group.web: Destruction complete after 0s
+aws_vpc.main: Destroying... [id=vpc-fdcbe3f2]
+aws_vpc.main: Destruction complete after 0s
+
+Destroy complete! Resources: 21 destroyed.
+
+PASS: terraform destroy
+
+$ awslocal ec2 describe-vpcs --vpc-ids vpc-fdcbe3f2
+
+An error occurred (InvalidVpcID.NotFound) when calling the DescribeVpcs operation: VpcID {'vpc-fdcbe3f2'} does not exist.

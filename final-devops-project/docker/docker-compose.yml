@@ -1,0 +1,21 @@
+# Running the same image locally, the way it runs in the cluster: a named
+# volume stands in for the PersistentVolumeClaim.
+name: notes-local
+
+services:
+  notes:
+    build:
+      context: ../application
+      dockerfile: ../docker/Dockerfile
+    image: notes-app:local
+    environment:
+      APP_ENVIRONMENT: local
+      APP_VERSION: "1.0.0"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - notes-data:/data
+    restart: unless-stopped
+
+volumes:
+  notes-data:

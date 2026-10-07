@@ -1,21 +1,21 @@
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/daemonset.yaml
-daemonset.apps/node-agent unchanged (server dry run)
+daemonset.apps/node-agent created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/deployment-v1.yaml
-deployment.apps/core-web configured (server dry run)
+deployment.apps/core-web created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/deployment-v2.yaml
-deployment.apps/core-web configured (server dry run)
+deployment.apps/core-web created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/pod.yaml
 pod/standalone-web created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/replicaset.yaml
-replicaset.apps/replica-web configured (server dry run)
+replicaset.apps/replica-web created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/service.yaml
-service/core-web unchanged (server dry run)
+service/core-web created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-fundamentals/namespace.yaml
 namespace/devops-homework unchanged (server dry run)
@@ -79,7 +79,7 @@ $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/li
 pod/lifecycle-failed created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/05-crashloop.yaml
-pod/lifecycle-crashloop unchanged (server dry run)
+pod/lifecycle-crashloop created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/lifecycle/06-image-pull.yaml
 pod/lifecycle-image-error created (server dry run)
@@ -103,20 +103,20 @@ $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/li
 pod/lifecycle-termination created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/strategies/blue-green.yaml
-deployment.apps/web-blue unchanged (server dry run)
-deployment.apps/web-green unchanged (server dry run)
-service/blue-green configured (server dry run)
+deployment.apps/web-blue created (server dry run)
+deployment.apps/web-green created (server dry run)
+service/blue-green created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/strategies/canary.yaml
-deployment.apps/web-stable unchanged (server dry run)
-deployment.apps/web-canary unchanged (server dry run)
-service/canary-web unchanged (server dry run)
+deployment.apps/web-stable created (server dry run)
+deployment.apps/web-canary created (server dry run)
+service/canary-web created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/strategies/recreate-v1.yaml
-deployment.apps/recreate-web configured (server dry run)
+deployment.apps/recreate-web created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-core-objects/strategies/recreate-v2.yaml
-deployment.apps/recreate-web unchanged (server dry run)
+deployment.apps/recreate-web created (server dry run)
 
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-ingress-configmaps-secrets/optional/ingress-tls.yaml
 ingress.networking.k8s.io/demo-tls created (server dry run)
@@ -124,8 +124,208 @@ ingress.networking.k8s.io/demo-tls created (server dry run)
 $ kubectl apply --dry-run=server --validate=strict -f kubernetes-services/optional/loadbalancer.yaml
 service/web-loadbalancer created (server dry run)
 
-PASS: server accepted all Kubernetes objects in 37 manifest files
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/01-volumes/emptydir-pod.yaml
+pod/emptydir-demo created (server dry run)
 
-Follow-up check after the TLS-router annotation correction (run separately):
-$ kubectl --kubeconfig .lab/kubeconfig --context kind-vibhuti-devops apply --dry-run=server --validate=strict -f kubernetes-ingress-configmaps-secrets/optional/ingress-tls.yaml
-ingress.networking.k8s.io/demo-tls unchanged (server dry run)
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/01-volumes/hostpath-pod.yaml
+pod/hostpath-demo created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/02-persistent-storage/pod.yaml
+pod/static-pv-writer created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/02-persistent-storage/pv.yaml
+persistentvolume/static-pv created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/02-persistent-storage/pvc.yaml
+persistentvolumeclaim/static-pvc created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/03-storageclass/dynamic-pod.yaml
+pod/dynamic-pv-writer created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/03-storageclass/dynamic-pvc.yaml
+persistentvolumeclaim/dynamic-pvc created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/04-hpa/deployment.yaml
+deployment.apps/hpa-demo created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/04-hpa/hpa.yaml
+horizontalpodautoscaler.autoscaling/hpa-demo created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/04-hpa/load-generator.yaml
+deployment.apps/load-generator created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/04-hpa/service.yaml
+service/hpa-demo created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/05-probes/liveness.yaml
+pod/probe-liveness created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/05-probes/readiness-service.yaml
+service/probe-readiness created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/05-probes/readiness.yaml
+pod/probe-readiness created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/05-probes/startup.yaml
+pod/probe-startup created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/mini-project/deployment.yaml
+deployment.apps/web-app created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/mini-project/hpa.yaml
+horizontalpodautoscaler.autoscaling/web-app-hpa unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/mini-project/load-generator.yaml
+deployment.apps/load-generator created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/mini-project/namespace.yaml
+namespace/production-webapp unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/mini-project/pvc.yaml
+persistentvolumeclaim/web-data unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-storage-hpa-probes/mini-project/service.yaml
+service/web-service unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/01-commands/demo-pod.yaml
+pod/triage-demo created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/02-crashloopbackoff/broken-pod.yaml
+pod/crashloop-broken created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/02-crashloopbackoff/fixed-pod.yaml
+configmap/crashloop-config created (server dry run)
+pod/crashloop-fixed created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/03-imagepullbackoff/broken-pod.yaml
+pod/imagepull-broken created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/03-imagepullbackoff/fixed-pod.yaml
+pod/imagepull-fixed created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/04-pending/broken-pod.yaml
+pod/pending-broken created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/04-pending/fixed-pod.yaml
+pod/pending-fixed created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/05-service-dns/broken-service.yaml
+service/dns-demo created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/05-service-dns/deployment.yaml
+deployment.apps/dns-demo created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/05-service-dns/dns-test-pod.yaml
+pod/dns-probe created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/05-service-dns/service.yaml
+service/dns-demo created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/06-oomkilled/broken-pod.yaml
+pod/oom-broken created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/06-oomkilled/fixed-pod.yaml
+pod/oom-fixed created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/07-config-error/broken-pod.yaml
+pod/config-broken created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/07-config-error/fixed.yaml
+configmap/missing-config created (server dry run)
+pod/config-fixed created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/mini-project/broken-pod.yaml
+pod/project-broken-pod created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/mini-project/broken-service.yaml
+service/troubleshooting-service created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/mini-project/deployment.yaml
+deployment.apps/troubleshooting-app created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f kubernetes-troubleshooting/mini-project/service.yaml
+service/troubleshooting-service created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f cicd-github-actions/kubernetes/deployment.yaml
+namespace/task-api configured (server dry run)
+deployment.apps/task-api created (server dry run)
+service/task-api created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f devsecops/kubernetes/deployment.yaml
+deployment.apps/task-api created (server dry run)
+configmap/task-api-config created (server dry run)
+service/task-api created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f devsecops/kubernetes/namespace.yaml
+namespace/task-api unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f devsecops/kubernetes/networkpolicy.yaml
+networkpolicy.networking.k8s.io/task-api-default-deny created (server dry run)
+networkpolicy.networking.k8s.io/task-api-allow created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f final-devops-project/kubernetes/00-namespace.yaml
+namespace/notes configured (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f final-devops-project/kubernetes/01-configmap.yaml
+configmap/notes-config unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f final-devops-project/kubernetes/02-secret.yaml
+Warning: resource secrets/notes-secret is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+secret/notes-secret configured (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f final-devops-project/kubernetes/03-pvc.yaml
+persistentvolumeclaim/notes-data unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f final-devops-project/kubernetes/04-deployment.yaml
+deployment.apps/notes unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f final-devops-project/kubernetes/05-service.yaml
+service/notes unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f final-devops-project/kubernetes/06-ingress.yaml
+ingress.networking.k8s.io/notes unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f final-devops-project/kubernetes/07-hpa.yaml
+horizontalpodautoscaler.autoscaling/notes unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f final-devops-project/kubernetes/08-networkpolicy.yaml
+networkpolicy.networking.k8s.io/notes-default-deny unchanged (server dry run)
+networkpolicy.networking.k8s.io/notes-allow unchanged (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f final-devops-project/kubernetes/load-generator.yaml
+deployment.apps/notes-load created (server dry run)
+
+$ kubectl apply --dry-run=server --validate=strict -f final-devops-project/monitoring/prometheus-k8s.yaml
+namespace/monitoring configured (server dry run)
+serviceaccount/prometheus unchanged (server dry run)
+clusterrole.rbac.authorization.k8s.io/prometheus unchanged (server dry run)
+clusterrolebinding.rbac.authorization.k8s.io/prometheus unchanged (server dry run)
+configmap/prometheus-config unchanged (server dry run)
+configmap/prometheus-rules unchanged (server dry run)
+deployment.apps/prometheus unchanged (server dry run)
+service/prometheus unchanged (server dry run)
+
+$ helm lint helm/notes-chart final-devops-project/helm/notes
+==> Linting helm/notes-chart
+[INFO] Chart.yaml: icon is recommended
+
+==> Linting final-devops-project/helm/notes
+[INFO] Chart.yaml: icon is recommended
+
+2 chart(s) linted, 0 chart(s) failed
+
+$ helm template check helm/notes-chart | kubectl apply --dry-run=server --validate=strict -f -
+configmap/check-notes-chart-config created (server dry run)
+service/check-notes-chart created (server dry run)
+deployment.apps/check-notes-chart created (server dry run)
+
+$ helm template check final-devops-project/helm/notes | kubectl apply --dry-run=server --validate=strict -f -
+secret/check-notes-secret created (server dry run)
+configmap/check-notes-config created (server dry run)
+persistentvolumeclaim/check-notes-data created (server dry run)
+service/check-notes created (server dry run)
+deployment.apps/check-notes created (server dry run)
+horizontalpodautoscaler.autoscaling/check-notes created (server dry run)
+ingress.networking.k8s.io/check-notes created (server dry run)
+
+PASS: server accepted all Kubernetes objects in 92 manifest files and 2 rendered charts

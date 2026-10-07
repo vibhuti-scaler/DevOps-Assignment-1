@@ -1,0 +1,118 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T09:36:23Z | image-scan
+
+$ docker build -t task-api:security-scan cicd-github-actions
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.04kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 DONE 0.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 132B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 613B done
+#4 DONE 0.0s
+
+#5 [builder 1/4] FROM docker.io/library/python:3.12-slim@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f
+#5 resolve docker.io/library/python:3.12-slim@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f 0.0s done
+#5 DONE 0.0s
+
+#6 [stage-1 5/6] RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt     && rm -rf /wheels     && useradd --system --uid 10001 --create-home appuser
+#6 CACHED
+
+#7 [stage-1 2/6] WORKDIR /srv
+#7 CACHED
+
+#8 [builder 3/4] COPY requirements.txt .
+#8 CACHED
+
+#9 [builder 4/4] RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+#9 CACHED
+
+#10 [builder 2/4] WORKDIR /build
+#10 CACHED
+
+#11 [stage-1 4/6] COPY requirements.txt .
+#11 CACHED
+
+#12 [stage-1 3/6] COPY --from=builder /wheels /wheels
+#12 CACHED
+
+#13 [stage-1 6/6] COPY app ./app
+#13 CACHED
+
+#14 exporting to image
+#14 exporting layers done
+#14 exporting manifest sha256:870541378d8eaadf3efe9847d886f0f79fba1bb6fa08bf61b4905fc062a4480a done
+#14 exporting config sha256:dbc6a1939964e12099df0f423d6133f6552500a68e1e8cd3065bdc7e9028d2ac done
+#14 exporting attestation manifest sha256:6c7add4f4302017c5d31055a46b7b9c2bce451c5e830a1d56ea3766c143a710f done
+#14 exporting manifest list sha256:edc827c3295650791e77fd96440ca9776f3ff86af58a724b792795a9b72c3035 done
+#14 naming to docker.io/library/task-api:security-scan done
+#14 unpacking to docker.io/library/task-api:security-scan 0.1s done
+#14 DONE 0.1s
+
+PASS: application image built
+2026-10-07T09:36:25Z	INFO	[vulndb] Need to update DB
+2026-10-07T09:36:25Z	INFO	[vulndb] Downloading vulnerability DB...
+2026-10-07T09:36:25Z	INFO	[vulndb] Downloading artifact...	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-07T09:37:16Z	INFO	[vulndb] Artifact successfully downloaded	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-07T09:37:16Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-10-07T09:37:16Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-10-07T09:37:16Z	INFO	[misconfig] Need to update the built-in checks
+2026-10-07T09:37:16Z	INFO	[misconfig] Downloading the built-in checks...
+79.26 KiB / 165.46 KiB [---------------------------->_______________________________] 47.90% ? p/s ?165.46 KiB / 165.46 KiB [---------------------------------------------] 100.00% 887.19 KiB p/s 400ms2026-10-07T09:37:18Z	INFO	[secret] Secret scanning is enabled
+2026-10-07T09:37:18Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-10-07T09:37:18Z	INFO	[secret] Please see also https://aquasecurity.github.io/trivy/v0.58/docs/scanner/secret#recommendation for faster secret detection
+2026-10-07T09:37:19Z	ERROR	[rego] Error occurred while parsing. Trying to fallback to embedded check	file_path="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego" err="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego:30: rego_type_error: undefined ref: input.aws.ec2.requestedamis[__local622__]\n\tinput.aws.ec2.requestedamis[__local622__]\n\t              ^\n\t              have: \"requestedamis\"\n\t              want (one of): [\"instances\" \"launchconfigurations\" \"launchtemplates\" \"networkacls\" \"securitygroups\" \"subnets\" \"volumes\" \"vpcs\"]"
+2026-10-07T09:37:19Z	ERROR	[rego] Failed to find embedded check, skipping	file_path="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego"
+2026-10-07T09:37:19Z	ERROR	[rego] Error occurred while parsing	file_path="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego" err="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego:30: rego_type_error: undefined ref: input.aws.ec2.requestedamis[__local622__]\n\tinput.aws.ec2.requestedamis[__local622__]\n\t              ^\n\t              have: \"requestedamis\"\n\t              want (one of): [\"instances\" \"launchconfigurations\" \"launchtemplates\" \"networkacls\" \"securitygroups\" \"subnets\" \"volumes\" \"vpcs\"]"
+2026-10-07T09:37:19Z	ERROR	[rego] Error occurred while parsing. Trying to fallback to embedded check	file_path="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego" err="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego:30: rego_type_error: undefined ref: input.aws.ec2.requestedamis[__local622__]\n\tinput.aws.ec2.requestedamis[__local622__]\n\t              ^\n\t              have: \"requestedamis\"\n\t              want (one of): [\"instances\" \"launchconfigurations\" \"launchtemplates\" \"networkacls\" \"securitygroups\" \"subnets\" \"volumes\" \"vpcs\"]"
+2026-10-07T09:37:19Z	ERROR	[rego] Failed to find embedded check, skipping	file_path="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego"
+2026-10-07T09:37:19Z	ERROR	[rego] Error occurred while parsing	file_path="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego" err="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego:30: rego_type_error: undefined ref: input.aws.ec2.requestedamis[__local622__]\n\tinput.aws.ec2.requestedamis[__local622__]\n\t              ^\n\t              have: \"requestedamis\"\n\t              want (one of): [\"instances\" \"launchconfigurations\" \"launchtemplates\" \"networkacls\" \"securitygroups\" \"subnets\" \"volumes\" \"vpcs\"]"
+2026-10-07T09:37:20Z	ERROR	[rego] Error occurred while parsing. Trying to fallback to embedded check	file_path="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego" err="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego:30: rego_type_error: undefined ref: input.aws.ec2.requestedamis[__local622__]\n\tinput.aws.ec2.requestedamis[__local622__]\n\t              ^\n\t              have: \"requestedamis\"\n\t              want (one of): [\"instances\" \"launchconfigurations\" \"launchtemplates\" \"networkacls\" \"securitygroups\" \"subnets\" \"volumes\" \"vpcs\"]"
+2026-10-07T09:37:20Z	ERROR	[rego] Failed to find embedded check, skipping	file_path="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego"
+2026-10-07T09:37:20Z	ERROR	[rego] Error occurred while parsing	file_path="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego" err="root/.cache/trivy/policy/content/policies/cloud/policies/aws/ec2/specify_ami_owners.rego:30: rego_type_error: undefined ref: input.aws.ec2.requestedamis[__local622__]\n\tinput.aws.ec2.requestedamis[__local622__]\n\t              ^\n\t              have: \"requestedamis\"\n\t              want (one of): [\"instances\" \"launchconfigurations\" \"launchtemplates\" \"networkacls\" \"securitygroups\" \"subnets\" \"volumes\" \"vpcs\"]"
+2026-10-07T09:37:20Z	WARN	[pip] Unable to find python `site-packages` directory. License detection is skipped.	err="unable to find path to Python executable"
+2026-10-07T09:37:20Z	INFO	Number of language-specific files	num=1
+2026-10-07T09:37:20Z	INFO	[pip] Detecting vulnerabilities...
+2026-10-07T09:37:20Z	INFO	Detected config files	num=2
+
+PASS: Trivy filesystem scan (dependencies, secrets, misconfiguration)
+2026-10-07T09:37:21Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-10-07T09:37:21Z	INFO	[secret] Secret scanning is enabled
+2026-10-07T09:37:21Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-10-07T09:37:21Z	INFO	[secret] Please see also https://aquasecurity.github.io/trivy/v0.58/docs/scanner/secret#recommendation for faster secret detection
+2026-10-07T09:37:21Z	INFO	Detected OS	family="debian" version="13.7"
+2026-10-07T09:37:21Z	INFO	[debian] Detecting vulnerabilities...	os_version="13" pkg_num=87
+2026-10-07T09:37:21Z	INFO	Number of language-specific files	num=1
+2026-10-07T09:37:21Z	INFO	[python-pkg] Detecting vulnerabilities...
+2026-10-07T09:37:21Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://aquasecurity.github.io/trivy/v0.58/docs/scanner/vulnerability#severity-selection for details.
+
+task-api:security-scan (debian 13.7)
+====================================
+Total: 0 (HIGH: 0, CRITICAL: 0)
+
+
+PASS: Trivy image scan, failing on fixable HIGH or CRITICAL findings
+2026-10-07T09:37:22Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-10-07T09:37:22Z	INFO	[secret] Secret scanning is enabled
+2026-10-07T09:37:22Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-10-07T09:37:22Z	INFO	[secret] Please see also https://aquasecurity.github.io/trivy/v0.58/docs/scanner/secret#recommendation for faster secret detection
+2026-10-07T09:37:25Z	INFO	Detected OS	family="debian" version="13.7"
+2026-10-07T09:37:25Z	INFO	[debian] Detecting vulnerabilities...	os_version="13" pkg_num=469
+2026-10-07T09:37:25Z	INFO	Number of language-specific files	num=1
+2026-10-07T09:37:25Z	INFO	[python-pkg] Detecting vulnerabilities...
+2026-10-07T09:37:25Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://aquasecurity.github.io/trivy/v0.58/docs/scanner/vulnerability#severity-selection for details.
+
+python:3.12 (debian 13.7)
+=========================
+Total: 0 (HIGH: 0, CRITICAL: 0)
+
+
+Context: the unslimmed python:3.12 base image above is shown for comparison.

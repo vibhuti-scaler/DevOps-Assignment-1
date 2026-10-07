@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: load-generator
+  labels:
+    app: load-generator
+spec:
+  # Four looping clients are enough to push a 50m CPU request well past 50%
+  # utilisation on this single-node cluster.
+  replicas: 4
+  selector:
+    matchLabels:
+      app: load-generator
+  template:
+    metadata:
+      labels:
+        app: load-generator
+    spec:
+      containers:
+        - name: load
+          image: busybox:1.36
+          command:
+            - /bin/sh
+            - -c
+            - 'while true; do wget -q -O- http://hpa-demo >/dev/null 2>&1; done'
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi

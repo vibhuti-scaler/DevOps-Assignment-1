@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: crashloop-broken
+  labels:
+    app: crashloop-demo
+spec:
+  containers:
+    - name: app
+      image: busybox:1.36
+      # The process reads a configuration file that was never mounted, exits 1,
+      # and the default restartPolicy: Always brings it straight back. Repeated
+      # fast exits are what the kubelet reports as CrashLoopBackOff.
+      command:
+        - /bin/sh
+        - -c
+        - 'echo "starting app"; cat /etc/app/config.ini || exit 1; echo "started"'

@@ -1,0 +1,63 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T09:17:18.462375+00:00 | 15-final-monitoring
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n monitoring apply -f final-devops-project/monitoring/prometheus-k8s.yaml
+namespace/monitoring unchanged
+serviceaccount/prometheus created
+clusterrole.rbac.authorization.k8s.io/prometheus unchanged
+clusterrolebinding.rbac.authorization.k8s.io/prometheus unchanged
+configmap/prometheus-config created
+configmap/prometheus-rules created
+deployment.apps/prometheus created
+service/prometheus created
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n monitoring rollout status deployment/prometheus --timeout=300s
+Waiting for deployment "prometheus" rollout to finish: 0 of 1 updated replicas are available...
+deployment "prometheus" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n monitoring get pods,svc
+NAME                             READY   STATUS    RESTARTS   AGE
+pod/prometheus-99995fb76-zvpqk   1/1     Running   0          19s
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/prometheus   ClusterIP   10.96.218.127   <none>        9090/TCP   19s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get networkpolicies
+NAME                 POD-SELECTOR   AGE
+notes-allow          app=notes      2m42s
+notes-default-deny   <none>         2m42s
+Command exited 7: curl --fail --silent --max-time 10 http://127.0.0.1:19090/-/ready
+PASS: Prometheus is ready inside the cluster
+PASS: service discovery found the Notes Pods
+
+$ curl http://127.0.0.1:19090/api/v1/targets
+kubernetes-nodes	https://kubernetes.default.svc:443/api/v1/nodes/vibhuti-devops-control-plane/proxy/metrics	unknown
+kubernetes-pods	http://10.244.0.90:8000/metrics	up
+kubernetes-pods	http://10.244.0.88:8000/metrics	up
+
+$ promql notes_stored_total
+pod notes-7f7c4d88bd-fs4jc stored notes: 3
+pod notes-7f7c4d88bd-vljv7 stored notes: 3
+
+$ promql notes_storage_writable
+pod notes-7f7c4d88bd-fs4jc storage writable: 1
+pod notes-7f7c4d88bd-vljv7 storage writable: 1
+
+$ promql sum by (endpoint) (notes_http_requests_total)
+readyz	69 requests
+list_notes	52448 requests
+healthz	36 requests
+index	1 requests
+metrics	1 requests
+
+$ promql count(up == 1)
+targets up: 2
+
+$ curl http://127.0.0.1:19090/api/v1/rules
+notes/NotesTargetDown: inactive
+notes/NotesStorageNotWritable: inactive
+notes/NotesHighErrorRate: inactive
+notes/NotesSlowRequests: inactive
+
+PASS: the alert rules are loaded and none is firing
+PASS: 15-final-monitoring completed

@@ -1,0 +1,6 @@
+Release {{ .Release.Name }} (revision {{ .Release.Revision }}) is installed in
+namespace {{ .Release.Namespace }}, environment {{ .Values.app.environment }}.
+
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "notes.fullname" . }} 8000:{{ .Values.service.port }}
+  curl http://127.0.0.1:8000/healthz
+  curl http://127.0.0.1:8000/metrics

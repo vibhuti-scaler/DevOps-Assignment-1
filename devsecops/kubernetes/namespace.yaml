@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: task-api
+  labels:
+    # Pod Security Admission rejects anything that does not meet the
+    # "restricted" profile, so a privileged Pod cannot be applied here even by
+    # accident.
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/warn: restricted

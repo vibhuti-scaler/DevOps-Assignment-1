@@ -1,0 +1,26 @@
+replicaCount: 3
+
+image:
+  repository: nginx
+  tag: "1.27"
+
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30090
+
+app:
+  name: notes-app
+  environment: production
+  message: "Notes app - production release"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 300m
+    memory: 192Mi
+
+probes:
+  enabled: true

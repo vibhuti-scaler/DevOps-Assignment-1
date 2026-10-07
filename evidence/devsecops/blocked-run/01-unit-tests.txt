@@ -1,0 +1,21 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T08:43:08Z | unit-tests
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.2.1
+[notice] To update, run: pip install --upgrade pip
+................                                                         [100%]
+
+---------- coverage: platform linux, python 3.12.15-final-0 ----------
+Name              Stmts   Miss  Cover
+-------------------------------------
+app/__init__.py       0      0   100%
+app/main.py          36      0   100%
+app/tasks.py         36      1    97%
+-------------------------------------
+TOTAL                72      1    99%
+
+Required test coverage of 85% reached. Total coverage: 98.61%
+16 passed in 0.16s
+
+PASS: unit tests and the 85% coverage gate

@@ -1,0 +1,2 @@
+# Grafana reads provisioning from these directories; an absent one is logged
+# as an error at start-up, so both are present and deliberately empty.

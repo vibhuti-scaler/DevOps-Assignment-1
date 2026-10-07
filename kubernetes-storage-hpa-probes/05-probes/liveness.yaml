@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-liveness
+  labels:
+    app: probe-liveness
+spec:
+  containers:
+    - name: flaky
+      image: busybox:1.36
+      # Healthy for 15s, then the health file is removed. The liveness probe
+      # fails and the kubelet restarts the container, so RESTARTS keeps rising.
+      command:
+        - /bin/sh
+        - -c
+        - 'touch /tmp/healthy; sleep 15; rm -f /tmp/healthy; sleep 3600'
+      livenessProbe:
+        exec:
+          command: ["cat", "/tmp/healthy"]
+        initialDelaySeconds: 3
+        periodSeconds: 3
+        failureThreshold: 1

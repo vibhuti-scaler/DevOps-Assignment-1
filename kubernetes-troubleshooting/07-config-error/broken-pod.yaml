@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: config-broken
+  labels:
+    app: config-demo
+spec:
+  containers:
+    - name: web
+      image: nginx:1.27-alpine
+      env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              # This ConfigMap is never created. The Pod is scheduled, but the
+              # kubelet cannot build the container: CreateContainerConfigError,
+              # which shows up as a Pod stuck short of Running.
+              name: missing-config
+              key: APP_MODE

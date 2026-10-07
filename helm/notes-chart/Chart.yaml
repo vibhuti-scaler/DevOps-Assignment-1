@@ -1,0 +1,9 @@
+apiVersion: v2
+name: notes-chart
+description: A Notes web application packaged for the Session 15 Helm homework
+type: application
+# version is the chart's own version; appVersion is the application it ships.
+version: 0.1.0
+appVersion: "1.0"
+maintainers:
+  - name: Vibhuti Bhatnagar

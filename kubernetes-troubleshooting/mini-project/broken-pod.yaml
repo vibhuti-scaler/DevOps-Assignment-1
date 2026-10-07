@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: project-broken-pod
+  labels:
+    # Deliberately not app=troubleshooting-app. This Pod exists to demonstrate
+    # an image-pull failure; giving it the Service's label would imply it is
+    # meant to be a backend, which it is not.
+    app: project-broken-pod
+spec:
+  containers:
+    - name: nginx
+      # Typo in the repository name: "nginxx" is not a Docker Hub image.
+      image: nginxx:latest

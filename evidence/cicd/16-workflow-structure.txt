@@ -1,0 +1,67 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T09:37:38Z | 16-workflow-structure
+
+Every workflow in this repository, as act parses it. The Stage column is
+the dependency order act worked out from each job's needs:
+
+$ /Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/bin/act --list
+time="2026-10-07T15:07:38+05:30" level=info msg="Using docker host 'unix:///Users/vibhutibhatnagar/.docker/run/docker.sock', and daemon socket 'unix:///Users/vibhutibhatnagar/.docker/run/docker.sock'"
+level=warning msg= ⚠ You are using Apple M-series chip and you have not specified container architecture, you might encounter issues while running act. If so, try running it with '--container-architecture linux/amd64'. ⚠ 
+
+Stage  Job ID          Job name                                    Workflow name  Workflow file  Events                             
+0      publish         Build and publish the image                 CD             cd.yml         workflow_run,workflow_dispatch     
+0      lint            Lint                                        CI             ci.yml         workflow_dispatch,push,pull_request
+0      build-and-test  Build and unit test                         DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+1      deploy          Deploy to Kubernetes                        CD             cd.yml         workflow_run,workflow_dispatch     
+1      test            Test (Python ${{ matrix.python-version }})  CI             ci.yml         push,pull_request,workflow_dispatch
+1      secret-scan     Secret scanning                             DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+1      sast            SAST                                        DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+1      sca             SCA                                         DevSecOps      devsecops.yml  pull_request,workflow_dispatch,push
+2      build           Build image                                 CI             ci.yml         push,pull_request,workflow_dispatch
+2      image-scan      Container image scan                        DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+3      publish         Push to the registry                        DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+4      deploy          Deploy to Kubernetes                        DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+
+Detected multiple jobs with the same job name, use `-W` to specify the path to the specific workflow.
+
+PASS: act parsed every workflow in the repository
+
+The CI workflow on its own:
+
+$ /Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/bin/act push --workflows .github/workflows/ci.yml --list
+time="2026-10-07T15:07:39+05:30" level=info msg="Using docker host 'unix:///Users/vibhutibhatnagar/.docker/run/docker.sock', and daemon socket 'unix:///Users/vibhutibhatnagar/.docker/run/docker.sock'"
+level=warning msg= ⚠ You are using Apple M-series chip and you have not specified container architecture, you might encounter issues while running act. If so, try running it with '--container-architecture linux/amd64'. ⚠ 
+
+Stage  Job ID  Job name                                    Workflow name  Workflow file  Events                             
+0      lint    Lint                                        CI             ci.yml         workflow_dispatch,push,pull_request
+1      test    Test (Python ${{ matrix.python-version }})  CI             ci.yml         push,pull_request,workflow_dispatch
+2      build   Build image                                 CI             ci.yml         push,pull_request,workflow_dispatch
+
+PASS: the CI workflow resolves lint -> test (matrix) -> build
+
+The delivery workflows:
+
+$ /Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/bin/act --workflows .github/workflows/cd.yml --list
+time="2026-10-07T15:07:40+05:30" level=info msg="Using docker host 'unix:///Users/vibhutibhatnagar/.docker/run/docker.sock', and daemon socket 'unix:///Users/vibhutibhatnagar/.docker/run/docker.sock'"
+level=warning msg= ⚠ You are using Apple M-series chip and you have not specified container architecture, you might encounter issues while running act. If so, try running it with '--container-architecture linux/amd64'. ⚠ 
+
+Stage  Job ID   Job name                     Workflow name  Workflow file  Events                        
+0      publish  Build and publish the image  CD             cd.yml         workflow_run,workflow_dispatch
+1      deploy   Deploy to Kubernetes         CD             cd.yml         workflow_run,workflow_dispatch
+
+PASS: the CD workflow resolves publish -> deploy
+
+$ /Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/bin/act push --workflows .github/workflows/devsecops.yml --list
+time="2026-10-07T15:07:41+05:30" level=info msg="Using docker host 'unix:///Users/vibhutibhatnagar/.docker/run/docker.sock', and daemon socket 'unix:///Users/vibhutibhatnagar/.docker/run/docker.sock'"
+level=warning msg= ⚠ You are using Apple M-series chip and you have not specified container architecture, you might encounter issues while running act. If so, try running it with '--container-architecture linux/amd64'. ⚠ 
+
+Stage  Job ID          Job name              Workflow name  Workflow file  Events                             
+0      build-and-test  Build and unit test   DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+1      sast            SAST                  DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+1      sca             SCA                   DevSecOps      devsecops.yml  pull_request,workflow_dispatch,push
+1      secret-scan     Secret scanning       DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+2      image-scan      Container image scan  DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+3      publish         Push to the registry  DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+4      deploy          Deploy to Kubernetes  DevSecOps      devsecops.yml  push,pull_request,workflow_dispatch
+
+PASS: the DevSecOps workflow resolves build/test -> scans -> gate -> publish -> deploy

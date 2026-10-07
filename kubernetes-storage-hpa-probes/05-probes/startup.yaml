@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-startup
+  labels:
+    app: probe-startup
+spec:
+  containers:
+    - name: slow-start
+      image: busybox:1.36
+      # The application needs ~20s before it is usable. The startup probe gives
+      # it up to 30 attempts of 2s; the liveness probe stays suspended until the
+      # startup probe passes once, so a slow boot is not mistaken for a hang.
+      command:
+        - /bin/sh
+        - -c
+        - 'sleep 20; touch /tmp/ready; sleep 3600'
+      startupProbe:
+        exec:
+          command: ["cat", "/tmp/ready"]
+        periodSeconds: 2
+        failureThreshold: 30
+      livenessProbe:
+        exec:
+          command: ["cat", "/tmp/ready"]
+        periodSeconds: 5
+        failureThreshold: 1

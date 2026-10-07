@@ -1,0 +1,29 @@
+# Development defaults. values-prod.yaml overrides these for the production
+# release, which is the whole point of keeping configuration out of templates.
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30090
+
+app:
+  name: notes-app
+  environment: development
+  message: "Notes app - development release"
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 32Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+probes:
+  enabled: true

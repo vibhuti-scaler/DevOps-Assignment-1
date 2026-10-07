@@ -1,0 +1,525 @@
+Vibhuti Bhatnagar | 24BCS10288 | vibhuti.24bcs10288@sst.scaler.com
+2026-10-07T09:19:26.258284+00:00 | 16-final-troubleshooting
+
+=== Fault 1: the Deployment points at an image tag that does not exist ===
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes patch deployment notes --type=strategic --patch-file final-devops-project/troubleshooting/faults/01-wrong-image-tag.yaml
+deployment.apps/notes patched
+PASS: new Pods cannot pull the image
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get pods -l app=notes
+NAME                     READY   STATUS         RESTARTS   AGE
+notes-6fd4484d48-8df69   0/1     ErrImagePull   0          4s
+notes-7f7c4d88bd-fs4jc   1/1     Running        0          8m
+notes-7f7c4d88bd-vljv7   1/1     Running        0          8m14s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout status deployment/notes --timeout=20s
+Waiting for deployment "notes" rollout to finish: 1 out of 2 new replicas have been updated...
+error: timed out waiting for the condition
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get deployment notes
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+notes   2/2     1            2           21m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes describe pod notes-6fd4484d48-8df69
+Name:             notes-6fd4484d48-8df69
+Namespace:        notes
+Priority:         0
+Service Account:  default
+Node:             vibhuti-devops-control-plane/172.20.0.2
+Start Time:       Wed, 07 Oct 2026 14:49:26 +0530
+Labels:           app=notes
+                  pod-template-hash=6fd4484d48
+Annotations:      kubectl.kubernetes.io/restartedAt: 2026-10-07T14:41:16+05:30
+                  prometheus.io/path: /metrics
+                  prometheus.io/port: 8000
+                  prometheus.io/scrape: true
+Status:           Pending
+SeccompProfile:   RuntimeDefault
+IP:               10.244.0.102
+IPs:
+  IP:           10.244.0.102
+Controlled By:  ReplicaSet/notes-6fd4484d48
+Containers:
+  notes:
+    Container ID:   
+    Image:          notes-app:v9-does-not-exist
+    Image ID:       
+    Port:           8000/TCP (http)
+    Host Port:      0/TCP (http)
+    State:          Waiting
+      Reason:       ImagePullBackOff
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  256Mi
+    Requests:
+      cpu:      50m
+      memory:   96Mi
+    Liveness:   http-get http://:http/healthz delay=0s timeout=1s period=10s #success=1 #failure=3
+    Readiness:  http-get http://:http/readyz delay=0s timeout=1s period=5s #success=1 #failure=3
+    Startup:    http-get http://:http/healthz delay=0s timeout=1s period=2s #success=1 #failure=30
+    Environment Variables from:
+      notes-config  ConfigMap  Optional: false
+    Environment:
+      API_TOKEN:  <set to the key 'API_TOKEN' in secret 'notes-secret'>  Optional: false
+    Mounts:
+      /data from data (rw)
+      /tmp from tmp (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-nljp4 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  data:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  notes-data
+    ReadOnly:   false
+  tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  kube-api-access-nljp4:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                From               Message
+  ----     ------     ----               ----               -------
+  Normal   Scheduled  24s                default-scheduler  Successfully assigned notes/notes-6fd4484d48-8df69 to vibhuti-devops-control-plane
+  Normal   BackOff    22s                kubelet            spec.containers{notes}: Back-off pulling image "notes-app:v9-does-not-exist"
+  Warning  Failed     22s                kubelet            spec.containers{notes}: Error: ImagePullBackOff
+  Normal   Pulling    11s (x2 over 24s)  kubelet            spec.containers{notes}: Pulling image "notes-app:v9-does-not-exist"
+  Warning  Failed     9s (x2 over 22s)   kubelet            spec.containers{notes}: Failed to pull image "notes-app:v9-does-not-exist": failed to pull and unpack image "docker.io/library/notes-app:v9-does-not-exist": failed to resolve reference "docker.io/library/notes-app:v9-does-not-exist": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed
+  Warning  Failed     9s (x2 over 22s)   kubelet            spec.containers{notes}: Error: ErrImagePull
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://notes.notes.svc.cluster.local/healthz
+{"status":"ok","version":"1.0.0"}
+PASS: the running version still answers while the rollout is stuck
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout undo deployment/notes
+Warning: resource deployments/notes was previously managed with 'kubectl apply'. Rolling back will not update the kubectl.kubernetes.io/last-applied-configuration annotation, which may cause unexpected behavior on future 'kubectl apply' operations. Consider using 'kubectl apply' with your previous configuration file instead.
+deployment.apps/notes rolled back
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout status deployment/notes --timeout=300s
+Waiting for deployment spec update to be observed...
+Waiting for deployment "notes" rollout to finish: 1 old replicas are pending termination...
+deployment "notes" successfully rolled out
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get pods -l app=notes
+NAME                     READY   STATUS        RESTARTS   AGE
+notes-6fd4484d48-8df69   0/1     Terminating   0          25s
+notes-7f7c4d88bd-fs4jc   1/1     Running       0          8m21s
+notes-7f7c4d88bd-vljv7   1/1     Running       0          8m35s
+
+=== Fault 2: the Service selector no longer matches the Pod labels ===
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes apply -f final-devops-project/troubleshooting/faults/02-wrong-service-selector.yaml
+service/notes configured
+PASS: the Service lost every endpoint
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get endpointslices -l kubernetes.io/service-name=notes
+NAME          ADDRESSTYPE   PORTS     ENDPOINTS   AGE
+notes-w5vjr   IPv4          <unset>   <unset>     21m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get pods --show-labels -l app=notes
+NAME                     READY   STATUS        RESTARTS   AGE     LABELS
+notes-6fd4484d48-8df69   0/1     Terminating   0          25s     app=notes,pod-template-hash=6fd4484d48
+notes-7f7c4d88bd-fs4jc   1/1     Running       0          8m21s   app=notes,pod-template-hash=7f7c4d88bd
+notes-7f7c4d88bd-vljv7   1/1     Running       0          8m35s   app=notes,pod-template-hash=7f7c4d88bd
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes describe service notes
+Name:                     notes
+Namespace:                notes
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 app=notes-api
+Type:                     ClusterIP
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.96.146.90
+IPs:                      10.96.146.90
+Port:                     http  80/TCP
+TargetPort:               http/TCP
+Endpoints:                
+Session Affinity:         None
+Internal Traffic Policy:  Cluster
+Events:                   <none>
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- sh -c 'nslookup notes.notes.svc.cluster.local >/dev/null 2>&1 && echo '"'"'DNS still resolves the name'"'"''
+DNS still resolves the name
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- sh -c 'wget -T 3 -qO- http://notes.notes.svc.cluster.local/healthz || echo '"'"'connection refused: the Service has no backend'"'"''
+{"status":"ok","version":"1.0.0"}
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes apply -f final-devops-project/kubernetes/05-service.yaml
+service/notes configured
+PASS: endpoints returned once the selector matched again
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get endpointslices -l kubernetes.io/service-name=notes
+NAME          ADDRESSTYPE   PORTS   ENDPOINTS                 AGE
+notes-w5vjr   IPv4          8000    10.244.0.90,10.244.0.88   21m
+
+=== Fault 3: the Deployment references a Secret key that does not exist ===
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes patch deployment notes --type=strategic --patch-file final-devops-project/troubleshooting/faults/03-missing-secret-key.yaml
+deployment.apps/notes patched
+PASS: the new Pod cannot be built from its configuration
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get pods -l app=notes
+NAME                     READY   STATUS                       RESTARTS   AGE
+notes-7f7c4d88bd-fs4jc   1/1     Running                      0          8m24s
+notes-7f7c4d88bd-vljv7   1/1     Running                      0          8m38s
+notes-b669cdfd7-9gnlf    0/1     CreateContainerConfigError   0          2s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes describe pod notes-b669cdfd7-9gnlf
+Name:             notes-b669cdfd7-9gnlf
+Namespace:        notes
+Priority:         0
+Service Account:  default
+Node:             vibhuti-devops-control-plane/172.20.0.2
+Start Time:       Wed, 07 Oct 2026 14:49:52 +0530
+Labels:           app=notes
+                  pod-template-hash=b669cdfd7
+Annotations:      kubectl.kubernetes.io/restartedAt: 2026-10-07T14:41:16+05:30
+                  prometheus.io/path: /metrics
+                  prometheus.io/port: 8000
+                  prometheus.io/scrape: true
+Status:           Pending
+SeccompProfile:   RuntimeDefault
+IP:               10.244.0.103
+IPs:
+  IP:           10.244.0.103
+Controlled By:  ReplicaSet/notes-b669cdfd7
+Containers:
+  notes:
+    Container ID:   
+    Image:          notes-app:local
+    Image ID:       
+    Port:           8000/TCP (http)
+    Host Port:      0/TCP (http)
+    State:          Waiting
+      Reason:       CreateContainerConfigError
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  256Mi
+    Requests:
+      cpu:      50m
+      memory:   96Mi
+    Liveness:   http-get http://:http/healthz delay=0s timeout=1s period=10s #success=1 #failure=3
+    Readiness:  http-get http://:http/readyz delay=0s timeout=1s period=5s #success=1 #failure=3
+    Startup:    http-get http://:http/healthz delay=0s timeout=1s period=2s #success=1 #failure=30
+    Environment Variables from:
+      notes-config  ConfigMap  Optional: false
+    Environment:
+      API_TOKEN:  <set to the key 'TOKEN_THAT_DOES_NOT_EXIST' in secret 'notes-secret'>  Optional: false
+    Mounts:
+      /data from data (rw)
+      /tmp from tmp (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-446pp (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  data:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  notes-data
+    ReadOnly:   false
+  tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  kube-api-access-446pp:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age              From               Message
+  ----     ------     ----             ----               -------
+  Normal   Scheduled  2s               default-scheduler  Successfully assigned notes/notes-b669cdfd7-9gnlf to vibhuti-devops-control-plane
+  Normal   Pulled     1s (x2 over 2s)  kubelet            spec.containers{notes}: Container image "notes-app:local" already present on machine and can be accessed by the pod
+  Warning  Failed     1s (x2 over 2s)  kubelet            spec.containers{notes}: Error: couldn't find key TOKEN_THAT_DOES_NOT_EXIST in Secret notes/notes-secret
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get secret notes-secret -o 'jsonpath={.data}'
+{"API_TOKEN":"YzUxOTRmNmY4NGM5Y2ZmNjU5MmU1MDk0NWZjOWUzNzNiY2E3M2NkZDliZTZjYjYy"}
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout undo deployment/notes
+Warning: resource deployments/notes was previously managed with 'kubectl apply'. Rolling back will not update the kubectl.kubernetes.io/last-applied-configuration annotation, which may cause unexpected behavior on future 'kubectl apply' operations. Consider using 'kubectl apply' with your previous configuration file instead.
+deployment.apps/notes rolled back
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout status deployment/notes --timeout=300s
+Waiting for deployment "notes" rollout to finish: 1 old replicas are pending termination...
+deployment "notes" successfully rolled out
+
+=== Fault 4: the readiness probe points at a path the application does not serve ===
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes patch deployment notes --type=strategic --patch-file final-devops-project/troubleshooting/faults/04-probe-on-wrong-path.yaml
+deployment.apps/notes patched
+PASS: a Pod is Running but never becomes Ready
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get pods -l app=notes
+NAME                     READY   STATUS    RESTARTS   AGE
+notes-798d657cdf-69qtc   0/1     Running   0          2s
+notes-7f7c4d88bd-fs4jc   1/1     Running   0          8m26s
+notes-7f7c4d88bd-vljv7   1/1     Running   0          8m40s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes describe pod notes-798d657cdf-69qtc
+Name:             notes-798d657cdf-69qtc
+Namespace:        notes
+Priority:         0
+Service Account:  default
+Node:             vibhuti-devops-control-plane/172.20.0.2
+Start Time:       Wed, 07 Oct 2026 14:49:54 +0530
+Labels:           app=notes
+                  pod-template-hash=798d657cdf
+Annotations:      kubectl.kubernetes.io/restartedAt: 2026-10-07T14:41:16+05:30
+                  prometheus.io/path: /metrics
+                  prometheus.io/port: 8000
+                  prometheus.io/scrape: true
+Status:           Running
+SeccompProfile:   RuntimeDefault
+IP:               10.244.0.104
+IPs:
+  IP:           10.244.0.104
+Controlled By:  ReplicaSet/notes-798d657cdf
+Containers:
+  notes:
+    Container ID:   containerd://03a5f1cd609e710bfebbee2e1f1db2db48865767af498f47bbf07d75a74f9207
+    Image:          notes-app:local
+    Image ID:       sha256:578c1cca5113edbe75cc7c1144d5946aea326479b65a6323fcbe74dd138bf92e
+    Port:           8000/TCP (http)
+    Host Port:      0/TCP (http)
+    State:          Running
+      Started:      Wed, 07 Oct 2026 14:49:55 +0530
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  256Mi
+    Requests:
+      cpu:      50m
+      memory:   96Mi
+    Liveness:   http-get http://:http/healthz delay=0s timeout=1s period=10s #success=1 #failure=3
+    Readiness:  http-get http://:http/health delay=0s timeout=1s period=5s #success=1 #failure=3
+    Startup:    http-get http://:http/healthz delay=0s timeout=1s period=2s #success=1 #failure=30
+    Environment Variables from:
+      notes-config  ConfigMap  Optional: false
+    Environment:
+      API_TOKEN:  <set to the key 'API_TOKEN' in secret 'notes-secret'>  Optional: false
+    Mounts:
+      /data from data (rw)
+      /tmp from tmp (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-cvpj4 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  data:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  notes-data
+    ReadOnly:   false
+  tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  kube-api-access-cvpj4:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  2s    default-scheduler  Successfully assigned notes/notes-798d657cdf-69qtc to vibhuti-devops-control-plane
+  Normal  Pulled     2s    kubelet            spec.containers{notes}: Container image "notes-app:local" already present on machine and can be accessed by the pod
+  Normal  Created    1s    kubelet            spec.containers{notes}: Container created
+  Normal  Started    1s    kubelet            spec.containers{notes}: Container started
+
+The unready Pod's address is not in the Service's EndpointSlice:
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get endpointslices -l kubernetes.io/service-name=notes -o wide
+NAME          ADDRESSTYPE   PORTS   ENDPOINTS                              AGE
+notes-w5vjr   IPv4          8000    10.244.0.90,10.244.0.88,10.244.0.104   21m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout undo deployment/notes
+Warning: resource deployments/notes was previously managed with 'kubectl apply'. Rolling back will not update the kubectl.kubernetes.io/last-applied-configuration annotation, which may cause unexpected behavior on future 'kubectl apply' operations. Consider using 'kubectl apply' with your previous configuration file instead.
+deployment.apps/notes rolled back
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout status deployment/notes --timeout=300s
+Waiting for deployment spec update to be observed...
+Waiting for deployment "notes" rollout to finish: 1 old replicas are pending termination...
+deployment "notes" successfully rolled out
+
+=== Fault 5: the memory limit is below what the process needs to start ===
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes patch deployment notes --type=strategic --patch-file final-devops-project/troubleshooting/faults/05-memory-limit-too-low.yaml
+deployment.apps/notes patched
+PASS: the container is killed by the kernel for exceeding its limit
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get pods -l app=notes
+NAME                     READY   STATUS      RESTARTS   AGE
+notes-594999854-vcnzj    0/1     OOMKilled   0          2s
+notes-7f7c4d88bd-fs4jc   1/1     Running     0          8m29s
+notes-7f7c4d88bd-vljv7   1/1     Running     0          8m43s
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes describe pod notes-594999854-vcnzj
+Name:             notes-594999854-vcnzj
+Namespace:        notes
+Priority:         0
+Service Account:  default
+Node:             vibhuti-devops-control-plane/172.20.0.2
+Start Time:       Wed, 07 Oct 2026 14:49:57 +0530
+Labels:           app=notes
+                  pod-template-hash=594999854
+Annotations:      kubectl.kubernetes.io/restartedAt: 2026-10-07T14:41:16+05:30
+                  prometheus.io/path: /metrics
+                  prometheus.io/port: 8000
+                  prometheus.io/scrape: true
+Status:           Running
+SeccompProfile:   RuntimeDefault
+IP:               10.244.0.105
+IPs:
+  IP:           10.244.0.105
+Controlled By:  ReplicaSet/notes-594999854
+Containers:
+  notes:
+    Container ID:   containerd://0c769ddea261f968ce643630eb586a0c8f18532406d140e727935eef72c3f728
+    Image:          notes-app:local
+    Image ID:       sha256:578c1cca5113edbe75cc7c1144d5946aea326479b65a6323fcbe74dd138bf92e
+    Port:           8000/TCP (http)
+    Host Port:      0/TCP (http)
+    State:          Terminated
+      Reason:       OOMKilled
+      Exit Code:    137
+      Started:      Wed, 07 Oct 2026 14:49:57 +0530
+      Finished:     Wed, 07 Oct 2026 14:49:58 +0530
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  24Mi
+    Requests:
+      cpu:      50m
+      memory:   16Mi
+    Liveness:   http-get http://:http/healthz delay=0s timeout=1s period=10s #success=1 #failure=3
+    Readiness:  http-get http://:http/readyz delay=0s timeout=1s period=5s #success=1 #failure=3
+    Startup:    http-get http://:http/healthz delay=0s timeout=1s period=2s #success=1 #failure=30
+    Environment Variables from:
+      notes-config  ConfigMap  Optional: false
+    Environment:
+      API_TOKEN:  <set to the key 'API_TOKEN' in secret 'notes-secret'>  Optional: false
+    Mounts:
+      /data from data (rw)
+      /tmp from tmp (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-jkj6v (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  data:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  notes-data
+    ReadOnly:   false
+  tmp:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  kube-api-access-jkj6v:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age              From               Message
+  ----    ------     ----             ----               -------
+  Normal  Scheduled  2s               default-scheduler  Successfully assigned notes/notes-594999854-vcnzj to vibhuti-devops-control-plane
+  Normal  Pulled     0s (x2 over 2s)  kubelet            spec.containers{notes}: Container image "notes-app:local" already present on machine and can be accessed by the pod
+  Normal  Created    0s (x2 over 2s)  kubelet            spec.containers{notes}: Container created
+  Normal  Started    0s (x2 over 2s)  kubelet            spec.containers{notes}: Container started
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout undo deployment/notes
+Warning: resource deployments/notes was previously managed with 'kubectl apply'. Rolling back will not update the kubectl.kubernetes.io/last-applied-configuration annotation, which may cause unexpected behavior on future 'kubectl apply' operations. Consider using 'kubectl apply' with your previous configuration file instead.
+deployment.apps/notes rolled back
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes apply -f final-devops-project/kubernetes/04-deployment.yaml
+deployment.apps/notes unchanged
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout status deployment/notes --timeout=300s
+deployment "notes" successfully rolled out
+
+=== Everything restored ===
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes get pods,svc,endpointslices,hpa -o wide
+NAME                         READY   STATUS        RESTARTS   AGE     IP             NODE                           NOMINATED NODE   READINESS GATES
+pod/notes-594999854-vcnzj    0/1     Terminating   0          2s      10.244.0.105   vibhuti-devops-control-plane   <none>           <none>
+pod/notes-7f7c4d88bd-fs4jc   1/1     Running       0          8m29s   10.244.0.90    vibhuti-devops-control-plane   <none>           <none>
+pod/notes-7f7c4d88bd-vljv7   1/1     Running       0          8m43s   10.244.0.88    vibhuti-devops-control-plane   <none>           <none>
+
+NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+service/notes   ClusterIP   10.96.146.90   <none>        80/TCP    21m   app=notes
+
+NAME                                         ADDRESSTYPE   PORTS   ENDPOINTS                              AGE
+endpointslice.discovery.k8s.io/notes-w5vjr   IPv4          8000    10.244.0.90,10.244.0.88,10.244.0.105   21m
+
+NAME                                        REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/notes   Deployment/notes   cpu: 4%/60%   2         6         2          21m
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework exec dns-client -- wget -T 5 -qO- http://notes.notes.svc.cluster.local/api/notes
+{"notes":[{"body":"session 21","id":1,"title":"deployed to kubernetes"},{"body":"session 21","id":2,"title":"deployed to kubernetes"},{"body":"session 21","id":3,"title":"deployed to kubernetes"}]}
+PASS: the application serves normally again
+
+$ kubectl --kubeconfig '/Users/vibhutibhatnagar/Desktop/SST STUDY/untitled folder/DevOps-Assignment-1/.lab/kubeconfig' --context kind-vibhuti-devops -n devops-homework -n notes rollout history deployment/notes
+deployment.apps/notes 
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+3         <none>
+4         <none>
+5         <none>
+11        <none>
+13        <none>
+15        <none>
+17        <none>
+18        <none>
+PASS: 16-final-troubleshooting completed

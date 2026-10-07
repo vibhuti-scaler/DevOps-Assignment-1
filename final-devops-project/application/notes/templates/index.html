@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notes</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 42rem; padding: 0 1rem; }
+      .meta { color: #555; font-size: .9rem; }
+      article { border-left: 3px solid #ddd; padding-left: .75rem; margin: 1rem 0; }
+      h2 { font-size: 1rem; margin: 0 0 .25rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Notes</h1>
+    <p class="meta">version {{ version }} &middot; {{ environment }}</p>
+    {% for note in notes %}
+      <article>
+        <h2>#{{ note.id }} {{ note.title }}</h2>
+        <p>{{ note.body }}</p>
+      </article>
+    {% else %}
+      <p class="meta">No notes stored yet. POST to /api/notes to add one.</p>
+    {% endfor %}
+  </body>
+</html>

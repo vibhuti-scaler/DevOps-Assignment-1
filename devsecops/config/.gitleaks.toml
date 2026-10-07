@@ -1,0 +1,21 @@
+# Secret-scanning configuration for this repository.
+# Extending the default rule set keeps every upstream detector and adds the
+# allowlist this coursework genuinely needs.
+title = "DevOps homework secret scanning"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Paths that legitimately contain placeholder or generated values"
+paths = [
+  '''\.gitleaks\.toml$''',
+  '''\.env\.example$''',
+  '''(^|/)evidence/''',
+  '''(^|/)\.terraform\.lock\.hcl$''',
+]
+regexes = [
+  # Documentation shows the shape of a token without ever carrying a real one.
+  '''REPLACE_WITH_[A-Z_]+''',
+  '''<your-[a-z-]+>''',
+]

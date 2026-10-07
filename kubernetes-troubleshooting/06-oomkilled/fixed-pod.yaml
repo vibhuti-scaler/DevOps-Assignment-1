@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: oom-fixed
+  labels:
+    app: oom-demo
+spec:
+  restartPolicy: Never
+  containers:
+    - name: hungry
+      image: busybox:1.36
+      command:
+        - /bin/sh
+        - -c
+        - 'dd if=/dev/zero of=/dev/shm/fill bs=1M count=80; echo "allocation finished"; sleep 3600'
+      resources:
+        requests:
+          memory: 64Mi
+        limits:
+          # Headroom for the 80Mi allocation plus the container's own overhead.
+          memory: 192Mi

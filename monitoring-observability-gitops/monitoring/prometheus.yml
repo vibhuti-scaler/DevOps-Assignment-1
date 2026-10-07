@@ -1,0 +1,39 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+  external_labels:
+    environment: devops-homework
+
+rule_files:
+  - /etc/prometheus/alert-rules.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
+        labels:
+          tier: host
+
+  - job_name: containers
+    static_configs:
+      - targets: ["cadvisor:8080"]
+        labels:
+          tier: container
+
+  # The application's own metrics. This is also the target stopped and started
+  # again to demonstrate TargetDown firing and then resolving.
+  - job_name: notes-app
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["demo-app:8000"]
+        labels:
+          tier: application
